@@ -168,6 +168,7 @@ const strings: UiStrings = {
   receiptTitle: "Kuitansi",
   receiptStatusBroadcast: "Disiarkan",
   receiptStatusConfirmed: "Terkonfirmasi",
+  receiptStatusConfirmedCount: "Terkonfirmasi ({count})",
   receiptExplorer: "Lihat di explorer",
   copyTxid: "Salin ID transaksi",
   copyRecipient: "Salin penerima",

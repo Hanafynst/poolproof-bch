@@ -32,6 +32,7 @@ import {
   type SpendableUtxo,
 } from "./core/transfer-tx";
 import type { WalletHoldings } from "./core/wallet-utxos";
+import type { HistoryEntry } from "./core/history-store";
 
 const PRESENTATION_URL =
   "https://docs.google.com/presentation/d/1Yfuk9CJkf4U9M_WukcELhumWgj3Ak6345Ewy8hSp-Hk/edit?usp=sharing";
@@ -333,20 +334,25 @@ export function ReceivePanel({
 
 /**
  * History: the receipts this browser recorded, newest first, from
- * the history store. A receipt is the record of a broadcast send:
- * asset, amount, recipient, fee and the explorer link. A store
- * that failed to load says so above the (empty) list instead of
- * pretending nothing ever happened.
+ * the history store, each joined with its confirmation status. A
+ * receipt is the record of a broadcast send: asset, amount,
+ * recipient, fee and the explorer link. The status chip starts at
+ * Broadcast and moves to Confirmed with its count once App's
+ * refresh (which runs while this panel is open) has seen the
+ * transaction in a block; a reopen shows the last known status
+ * immediately, from the persisted store. A store that failed to
+ * load says so above the (empty) list instead of pretending
+ * nothing ever happened.
  */
 export function HistoryPanel({
   t,
   lang,
-  receipts,
+  entries,
   loadFailed,
 }: {
   t: UiStrings;
   lang: Lang;
-  receipts: Receipt[];
+  entries: HistoryEntry[];
   loadFailed: boolean;
 }) {
   const [copiedTxid, setCopiedTxid] = useState<string | null>(null);
@@ -368,17 +374,24 @@ export function HistoryPanel({
           {t.historyUnavailable}
         </p>
       )}
-      {receipts.length === 0 ? (
+      {entries.length === 0 ? (
         <p>{t.historyEmpty}</p>
       ) : (
-        receipts.map((receipt) => (
+        entries.map(({ receipt, status }) => (
           <article className="history-row" key={receipt.txid}>
             <div className="history-main">
               <span className="history-asset">{receipt.assetLabel}</span>
               <span className="history-amount">{receipt.amountText}</span>
-              <span className="chip" data-status="pass">
-                {t.receiptStatusBroadcast}
-              </span>
+              {status.state === "confirmed" ? (
+                <span className="chip" data-status="pass">
+                  {t.receiptStatusConfirmedCount.replace(
+                    "{count}",
+                    String(status.confirmations),
+                  )}
+                </span>
+              ) : (
+                <span className="chip">{t.receiptStatusBroadcast}</span>
+              )}
             </div>
             <p className="mono history-recipient" title={receipt.recipient}>
               {shortenMiddle(receipt.recipient, 14)}

@@ -123,6 +123,7 @@ export interface UiStrings {
   receiptTitle: string;
   receiptStatusBroadcast: string;
   receiptStatusConfirmed: string;
+  receiptStatusConfirmedCount: string;
   receiptExplorer: string;
   copyTxid: string;
   copyRecipient: string;

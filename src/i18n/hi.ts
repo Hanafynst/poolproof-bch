@@ -165,6 +165,7 @@ const strings: UiStrings = {
   receiptTitle: "रसीद",
   receiptStatusBroadcast: "प्रसारित",
   receiptStatusConfirmed: "पुष्ट",
+  receiptStatusConfirmedCount: "पुष्ट ({count})",
   receiptExplorer: "एक्सप्लोरर पर देखें",
   copyTxid: "लेनदेन ID कॉपी करें",
   copyRecipient: "प्राप्तकर्ता कॉपी करें",

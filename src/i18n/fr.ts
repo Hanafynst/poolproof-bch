@@ -178,6 +178,7 @@ const strings: UiStrings = {
   receiptTitle: "Reçu",
   receiptStatusBroadcast: "Diffusée",
   receiptStatusConfirmed: "Confirmée",
+  receiptStatusConfirmedCount: "Confirmée ({count})",
   receiptExplorer: "Voir dans l'explorateur",
   copyTxid: "Copier l'ID de transaction",
   copyRecipient: "Copier le destinataire",

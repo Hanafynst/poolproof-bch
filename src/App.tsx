@@ -27,6 +27,8 @@ import { type LiveReportInput } from "./core/live-report";
 import { judgePool, type FlagCode, type PoolJudgement } from "./core/poolproof-core";
 import { createElectrumSession } from "./core/electrum-wss";
 import { HistoryStore, HistoryStoreError } from "./core/history-store";
+import type { HistoryEntry } from "./core/history-store";
+import { fetchConfirmationUpdates } from "./core/history-status";
 import type { Receipt } from "./core/send-flow";
 import type { SpendableUtxo } from "./core/transfer-tx";
 import { fetchAddressUtxos, indexWalletHoldings, type WalletHoldings } from "./core/wallet-utxos";
@@ -1072,7 +1074,7 @@ export default function App() {
     useState<WalletHoldings | null>(null);
   const [openPanel, setOpenPanel] = useState<HomePanel | null>(null);
   const [history] = useState(loadHistoryStore);
-  const [receipts, setReceipts] = useState<Receipt[]>(() =>
+  const [entries, setEntries] = useState<HistoryEntry[]>(() =>
     history.store.list(),
   );
   const walletAddress = walletSession.address;
@@ -1108,11 +1110,59 @@ export default function App() {
     (receipt: Receipt) => {
       history.store.append(receipt);
       history.store.save();
-      setReceipts(history.store.list());
+      setEntries(history.store.list());
       setOpenPanel("history");
     },
     [history],
   );
+  // Confirmation statuses refresh while the History panel is
+  // open: once on open, then every 30 seconds until it closes.
+  // The fetch never guesses, so a transaction whose check fails
+  // keeps its last recorded status, and the store refuses to
+  // move a status backward, so this loop can only ever advance
+  // the record, and a failed cycle shows no error.
+  const historyRefreshInFlight = useRef(false);
+  useEffect(() => {
+    if (openPanel !== "history") return;
+    let cancelled = false;
+    const refresh = async () => {
+      if (historyRefreshInFlight.current) return;
+      historyRefreshInFlight.current = true;
+      try {
+        const targets = history.store.list().slice(0, 20);
+        if (targets.length === 0) return;
+        const updates = await fetchConfirmationUpdates(
+          electrum.call,
+          targets.map((entry) => entry.receipt.txid),
+        );
+        if (cancelled || updates.size === 0) return;
+        const checkedAtIso = new Date().toISOString();
+        let applied = false;
+        for (const [txid, status] of updates) {
+          if (history.store.updateConfirmation(txid, status, checkedAtIso)) {
+            applied = true;
+          }
+        }
+        if (applied) {
+          history.store.save();
+          setEntries(history.store.list());
+        }
+      } catch {
+        // fetchConfirmationUpdates already turns per-call
+        // failures into missing updates; anything that still
+        // escapes changes nothing. The last known statuses
+        // stand, and no error is shown for a status check.
+      } finally {
+        historyRefreshInFlight.current = false;
+      }
+    };
+    void refresh();
+    const timer = window.setInterval(() => void refresh(), 30_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [openPanel, history, electrum]);
   const togglePanel = useCallback(
     (panel: HomePanel) =>
       setOpenPanel((current) => (current === panel ? null : panel)),
@@ -1273,7 +1323,7 @@ export default function App() {
           <HistoryPanel
             t={t}
             lang={packLang}
-            receipts={receipts}
+            entries={entries}
             loadFailed={history.loadFailed}
           />
         )}

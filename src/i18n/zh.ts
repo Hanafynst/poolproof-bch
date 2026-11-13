@@ -139,6 +139,7 @@ const strings: UiStrings = {
   receiptTitle: "回执",
   receiptStatusBroadcast: "已广播",
   receiptStatusConfirmed: "已确认",
+  receiptStatusConfirmedCount: "已确认 ({count})",
   receiptExplorer: "在区块浏览器中查看",
   copyTxid: "复制交易 ID",
   copyRecipient: "复制收款方",

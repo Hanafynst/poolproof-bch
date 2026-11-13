@@ -160,6 +160,7 @@ const strings: UiStrings = {
   receiptTitle: "الإيصال",
   receiptStatusBroadcast: "تم البث",
   receiptStatusConfirmed: "تم التأكيد",
+  receiptStatusConfirmedCount: "تم التأكيد ({count})",
   receiptExplorer: "العرض في المستكشف",
   copyTxid: "نسخ معرّف المعاملة",
   copyRecipient: "نسخ المستلم",

@@ -29,13 +29,26 @@
  *   a user's transaction history is a decision, and this API makes
  *   whoever takes it say so. Even then the corrupt text is left in
  *   place until the caller explicitly saves over it.
+ * - Confirmation status is NOT part of the receipt. A receipt is
+ *   frozen at mint time with status "broadcast" forever; whether
+ *   its transaction has since been mined changes over time, so
+ *   it lives in a separate status map keyed by txid (history-
+ *   status.ts derives the values). list() joins the two. The
+ *   map only ever moves forward: once a transaction is recorded
+ *   as confirmed, no later update — a failed check, a stale
+ *   node, a lower count — can move it back to broadcast or
+ *   shrink its confirmation count.
  */
 import { buildReceipt, type Receipt, type ReceiptInput } from "./send-flow.js";
+import type { ConfirmationStatus } from "./history-status.js";
 
-/** Serialisation format version. Loading anything else is an
- *  UNSUPPORTED_VERSION error: a newer app's history is migrated by
- *  that app, never guessed at by this one. */
-export const HISTORY_FORMAT_VERSION = 1;
+/** Serialisation format version. Version 1 (receipts only) is
+ *  still read: it migrates in memory to version 2 with every
+ *  entry at its mint-time broadcast status, and the next save
+ *  writes version 2. Anything newer than HISTORY_FORMAT_VERSION
+ *  is an UNSUPPORTED_VERSION error: a newer app's history is
+ *  migrated by that app, never guessed at by this one. */
+export const HISTORY_FORMAT_VERSION = 2;
 
 /** One text blob in, one text blob out. read() returns null when
  *  nothing was ever written — a fresh install, NOT corruption. */
@@ -73,6 +86,30 @@ export type CorruptDataPolicy = "throw" | "start-empty";
 
 export interface LoadHistoryOptions {
   onCorrupt?: CorruptDataPolicy;
+}
+
+/**
+ * One receipt's confirmation status, as last checked. The
+ * ConfirmationStatus fields come from history-status.ts's
+ * derivation; checkedAtIso is when that derivation was made.
+ * For an entry that has never been refreshed since the send,
+ * checkedAtIso is the receipt's sentAtIso: "broadcast" was the
+ * known state at mint time, and the timestamp says exactly how
+ * fresh the claim is.
+ */
+export interface TxStatus {
+  state: ConfirmationStatus["state"];
+  confirmations: number;
+  blockHeight: number | null;
+  checkedAtIso: string;
+}
+
+/** What list() hands out: the frozen receipt joined with its
+ *  current status. Both halves are frozen, and so is the join —
+ *  a status advances only through updateConfirmation. */
+export interface HistoryEntry {
+  receipt: Receipt;
+  status: TxStatus;
 }
 
 /** The wire shape of one receipt: the receipt's own fields, with
@@ -241,12 +278,100 @@ function receiptFromStored(value: unknown): Receipt {
   return receipt;
 }
 
+/** The status a receipt is born with: broadcast, known as of
+ *  the moment it was sent. */
+function initialStatusFor(receipt: Receipt): TxStatus {
+  return Object.freeze({
+    state: "broadcast",
+    confirmations: 0,
+    blockHeight: null,
+    checkedAtIso: receipt.sentAtIso,
+  });
+}
+
+/** The consistency rules every status value must satisfy, in
+ *  memory or on disk: broadcast carries no count and no height;
+ *  confirmed carries a count of at least 1 and the block it
+ *  sits in; the check time parses. Throws a plain Error naming
+ *  the defect — updateConfirmation lets it propagate (a
+ *  malformed status is a caller bug) and the stored-history
+ *  parser wraps it as CORRUPT_DATA. */
+function assertStatusShape(
+  state: unknown,
+  confirmations: unknown,
+  blockHeight: unknown,
+  checkedAtIso: unknown,
+): void {
+  if (state !== "broadcast" && state !== "confirmed") {
+    throw new Error(
+      `state is ${JSON.stringify(state)}, not "broadcast" or "confirmed"`,
+    );
+  }
+  if (state === "broadcast" && (confirmations !== 0 || blockHeight !== null)) {
+    throw new Error(
+      "a broadcast status carries 0 confirmations and no block height",
+    );
+  }
+  if (state === "confirmed") {
+    if (
+      typeof confirmations !== "number" ||
+      !Number.isInteger(confirmations) ||
+      confirmations < 1
+    ) {
+      throw new Error(
+        "a confirmed status carries an integer confirmation count of at least 1",
+      );
+    }
+    if (
+      typeof blockHeight !== "number" ||
+      !Number.isInteger(blockHeight) ||
+      blockHeight < 1
+    ) {
+      throw new Error(
+        "a confirmed status carries the integer block height it sits in",
+      );
+    }
+  }
+  if (
+    typeof checkedAtIso !== "string" ||
+    Number.isNaN(Date.parse(checkedAtIso))
+  ) {
+    throw new Error("checkedAtIso is not a parseable ISO timestamp");
+  }
+}
+
+/** Parse one stored status entry into a frozen TxStatus.
+ *  Throws a plain Error naming the defect; parseStoredHistory
+ *  wraps it as CORRUPT_DATA with the entry's txid. */
+function statusFromStored(value: unknown): TxStatus {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("status entry is not an object");
+  }
+  const entry = value as Record<string, unknown>;
+  assertStatusShape(
+    entry.state,
+    entry.confirmations,
+    entry.blockHeight,
+    entry.checkedAtIso,
+  );
+  return Object.freeze({
+    state: entry.state as TxStatus["state"],
+    confirmations: entry.confirmations as number,
+    blockHeight: entry.blockHeight as number | null,
+    checkedAtIso: entry.checkedAtIso as string,
+  });
+}
+
 /** Parse the whole stored blob. Every failure is a typed
  *  HistoryStoreError — CORRUPT_DATA for anything malformed (a
  *  version field that is not even a number counts as malformed,
  *  not as a version), UNSUPPORTED_VERSION for a version this
- *  module does not read. */
-function parseStoredHistory(text: string): Receipt[] {
+ *  module does not read. Version 1 blobs (no status map)
+ *  migrate: every receipt stands at its mint-time status. */
+function parseStoredHistory(text: string): {
+  receipts: Receipt[];
+  statuses: Map<string, TxStatus>;
+} {
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
@@ -261,11 +386,11 @@ function parseStoredHistory(text: string): Receipt[] {
   if (typeof version !== "number") {
     throw corruptError("version field is missing or not a number");
   }
-  if (version !== HISTORY_FORMAT_VERSION) {
+  if (version !== 1 && version !== HISTORY_FORMAT_VERSION) {
     throw new HistoryStoreError(
       "UNSUPPORTED_VERSION",
       `history-store: stored history is format version ${version}, ` +
-        `this module reads version ${HISTORY_FORMAT_VERSION}`,
+        `this module reads versions 1 and ${HISTORY_FORMAT_VERSION}`,
     );
   }
   const entries = root.receipts;
@@ -291,7 +416,46 @@ function parseStoredHistory(text: string): Receipt[] {
     seenTxids.add(receipt.txid);
     receipts.push(receipt);
   });
-  return receipts;
+  const statuses = new Map<string, TxStatus>();
+  if (version === 1) {
+    // Migration: a version 1 file predates confirmation
+    // tracking, so every entry stands at its mint-time status.
+    for (const receipt of receipts) {
+      statuses.set(receipt.txid, initialStatusFor(receipt));
+    }
+    return { receipts, statuses };
+  }
+  const storedStatuses = root.statuses;
+  if (
+    storedStatuses === null ||
+    typeof storedStatuses !== "object" ||
+    Array.isArray(storedStatuses)
+  ) {
+    throw corruptError("statuses field is not an object");
+  }
+  const statusMap = storedStatuses as Record<string, unknown>;
+  for (const key of Object.keys(statusMap)) {
+    if (!seenTxids.has(key)) {
+      // save() only writes statuses for receipts it holds; a
+      // stranger's entry means the file was tampered with.
+      throw corruptError(`status entry for unknown txid ${key}`);
+    }
+  }
+  for (const receipt of receipts) {
+    const raw = statusMap[receipt.txid];
+    if (raw === undefined) {
+      throw corruptError(`status entry missing for txid ${receipt.txid}`);
+    }
+    try {
+      statuses.set(receipt.txid, statusFromStored(raw));
+    } catch (error) {
+      throw corruptError(
+        `status for txid ${receipt.txid}: ` +
+          (error instanceof Error ? error.message : String(error)),
+      );
+    }
+  }
+  return { receipts, statuses };
 }
 
 export class HistoryStore {
@@ -300,6 +464,10 @@ export class HistoryStore {
    *  serialisation order. */
   private readonly insertionOrder: Receipt[] = [];
   private readonly byTxid = new Map<string, Receipt>();
+  /** Confirmation status per txid — the mutable companion to
+   *  the frozen receipts. Every stored receipt has exactly one
+   *  entry here; append() and load() both maintain that. */
+  private readonly statuses = new Map<string, TxStatus>();
 
   constructor(adapter?: HistoryStorageAdapter) {
     this.adapter = adapter;
@@ -317,18 +485,87 @@ export class HistoryStore {
     if (this.byTxid.has(canonical.txid)) return "duplicate";
     this.byTxid.set(canonical.txid, canonical);
     this.insertionOrder.push(canonical);
+    this.statuses.set(canonical.txid, initialStatusFor(canonical));
     return "appended";
+  }
+
+  /**
+   * Record the outcome of one confirmation check for a stored
+   * receipt. The status map is the only thing that changes —
+   * the receipt itself is never touched.
+   *
+   * Forward only: a confirmed entry stays confirmed. A later
+   * check that still reports broadcast (a node that lost the
+   * transaction, a mempool view after a reorg) or reports fewer
+   * confirmations (a shallower reorg, a lagging node) leaves
+   * the recorded state, count, and block height standing; only
+   * checkedAtIso advances, because the check did happen. A
+   * genuinely higher count replaces count and height together.
+   *
+   * Returns true when the stored entry changed (status fields
+   * advanced, or the check time moved). An unknown txid is a
+   * no-op returning false — a refresh racing a cleared store
+   * must never invent an entry for a receipt the store does
+   * not hold. A malformed status or timestamp throws: that is
+   * a caller bug, not data.
+   */
+  updateConfirmation(
+    txid: string,
+    next: ConfirmationStatus,
+    checkedAtIso: string,
+  ): boolean {
+    if (next === null || typeof next !== "object") {
+      throw new TypeError("history-store: updateConfirmation expects a status");
+    }
+    assertStatusShape(
+      next.state,
+      next.confirmations,
+      next.blockHeight,
+      checkedAtIso,
+    );
+    if (typeof txid !== "string") return false;
+    const key = txid.toLowerCase();
+    const current = this.statuses.get(key);
+    if (current === undefined) return false;
+    let merged: TxStatus;
+    if (
+      current.state === "confirmed" &&
+      (next.state === "broadcast" || next.confirmations <= current.confirmations)
+    ) {
+      // The recorded confirmation stands; only the check time
+      // advances.
+      merged = {
+        state: current.state,
+        confirmations: current.confirmations,
+        blockHeight: current.blockHeight,
+        checkedAtIso,
+      };
+    } else {
+      merged = {
+        state: next.state,
+        confirmations: next.confirmations,
+        blockHeight: next.blockHeight,
+        checkedAtIso,
+      };
+    }
+    const changed =
+      merged.state !== current.state ||
+      merged.confirmations !== current.confirmations ||
+      merged.blockHeight !== current.blockHeight ||
+      merged.checkedAtIso !== current.checkedAtIso;
+    if (changed) this.statuses.set(key, Object.freeze(merged));
+    return changed;
   }
 
   /**
    * Newest first: sentAtIso descending, and for equal timestamps
    * the later insertion first (it is the more recent action the
-   * user took). Returns a fresh array of the store's frozen
-   * receipts — callers can reorder or discard the array, and the
-   * frozen entries cannot be edited, so the store's internals are
+   * user took). Returns a fresh array of frozen joins — callers
+   * can reorder or discard the array, and neither half of an
+   * entry can be edited, so the store's internals are
    * unreachable from the result.
    */
-  list(): Receipt[] {
+  list(): HistoryEntry[] {
     return this.insertionOrder
       .map((receipt, index) => ({ receipt, index }))
       .sort((a, b) => {
@@ -336,7 +573,12 @@ export class HistoryStore {
           Date.parse(b.receipt.sentAtIso) - Date.parse(a.receipt.sentAtIso);
         return byTime !== 0 ? byTime : b.index - a.index;
       })
-      .map(({ receipt }) => receipt);
+      .map(({ receipt }) =>
+        Object.freeze({
+          receipt,
+          status: this.statuses.get(receipt.txid) as TxStatus,
+        }),
+      );
   }
 
   /** The stored receipt for a txid, or undefined. Txids are hex,
@@ -351,11 +593,18 @@ export class HistoryStore {
     return this.insertionOrder.length;
   }
 
-  /** The versioned text form — exactly what save() writes. */
+  /** The versioned text form — exactly what save() writes. The
+   *  status map is keyed by txid in receipt insertion order, so
+   *  a save/load/save cycle reproduces the identical text. */
   serialize(): string {
+    const statuses: Record<string, TxStatus> = {};
+    for (const receipt of this.insertionOrder) {
+      statuses[receipt.txid] = this.statuses.get(receipt.txid) as TxStatus;
+    }
     return JSON.stringify({
       version: HISTORY_FORMAT_VERSION,
       receipts: this.insertionOrder.map(toStoredReceipt),
+      statuses,
     });
   }
 
@@ -384,9 +633,9 @@ export class HistoryStore {
   ): HistoryStore {
     const text = adapter.read();
     if (text === null) return new HistoryStore(adapter);
-    let receipts: Receipt[];
+    let parsedHistory: ReturnType<typeof parseStoredHistory>;
     try {
-      receipts = parseStoredHistory(text);
+      parsedHistory = parseStoredHistory(text);
     } catch (error) {
       const callerChoseRecovery =
         error instanceof HistoryStoreError &&
@@ -396,9 +645,13 @@ export class HistoryStore {
       return new HistoryStore(adapter);
     }
     const store = new HistoryStore(adapter);
-    for (const receipt of receipts) {
+    for (const receipt of parsedHistory.receipts) {
       store.byTxid.set(receipt.txid, receipt);
       store.insertionOrder.push(receipt);
+      store.statuses.set(
+        receipt.txid,
+        parsedHistory.statuses.get(receipt.txid) as TxStatus,
+      );
     }
     return store;
   }
