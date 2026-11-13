@@ -232,6 +232,18 @@ const strings: UiStrings = {
     "{time}. Le nom, le symbole et les décimales proviennent de " +
     "l'enregistrement TokenStork pour cette catégorie.",
   liveUnnamed: "Jeton sans nom",
+  notFoundTitle: "Catégorie introuvable",
+  notFoundBody:
+    "Aucun CashToken portant cet identifiant de catégorie n'a " +
+    "été trouvé sur le réseau principal BCH. PoolProof a " +
+    "consulté Cauldron Indexer et TokenStork, et aucune des " +
+    "deux sources n'a d'enregistrement de cette catégorie.",
+  notFoundHint:
+    "Les identifiants de catégorie n'ont pas de somme de " +
+    "contrôle : un seul caractère erroné pointe vers un autre " +
+    "jeton, ou vers aucun jeton. Vérifiez l'identifiant et " +
+    "réessayez.",
+  notFoundAction: "Vérifier une autre catégorie",
   signPromptAnchor:
     "Ancrer le hash de ce rapport PoolProof sur le réseau principal " +
     "Bitcoin Cash ?",

@@ -24,6 +24,7 @@ import {
 } from "./core/identity";
 import { runLiveAuditReads } from "./core/live-audit";
 import { type LiveReportInput } from "./core/live-report";
+import { classifyLookup } from "./core/lookup";
 import { judgePool, type FlagCode, type PoolJudgement } from "./core/poolproof-core";
 import { createElectrumSession } from "./core/electrum-wss";
 import { HistoryStore, HistoryStoreError } from "./core/history-store";
@@ -565,11 +566,82 @@ function snapshotConcentrationReport(
 // idle shows the selected snapshot; fetching replaces the report
 // with the loading line; failed shows the error with a retry of the
 // same category; done renders the live result as a snapshot.
+// not-found (R44) is its own phase, not a done input: a category no
+// source attests is a lookup miss, and a miss must never be dressed
+// as a report (see core/lookup.ts).
 type LiveState =
   | { phase: "idle" }
   | { phase: "fetching" }
   | { phase: "failed" }
+  | { phase: "not-found"; category: string }
   | { phase: "done"; input: LiveReportInput };
+
+// The honest lookup miss (R44): one plain card. No verdict stamp,
+// no group cards, no exit simulation, no anchor offer, no report
+// actions: there is no token to judge, so there is nothing to
+// dress up. The category is shown shortened with the report
+// header's copy discipline (the button copies the FULL id; a
+// failed copy says so in words), and the one action returns to
+// the category input with the typed ID left in place, because
+// the likely fix is correcting a single character of it.
+function NotFoundCard({
+  category,
+  t,
+  onCheckAnother,
+}: {
+  category: string;
+  t: UiStrings;
+  onCheckAnother: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
+  const copyCategory = async () => {
+    try {
+      await navigator.clipboard.writeText(category);
+      setCopied(true);
+      setCopyFailed(false);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable: say so in words, never fake a
+      // copied state (the ReportActions rule).
+      setCopyFailed(true);
+      setTimeout(() => setCopyFailed(false), 3000);
+    }
+  };
+  return (
+    <section className="scan-group not-found">
+      <h2>{t.notFoundTitle}</h2>
+      <p className="not-found-body">{t.notFoundBody}</p>
+      <div className="not-found-category">
+        <p className="mono category" title={category}>
+          {shortenHash(category)}
+        </p>
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label={t.copyCategory}
+          title={t.copyCategory}
+          onClick={() => void copyCategory()}
+        >
+          {copied ? <CheckIcon /> : <CopyIcon />}
+        </button>
+        {copyFailed && (
+          <span className="action-status" role="status">
+            {t.copyFailed}
+          </span>
+        )}
+      </div>
+      <p className="scan-note">{t.notFoundHint}</p>
+      <button
+        type="button"
+        className="not-found-action"
+        onClick={onCheckAnother}
+      >
+        {t.notFoundAction}
+      </button>
+    </section>
+  );
+}
 
 // A live audit result dressed as a snapshot so BOTH report views
 // render it through the exact components the saved snapshots use, and
@@ -1200,6 +1272,15 @@ export default function App() {
     liveCategory.current = category;
     const attempt = ++liveAttempt.current;
     setLiveState({ phase: "fetching" });
+    // The classification's landing record (R44): the last report
+    // input this attempt produced and whether it already landed,
+    // kept in a box because the decision below reads it after the
+    // orchestration settles, not at render time (and a plain let
+    // assigned inside the callbacks narrows to never there).
+    const landing: { input: LiveReportInput | null; landed: boolean } = {
+      input: null,
+      landed: false,
+    };
     try {
       // The pool read and the identity read run concurrently
       // (R41, core/live-audit.ts): the report lands the moment
@@ -1212,6 +1293,16 @@ export default function App() {
       // promptly (below) without waiting on the identity read,
       // and an identity failure is a null: the report renders
       // unnamed, the audit never dies on a lookup.
+      //
+      // R44 adds one hold to that landing: a pool read with zero
+      // pools and no identity yet cannot be classified. It may
+      // be a real pool-less token whose identity is still in
+      // flight, or a category nothing attests. Landing the
+      // report immediately would flash exactly the dressed-up
+      // miss the user rejected (an "unnamed token" NO_MARKET
+      // report for a typo'd category), so that one case stays
+      // in "fetching" until the identity read settles; the
+      // orchestration's own promise resolves only after it has.
       await runLiveAuditReads(
         category,
         {
@@ -1221,14 +1312,50 @@ export default function App() {
         },
         () => liveAttempt.current === attempt,
         {
-          onReport: (input) => setLiveState({ phase: "done", input }),
-          onIdentityUpgrade: (input) =>
-            setLiveState({ phase: "done", input }),
+          onReport: (input) => {
+            landing.input = input;
+            if (input.poolCount > 0 || input.identity !== null) {
+              landing.landed = true;
+              setLiveState({ phase: "done", input });
+            }
+          },
+          onIdentityUpgrade: (input) => {
+            landing.input = input;
+            landing.landed = true;
+            setLiveState({ phase: "done", input });
+          },
         },
       );
     } catch {
       if (liveAttempt.current !== attempt) return;
       setLiveState({ phase: "failed" });
+      return;
+    }
+    if (liveAttempt.current !== attempt || landing.landed) return;
+    const finalInput = landing.input;
+    if (finalInput === null) return;
+    // The identity read has settled and nothing upgraded the
+    // held report: classify on the full evidence. In this wiring
+    // the pinned TokenStork entry that resolves an identity is
+    // also the supply / holder record for the category, so
+    // supplyKnown rises with identityFound; the classifier keeps
+    // them separate for wirings that learn one without the other
+    // (core/lookup.ts). poolReadOk is true here by construction:
+    // a failed pool read rejected into the catch above, which is
+    // the classifier's "error" outcome rendered as the existing
+    // failed state.
+    const outcome = classifyLookup({
+      poolReadOk: true,
+      poolCount: finalInput.poolCount,
+      identityFound: finalInput.identity !== null,
+      supplyKnown: finalInput.identity !== null,
+    });
+    if (outcome === "not-found") {
+      setLiveState({ phase: "not-found", category: finalInput.category });
+    } else {
+      // "report": a real token with no pools and no name yet,
+      // the honest unnamed NO_MARKET report.
+      setLiveState({ phase: "done", input: finalInput });
     }
   };
   // A shared live link (?cat=<category>) lands on the audit itself,
@@ -1470,6 +1597,23 @@ export default function App() {
               {t.retry}
             </button>
           </p>
+        ) : liveState.phase === "not-found" ? (
+          <NotFoundCard
+            category={liveState.category}
+            t={t}
+            onCheckAnother={() => {
+              // Back to the input with the typed ID left in
+              // place and selected: the likely fix is correcting
+              // one character of it, not retyping all 64.
+              liveAttempt.current++;
+              setLiveState({ phase: "idle" });
+              focusAudit();
+              window.setTimeout(() => {
+                const input = document.getElementById("live-category");
+                if (input instanceof HTMLInputElement) input.select();
+              }, 400);
+            }}
+          />
         ) : (
           <>
             {liveSnap !== null && liveTime !== null && (

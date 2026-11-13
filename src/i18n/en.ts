@@ -218,6 +218,16 @@ const strings: UiStrings = {
     "{time}. Name, symbol and decimals come from TokenStork's " +
     "record for this category.",
   liveUnnamed: "Unnamed token",
+  notFoundTitle: "Category not found",
+  notFoundBody:
+    "No CashToken with this category ID was found on BCH mainnet. " +
+    "PoolProof checked the Cauldron Indexer and TokenStork, and " +
+    "neither source has a record of this category.",
+  notFoundHint:
+    "Category IDs carry no checksum, so a single wrong character " +
+    "points at a different token, or at none at all. Check the ID " +
+    "and try again.",
+  notFoundAction: "Check another category",
   signPromptAnchor:
     "Anchor this PoolProof report hash on Bitcoin Cash mainnet?",
   signPromptSend: "Sign this send in your wallet to broadcast it.",

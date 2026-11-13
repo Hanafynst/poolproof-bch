@@ -214,6 +214,16 @@ const strings: UiStrings = {
     "Cauldron इंडेक्सर (indexer.riften.net) से {time} पर लाइव पठन। " +
     "नाम, प्रतीक और दशमलव इस श्रेणी के TokenStork रिकॉर्ड से हैं।",
   liveUnnamed: "अनाम टोकन",
+  notFoundTitle: "श्रेणी नहीं मिली",
+  notFoundBody:
+    "BCH मेननेट पर इस श्रेणी ID वाला कोई CashToken नहीं मिला। " +
+    "PoolProof ने Cauldron Indexer और TokenStork की जाँच की, और " +
+    "किसी भी स्रोत के पास इस श्रेणी का कोई रिकॉर्ड नहीं है।",
+  notFoundHint:
+    "श्रेणी ID में कोई चेकसम नहीं होता, इसलिए एक गलत अक्षर किसी " +
+    "दूसरे टोकन की ओर इशारा करता है, या किसी ऐसे टोकन की ओर जो " +
+    "है ही नहीं। ID जांचकर फिर से प्रयास करें।",
+  notFoundAction: "दूसरी श्रेणी जांचें",
   signPromptAnchor:
     "इस PoolProof रिपोर्ट हैश को Bitcoin Cash मेननेट पर एंकर करें?",
   signPromptSend:

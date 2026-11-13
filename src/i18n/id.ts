@@ -221,6 +221,17 @@ const strings: UiStrings = {
     "pada {time}. Nama, simbol, dan desimal dari catatan TokenStork " +
     "untuk kategori ini.",
   liveUnnamed: "Token tanpa nama",
+  notFoundTitle: "Kategori tidak ditemukan",
+  notFoundBody:
+    "Tidak ada CashToken dengan ID kategori ini yang ditemukan di " +
+    "mainnet BCH. PoolProof sudah memeriksa Cauldron Indexer dan " +
+    "TokenStork, dan kedua sumber itu tidak punya catatan tentang " +
+    "kategori ini.",
+  notFoundHint:
+    "ID kategori tidak punya checksum, jadi satu karakter yang " +
+    "salah menunjuk ke token yang berbeda, atau ke token yang " +
+    "tidak ada sama sekali. Periksa lagi ID-nya lalu coba lagi.",
+  notFoundAction: "Periksa kategori lain",
   signPromptAnchor:
     "Jangkar hash laporan PoolProof ini di mainnet Bitcoin Cash?",
   signPromptSend:

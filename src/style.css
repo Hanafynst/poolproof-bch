@@ -625,6 +625,50 @@ h1 {
   margin: 0 0 1rem;
 }
 
+/* The lookup-miss card (R44): the group cards' surface and the
+   report title's size, but a plain heading, never a verdict
+   stamp, on the report's type scale (0.9rem body, 0.8rem
+   notes). One card, one action; nothing else is offered
+   because there is no token to act on. */
+.not-found h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.not-found-body {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+}
+
+.not-found-category {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.not-found-category .category {
+  margin: 0;
+}
+
+.not-found .action-status {
+  font-size: 0.8rem;
+}
+
+.not-found-action {
+  font: inherit;
+  font-size: 0.88rem;
+  min-height: 44px;
+  margin-top: 0.75rem;
+  padding: 0.45rem 0.9rem;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
 /* The audit report. Verdict first, then card-row evidence. */
 .report {
   padding-top: 0.5rem;

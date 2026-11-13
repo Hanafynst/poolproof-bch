@@ -210,6 +210,16 @@ const strings: UiStrings = {
     "قراءة مباشرة من مفهرس Cauldron (indexer.riften.net) في {time}. " +
     "الاسم والرمز والمنازل العشرية من سجل TokenStork لهذه الفئة.",
   liveUnnamed: "رمز بلا اسم",
+  notFoundTitle: "الفئة غير موجودة",
+  notFoundBody:
+    "لم يتم العثور على أي CashToken بمعرف الفئة هذا على الشبكة " +
+    "الرئيسية لـ BCH. فحص PoolProof كلا من Cauldron Indexer " +
+    "وTokenStork، ولا يملك أي من المصدرين سجلا لهذه الفئة.",
+  notFoundHint:
+    "معرفات الفئات لا تحمل مجموعا اختباريا، لذا فإن حرفا واحدا " +
+    "خاطئا يشير إلى رمز مختلف، أو إلى رمز غير موجود أصلا. تحقق " +
+    "من المعرف وحاول مرة أخرى.",
+  notFoundAction: "تحقق من فئة أخرى",
   signPromptAnchor:
     "تثبيت بصمة تقرير PoolProof هذا على الشبكة الرئيسية لـ Bitcoin Cash؟",
   signPromptSend: "وقّع هذا الإرسال في محفظتك لبثّه.",

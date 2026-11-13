@@ -225,6 +225,17 @@ const strings: UiStrings = {
     "{time}. Nome, símbolo e decimais do registro da TokenStork " +
     "para esta categoria.",
   liveUnnamed: "Token sem nome",
+  notFoundTitle: "Categoria não encontrada",
+  notFoundBody:
+    "Nenhum CashToken com este ID de categoria foi encontrado na " +
+    "rede principal da BCH. O PoolProof consultou o Cauldron " +
+    "Indexer e o TokenStork, e nenhuma das fontes tem registro " +
+    "desta categoria.",
+  notFoundHint:
+    "Os IDs de categoria não têm soma de verificação, então um " +
+    "único caractere errado aponta para outro token, ou para " +
+    "nenhum. Confira o ID e tente novamente.",
+  notFoundAction: "Verificar outra categoria",
   signPromptAnchor:
     "Ancorar o hash deste relatório do PoolProof na rede principal " +
     "do Bitcoin Cash?",

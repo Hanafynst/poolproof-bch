@@ -185,6 +185,15 @@ const strings: UiStrings = {
     "于 {time} 从 Cauldron 索引器 (indexer.riften.net) 实时读取。" +
     "名称、符号和小数位数来自 TokenStork 对此类别的记录。",
   liveUnnamed: "未命名代币",
+  notFoundTitle: "未找到该类别",
+  notFoundBody:
+    "在 BCH 主网上没有找到使用此类别 ID 的 CashToken。PoolProof " +
+    "检查了 Cauldron Indexer 和 TokenStork，两个来源都没有这个" +
+    "类别的记录。",
+  notFoundHint:
+    "类别 ID 没有校验和，因此一个字符写错就会指向另一个代币，" +
+    "或者指向一个根本不存在的代币。请检查 ID 后重试。",
+  notFoundAction: "检查其他类别",
   signPromptAnchor: "将此 PoolProof 报告哈希锚定到 Bitcoin Cash 主网？",
   signPromptSend: "在钱包中签署此笔发送以广播它。",
   signRejected: "钱包拒绝了签名请求。没有发送任何内容。",

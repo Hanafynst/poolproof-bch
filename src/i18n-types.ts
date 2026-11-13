@@ -165,6 +165,10 @@ export interface UiStrings {
   liveProvenance: string;
   liveProvenanceIdentity: string;
   liveUnnamed: string;
+  notFoundTitle: string;
+  notFoundBody: string;
+  notFoundHint: string;
+  notFoundAction: string;
   signPromptAnchor: string;
   signPromptSend: string;
   signRejected: string;
