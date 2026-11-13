@@ -101,6 +101,26 @@ function PairingDialog({
   const [uriCopied, setUriCopied] = useState(false);
   const [uriCopyFailed, setUriCopyFailed] = useState(false);
   const [noWallet, setNoWallet] = useState(false);
+  // The exit (P5): the dialog's own close paths play the
+  // shorter exit first and unmount after it, instead of
+  // vanishing in one frame. Closes the component does not
+  // originate (a connection landing, the parent's Escape
+  // handling) still unmount instantly; they cannot be
+  // intercepted from here and are not disguised as animated.
+  const [closing, setClosing] = useState(false);
+  const closeTimer = useRef<number | null>(null);
+  const requestClose = () => {
+    if (closing) return;
+    setClosing(true);
+    closeTimer.current = window.setTimeout(onClose, 190);
+  };
+  useEffect(() => {
+    return () => {
+      if (closeTimer.current !== null) {
+        window.clearTimeout(closeTimer.current);
+      }
+    };
+  }, []);
   // Disarms the no-wallet watch armed by the latest tap on the
   // pairing button (its timer and its listeners). Kept in a ref
   // so the unmount effect below can run it too.
@@ -188,15 +208,15 @@ function PairingDialog({
 
   return (
     <div
-      className="pairing-overlay"
+      className={closing ? "pairing-overlay closing" : "pairing-overlay"}
       onClick={(event) => {
         // Backdrop dismiss takes the same path as the dialog's own
         // close controls (the stock dialog behaved this way too).
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget) requestClose();
       }}
     >
       <div
-        className="pairing-card"
+        className={closing ? "pairing-card closing" : "pairing-card"}
         role="dialog"
         aria-modal="true"
         aria-label={t.connectWallet}
@@ -220,7 +240,7 @@ function PairingDialog({
           <button type="button" onClick={() => void copyUri()}>
             {uriCopied ? t.copied : t.copyConnectionLink}
           </button>
-          <button type="button" onClick={onClose}>
+          <button type="button" onClick={requestClose}>
             {t.sendCancel}
           </button>
         </div>
