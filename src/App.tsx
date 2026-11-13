@@ -32,7 +32,13 @@ import { fetchConfirmationUpdates } from "./core/history-status";
 import type { Receipt } from "./core/send-flow";
 import type { SpendableUtxo } from "./core/transfer-tx";
 import { fetchAddressUtxos, indexWalletHoldings, type WalletHoldings } from "./core/wallet-utxos";
-import { formatBchShort, formatTokenAmount, shortenHash } from "./format";
+import {
+  formatBchShort,
+  formatTokenAmount,
+  latinDateTimeFormat,
+  latinNumberFormat,
+  shortenHash,
+} from "./format";
 import {
   HistoryPanel,
   ReceivePanel,
@@ -140,12 +146,11 @@ function fiatText(
   sats: bigint,
   snapshot: TokenSnapshot,
   currency: Currency,
-  lang: Lang,
 ): string | null {
   if (!snapshot.fiat) return null;
   const usd = (Number(sats) / 1e8) * snapshot.fiat.bchUsd;
   const value = currency === "USD" ? usd : usd * snapshot.fiat.usdIdr;
-  return new Intl.NumberFormat(languageOption(lang).locale, {
+  return latinNumberFormat({
     style: "currency",
     currency,
     maximumFractionDigits: 0,
@@ -157,9 +162,8 @@ function withFiat(
   sats: bigint,
   snapshot: TokenSnapshot,
   currency: Currency,
-  lang: Lang,
 ): string {
-  const fiat = fiatText(sats, snapshot, currency, lang);
+  const fiat = fiatText(sats, snapshot, currency);
   return fiat === null ? bchText : `${bchText} ≈ ${fiat}`;
 }
 
@@ -206,16 +210,15 @@ function EvidenceRows({
           // The fiat figure belongs to the simulated out, so it sits
           // directly behind that number, not at the end of the
           // sentence, where it would read as the spot value's.
-          const fiat = fiatText(simOut, snapshot, currency, lang);
+          const fiat = fiatText(simOut, snapshot, currency);
           return fiat === null ? out : `${out} (≈ ${fiat})`;
         });
-  const locale = languageOption(lang).locale;
   const rows: Array<[string, string]> = [
     [
       t.pools,
       snapshot.poolCount === null
         ? "n/a"
-        : new Intl.NumberFormat(locale).format(snapshot.poolCount),
+        : latinNumberFormat().format(snapshot.poolCount),
     ],
     [
       t.bchReserve,
@@ -224,16 +227,15 @@ function EvidenceRows({
         facts.reserveQuoteSats,
         snapshot,
         currency,
-        lang,
       ),
     ],
     [
       t.tokenReserve.replace("{symbol}", snapshot.symbol),
-      `${formatTokenAmount(facts.reserveTokenRaw, snapshot.decimals, lang)} ${snapshot.symbol}`,
+      `${formatTokenAmount(facts.reserveTokenRaw, snapshot.decimals)} ${snapshot.symbol}`,
     ],
     [
       t.referenceSell,
-      `${formatTokenAmount(judgement.referenceSellRaw, snapshot.decimals, lang)} ` +
+      `${formatTokenAmount(judgement.referenceSellRaw, snapshot.decimals)} ` +
         `${snapshot.symbol} ${t.referenceSellCap}`,
     ],
     [t.simulatedExit, exitValue],
@@ -241,7 +243,7 @@ function EvidenceRows({
       t.exitRatio,
       judgement.exitRatio === null
         ? "n/a"
-        : new Intl.NumberFormat(locale, {
+        : latinNumberFormat({
             minimumFractionDigits: 3,
             maximumFractionDigits: 3,
           }).format(judgement.exitRatio),
@@ -592,7 +594,7 @@ function liveSnapshot(
   t: UiStrings,
   lang: Lang,
 ): TokenSnapshot {
-  const time = new Intl.DateTimeFormat(languageOption(lang).locale, {
+  const time = latinDateTimeFormat(languageOption(lang).locale, {
     dateStyle: "medium",
     timeStyle: "medium",
   }).format(input.checkedAt);
@@ -621,17 +623,19 @@ function liveSnapshot(
   };
 }
 
-// Ratios (Gini, HHI) render like the exit ratio: three decimals in
-// the reader's locale. Shares render as percents, two decimals.
-function formatRatio(value: number, lang: Lang): string {
-  return new Intl.NumberFormat(languageOption(lang).locale, {
+// Ratios (Gini, HHI) render like the exit ratio: three decimals.
+// Shares render as percents, two decimals. Both go through the
+// app-wide Latin number format (see format.ts): figures never
+// follow the UI locale.
+function formatRatio(value: number): string {
+  return latinNumberFormat({
     minimumFractionDigits: 3,
     maximumFractionDigits: 3,
   }).format(value);
 }
 
-function formatShare(value: number, lang: Lang): string {
-  return new Intl.NumberFormat(languageOption(lang).locale, {
+function formatShare(value: number): string {
+  return latinNumberFormat({
     style: "percent",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -684,8 +688,7 @@ function ConcentrationTable({
   t: UiStrings;
   lang: Lang;
 }) {
-  const locale = languageOption(lang).locale;
-  const count = new Intl.NumberFormat(locale).format(report.listedCount);
+  const count = latinNumberFormat().format(report.listedCount);
   return (
     <>
       <table className="evidence">
@@ -695,7 +698,7 @@ function ConcentrationTable({
             <td>
               {report.gini === null || report.tier === null
                 ? t.concUnavailable
-                : `${formatRatio(report.gini, lang)} · ` +
+                : `${formatRatio(report.gini)} · ` +
                   concentrationTierLabel(report.tier, t)}
             </td>
           </tr>
@@ -704,7 +707,7 @@ function ConcentrationTable({
             <td>
               {report.top1ShareOfListed === null
                 ? t.concUnavailable
-                : formatShare(report.top1ShareOfListed, lang)}
+                : formatShare(report.top1ShareOfListed)}
             </td>
           </tr>
           <tr>
@@ -712,19 +715,19 @@ function ConcentrationTable({
             <td>
               {report.top1ShareOfSupply === null
                 ? t.concUnavailable
-                : formatShare(report.top1ShareOfSupply, lang)}
+                : formatShare(report.top1ShareOfSupply)}
             </td>
           </tr>
           {report.top10ShareOfListed !== null && (
             <tr>
               <th scope="row">{t.concTop10}</th>
-              <td>{formatShare(report.top10ShareOfListed, lang)}</td>
+              <td>{formatShare(report.top10ShareOfListed)}</td>
             </tr>
           )}
           {report.hhi !== null && (
             <tr>
               <th scope="row">{t.concHhi}</th>
-              <td>{formatRatio(report.hhi, lang)}</td>
+              <td>{formatRatio(report.hhi)}</td>
             </tr>
           )}
         </tbody>
@@ -811,14 +814,14 @@ function ScannerReport({
             <tr>
               <th scope="row">{t.totalSupply}</th>
               <td>
-                {formatTokenAmount(facts.totalSupplyRaw, snapshot.decimals, lang)}{" "}
+                {formatTokenAmount(facts.totalSupplyRaw, snapshot.decimals)}{" "}
                 {snapshot.symbol}
               </td>
             </tr>
             <tr>
               <th scope="row">{t.tokenReserve.replace("{symbol}", snapshot.symbol)}</th>
               <td>
-                {formatTokenAmount(facts.reserveTokenRaw, snapshot.decimals, lang)}{" "}
+                {formatTokenAmount(facts.reserveTokenRaw, snapshot.decimals)}{" "}
                 {snapshot.symbol}
               </td>
             </tr>
@@ -1254,7 +1257,7 @@ export default function App() {
   const judgement = useMemo(() => judgePool(snapshot.facts), [snapshot]);
   const liveTime =
     liveState.phase === "done"
-      ? new Intl.DateTimeFormat(languageOption(packLang).locale, {
+      ? latinDateTimeFormat(languageOption(packLang).locale, {
           dateStyle: "medium",
           timeStyle: "medium",
         }).format(liveState.input.checkedAt)
@@ -1266,7 +1269,7 @@ export default function App() {
           "{ratio}",
           judgement.exitRatio === null
             ? "n/a"
-            : new Intl.NumberFormat(languageOption(packLang).locale, {
+            : latinNumberFormat({
                 minimumFractionDigits: 3,
                 maximumFractionDigits: 3,
               }).format(judgement.exitRatio),

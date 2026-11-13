@@ -2,7 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { binToHex, hexToBin } from "@bitauth/libauth";
 import qrcode from "qrcode-generator";
 import { languageOption, type Lang, type UiStrings } from "./i18n";
-import { formatBch, formatTokenAmount, shortenMiddle } from "./format";
+import {
+  formatBch,
+  formatTokenAmount,
+  latinDateTimeFormat,
+  latinNumberFormat,
+  shortenMiddle,
+} from "./format";
 import type { WalletSession } from "./WalletConnect";
 import type { ElectrumSession } from "./core/electrum-wss";
 import { DUST_SATS } from "./core/anchor-tx";
@@ -398,7 +404,7 @@ export function HistoryPanel({
               {shortenMiddle(receipt.recipient, 14)}
             </p>
             <p className="history-meta">
-              {new Intl.DateTimeFormat(languageOption(lang).locale, {
+              {latinDateTimeFormat(languageOption(lang).locale, {
                 dateStyle: "medium",
                 timeStyle: "short",
               }).format(new Date(receipt.sentAtIso))}{" "}
@@ -655,12 +661,12 @@ export function SendPanel({
       ? `${t.holdingsCommitment}: ${shortenMiddle(selection.commitment, 8)}`
       : selection.kind === "bch"
         ? `${amount === null ? amountText : formatBch(amount)} BCH`
-        : `${amount === null ? amountText : formatTokenAmount(amount, decimals, lang)} ${identity?.symbol ?? ""}`.trim();
+        : `${amount === null ? amountText : formatTokenAmount(amount, decimals)} ${identity?.symbol ?? ""}`.trim();
   const balanceAfter =
     selection.kind === "bch" && amount !== null && template !== null
       ? `${formatBch(available - amount - template.feeSats)} BCH`
       : selection.kind === "fungible" && amount !== null
-        ? `${formatTokenAmount(available - amount, decimals, lang)} ${identity?.symbol ?? ""}`.trim()
+        ? `${formatTokenAmount(available - amount, decimals)} ${identity?.symbol ?? ""}`.trim()
         : null;
 
   // Every keypad press routes through applyAmountKey with the
@@ -743,7 +749,7 @@ export function SendPanel({
   };
 
   const percentLabel = (kind: 25 | 50 | 75) =>
-    new Intl.NumberFormat(languageOption(lang).locale, {
+    latinNumberFormat({
       style: "percent",
       maximumFractionDigits: 0,
     }).format(kind / 100);
@@ -796,7 +802,6 @@ export function SendPanel({
                     {formatTokenAmount(
                       holding.totalAmount,
                       held?.decimals ?? 0,
-                      lang,
                     )}{" "}
                     {held?.symbol ?? ""}
                   </span>
