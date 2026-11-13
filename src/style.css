@@ -1252,19 +1252,32 @@ a:focus-visible {
   }
 }
 
-/* Desktop sizing (user order 2026-11-14): from 1024px up the
+/* Desktop sizing (user orders 2026-11-14): from 1024px up the
    page stays ONE straight-down centred column in the original
    order (wallet, headline, controls, report), exactly the
-   phone/tablet flow, only sized for a big screen: main grows
-   from 46rem to 58rem with 2rem side padding. A two-column
-   grid composition was tried earlier the same day and removed
-   on the user's verdict: controls stacked in a left column
-   while the report they change sat in the right column read
-   as disconnected. The layout-* wrappers in App.tsx are now
-   plain blocks at every width. */
+   phone/tablet flow, only sized for a big screen. A two-column
+   grid composition was tried and removed on the user's
+   verdict (controls in a left column read as disconnected
+   from the report they change), and a fixed 58rem cap still
+   left the column floating in a wide screen. The FILL RULE
+   (the user's phone screenshot is the reference): the column
+   fills the viewport proportionally, the way the phone layout
+   fills its screen at about 92 percent — a fluid 110rem cap
+   with viewport-relative side padding, so at 1440px the
+   content spans roughly 92 percent of the width. The topbar
+   takes the same cap and padding so the wordmark and the
+   Connect wallet button line up with the column's edges,
+   exactly as they do on phone. The layout-* wrappers in
+   App.tsx are plain blocks at every width. */
 @media (min-width: 1024px) {
   main {
-    max-width: 58rem;
-    padding-inline: 2rem;
+    max-width: 110rem;
+    padding-inline: clamp(1rem, 4vw, 3rem);
+  }
+
+  .topbar {
+    max-width: 110rem;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 3rem);
   }
 }
