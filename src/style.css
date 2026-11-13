@@ -432,18 +432,23 @@ h1 {
   margin: 0.2rem 0 0;
 }
 
-/* Controls, switcher, live audit form. */
+/* Controls, switcher, live audit form. The audit controls read
+   as one balanced block (user order 2026-11-14): uniform selector
+   rows, an equal-height snapshot grid, and a true segmented
+   control for the view toggle. Ragged mixed-height pills were
+   the defect this replaces. */
 .controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
   margin: 0 0 1rem;
 }
 
 .controls label {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  justify-content: space-between;
+  gap: 1rem;
   font-size: 0.85rem;
   color: var(--soft);
 }
@@ -455,19 +460,26 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0.3rem 0.5rem;
+  /* Both selects share one width, so the two rows line up. */
+  width: 11rem;
+  max-width: 55%;
 }
 
 .switcher {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .switcher button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   font: inherit;
   font-size: 0.9rem;
-  min-height: 44px;
+  min-height: 48px;
   padding: 0.45rem 0.9rem;
   background: var(--surface-2);
   color: var(--text);
@@ -476,14 +488,37 @@ h1 {
   cursor: pointer;
 }
 
+/* An odd item out (the third snapshot) takes the full row at the
+   same height instead of sitting alone at half width. A two-line
+   label centres inside the shared height and never stretches
+   the item: grid rows size to the tallest item in the row. */
+.switcher > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
 .switcher button[aria-pressed="true"] {
   background: var(--text);
   color: var(--bg);
   border-color: var(--text);
 }
 
+/* View toggle: one segmented control. The container carries the
+   border and the track; the two segments split it evenly and the
+   active one is filled. Segment height matches the snapshot
+   items, so the block's rows stay uniform. */
 .view-switch {
+  gap: 0;
+  padding: 0.15rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
   margin-bottom: 1.25rem;
+}
+
+.view-switch button {
+  border: none;
+  background: transparent;
+  min-height: 44px;
 }
 
 .live-audit {
@@ -1008,6 +1043,47 @@ h1 {
   cursor: pointer;
 }
 
+/* No-wallet fallback: appears when the pairing button got no
+   answer from any wallet app (the watch in WalletConnect.tsx).
+   Routes a wallet-less visitor to a supported wallet instead of
+   leaving the dialog at a silent dead end. */
+.pairing-nowallet {
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.pairing-nowallet h3 {
+  font-size: 0.95rem;
+  margin: 0 0 0.35rem;
+}
+
+.pairing-nowallet p {
+  color: var(--soft);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.pairing-wallets {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pairing-wallets a {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.9rem;
+  min-height: 44px;
+  padding: 0.5rem 0.95rem;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  text-decoration: none;
+}
+
 /* Keyboard focus stays visible everywhere (ui-ux-pro-max
    priority 1: never remove the focus ring). */
 button:focus-visible,
@@ -1077,15 +1153,6 @@ a:focus-visible {
 
   .anchor dd {
     font-size: 0.72rem;
-  }
-
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .switcher button {
-    flex: 1 1 42%;
   }
 
   /* The report actions are fixed-size icon buttons: they keep

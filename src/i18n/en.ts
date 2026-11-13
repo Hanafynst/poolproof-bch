@@ -14,6 +14,10 @@ const strings: UiStrings = {
   openWalletApp: "Open wallet app",
   copyConnectionLink: "Copy connection link",
   pairingScanHint: "Or scan this code with a wallet on another device.",
+  noWalletHeading: "No wallet app answered",
+  noWalletBody:
+    "Install a supported wallet, then come back and tap Open wallet " +
+    "app again. Cashonize runs in the browser and needs no install.",
   walletBalanceLoading: "Loading balance...",
   walletBalanceUnavailable:
     "Balance unavailable. The UTXO indexer could not be reached.",

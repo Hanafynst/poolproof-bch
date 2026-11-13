@@ -15,6 +15,11 @@ const strings: UiStrings = {
   openWalletApp: "Abrir o app da carteira",
   copyConnectionLink: "Copiar link de conexão",
   pairingScanHint: "Ou escaneie este código com uma carteira em outro dispositivo.",
+  noWalletHeading: "Nenhum aplicativo de carteira respondeu",
+  noWalletBody:
+    "Instale uma carteira compatível, depois volte e toque em Abrir " +
+    "aplicativo de carteira novamente. O Cashonize funciona no " +
+    "navegador e não precisa de instalação.",
   walletBalanceLoading: "Carregando saldo...",
   walletBalanceUnavailable:
     "Saldo indisponível. O indexador de UTXO não pôde ser contatado.",

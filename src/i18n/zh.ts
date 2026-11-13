@@ -13,6 +13,10 @@ const strings: UiStrings = {
   openWalletApp: "打开钱包应用",
   copyConnectionLink: "复制连接链接",
   pairingScanHint: "也可以用另一台设备上的钱包扫描此二维码。",
+  noWalletHeading: "没有钱包应用响应",
+  noWalletBody:
+    "请安装一个受支持的钱包，然后返回并再次点击打开钱包应用。" +
+    "Cashonize 在浏览器中运行，无需安装。",
   walletBalanceLoading: "正在加载余额...",
   walletBalanceUnavailable: "余额不可用。无法连接 UTXO 索引器。",
   sendInProgress: "等待钱包签名...",

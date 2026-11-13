@@ -15,6 +15,11 @@ const strings: UiStrings = {
   openWalletApp: "Abrir la app de la billetera",
   copyConnectionLink: "Copiar enlace de conexión",
   pairingScanHint: "O escanea este código con una billetera en otro dispositivo.",
+  noWalletHeading: "Ninguna aplicación de billetera respondió",
+  noWalletBody:
+    "Instala una billetera compatible, luego vuelve y toca Abrir " +
+    "aplicación de billetera otra vez. Cashonize funciona en el " +
+    "navegador y no necesita instalación.",
   walletBalanceLoading: "Cargando saldo...",
   walletBalanceUnavailable:
     "Saldo no disponible. No se pudo contactar el indexador de UTXO.",

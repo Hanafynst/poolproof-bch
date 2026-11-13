@@ -14,6 +14,11 @@ const strings: UiStrings = {
   openWalletApp: "वॉलेट ऐप खोलें",
   copyConnectionLink: "कनेक्शन लिंक कॉपी करें",
   pairingScanHint: "या किसी दूसरे डिवाइस पर वॉलेट से यह कोड स्कैन करें।",
+  noWalletHeading: "किसी वॉलेट ऐप ने जवाब नहीं दिया",
+  noWalletBody:
+    "एक समर्थित वॉलेट इंस्टॉल करें, फिर वापस आकर वॉलेट ऐप खोलें फिर से " +
+    "टैप करें. Cashonize ब्राउज़र में चलता है और इसे इंस्टॉल करने की " +
+    "ज़रूरत नहीं है.",
   walletBalanceLoading: "शेष राशि लोड हो रही है...",
   walletBalanceUnavailable:
     "शेष राशि उपलब्ध नहीं है। UTXO इंडेक्सर से संपर्क नहीं हो सका।",

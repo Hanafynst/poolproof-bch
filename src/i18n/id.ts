@@ -14,6 +14,10 @@ const strings: UiStrings = {
   openWalletApp: "Buka aplikasi wallet",
   copyConnectionLink: "Salin tautan koneksi",
   pairingScanHint: "Atau pindai kode ini dengan wallet di perangkat lain.",
+  noWalletHeading: "Tidak ada aplikasi wallet yang merespons",
+  noWalletBody:
+    "Pasang wallet yang didukung, lalu kembali dan ketuk Buka aplikasi " +
+    "wallet lagi. Cashonize berjalan di browser dan tidak perlu dipasang.",
   walletBalanceLoading: "Memuat saldo...",
   walletBalanceUnavailable:
     "Saldo tidak tersedia. Indexer UTXO tidak bisa dihubungi.",

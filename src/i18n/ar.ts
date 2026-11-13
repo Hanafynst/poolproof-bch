@@ -14,6 +14,10 @@ const strings: UiStrings = {
   openWalletApp: "فتح تطبيق المحفظة",
   copyConnectionLink: "نسخ رابط الاتصال",
   pairingScanHint: "أو امسح هذا الرمز بمحفظة على جهاز آخر.",
+  noWalletHeading: "لم يستجب أي تطبيق محفظة",
+  noWalletBody:
+    "ثبّت محفظة مدعومة، ثم عد وانقر على فتح تطبيق المحفظة مرة أخرى. " +
+    "يعمل Cashonize في المتصفح ولا يحتاج إلى تثبيت.",
   walletBalanceLoading: "جارٍ تحميل الرصيد...",
   walletBalanceUnavailable:
     "الرصيد غير متاح. تعذّر الوصول إلى مفهرس UTXO.",

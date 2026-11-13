@@ -73,6 +73,12 @@ function asSignManager(manager: unknown): SignFlowManager | null {
  * canvas. An earlier version of this dialog put qrUri in an img
  * src, which renders as an empty white box: the bug the user
  * reported from his phone on 2026-11-14.
+ *
+ * A phone with no supported wallet installed answers the deep
+ * link with silence, so a tap on the pairing button also arms a
+ * 2-second watch (watchForWallet below): if the page never hid,
+ * no wallet app took over, and the dialog offers install links
+ * instead of sitting at a dead end.
  */
 function PairingDialog({
   t,
@@ -88,6 +94,11 @@ function PairingDialog({
   const openWalletRef = useRef<HTMLAnchorElement>(null);
   const [uriCopied, setUriCopied] = useState(false);
   const [uriCopyFailed, setUriCopyFailed] = useState(false);
+  const [noWallet, setNoWallet] = useState(false);
+  // Disarms the no-wallet watch armed by the latest tap on the
+  // pairing button (its timer and its listeners). Kept in a ref
+  // so the unmount effect below can run it too.
+  const watchCleanup = useRef<(() => void) | null>(null);
 
   // Focus starts on the primary action: on a phone that is the
   // button the user came for, and keyboard users land inside the
@@ -95,6 +106,41 @@ function PairingDialog({
   useEffect(() => {
     openWalletRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    return () => watchCleanup.current?.();
+  }, []);
+
+  // A tap on the pairing button either hands over to a wallet app
+  // (the page hides or the window blurs on the way out, which
+  // disarms the watch) or nothing answers at all, because no
+  // supported wallet is installed. The second case used to sit
+  // silent forever; now, if the page is still visible after 2 s,
+  // the install fallback appears under the buttons. The dialog
+  // unmounts when it closes and when a connection lands, so the
+  // fallback state resets with it; a fresh tap also hides it and
+  // re-arms the watch.
+  const watchForWallet = () => {
+    setNoWallet(false);
+    watchCleanup.current?.();
+    let timer = 0;
+    const cancel = () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onHidden);
+      window.removeEventListener("blur", cancel);
+      watchCleanup.current = null;
+    };
+    const onHidden = () => {
+      if (document.hidden) cancel();
+    };
+    timer = window.setTimeout(() => {
+      cancel();
+      if (!document.hidden) setNoWallet(true);
+    }, 2000);
+    document.addEventListener("visibilitychange", onHidden);
+    window.addEventListener("blur", cancel);
+    watchCleanup.current = cancel;
+  };
 
   const copyUri = async () => {
     try {
@@ -126,7 +172,12 @@ function PairingDialog({
         aria-label={t.connectWallet}
       >
         <h2>{t.connectWallet}</h2>
-        <a ref={openWalletRef} className="pairing-open" href={uri}>
+        <a
+          ref={openWalletRef}
+          className="pairing-open"
+          href={uri}
+          onClick={watchForWallet}
+        >
           {t.openWalletApp}
         </a>
         <p className="pairing-hint">{t.pairingScanHint}</p>
@@ -145,6 +196,31 @@ function PairingDialog({
           <p className="action-status" role="status">
             {t.copyFailed}
           </p>
+        )}
+        {noWallet && (
+          <div className="pairing-nowallet">
+            <h3>{t.noWalletHeading}</h3>
+            <p>{t.noWalletBody}</p>
+            <div className="pairing-wallets">
+              <a
+                href="https://www.paytaca.com"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Paytaca
+              </a>
+              <a href="https://selene.cash" target="_blank" rel="noreferrer">
+                Selene
+              </a>
+              <a
+                href="https://cashonize.com"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Cashonize
+              </a>
+            </div>
+          </div>
         )}
       </div>
     </div>
