@@ -342,6 +342,50 @@ export function ReceivePanel({
 }
 
 /**
+ * The receipt's confirmation chip. The colour crossfade is the
+ * chip class's own transition; the settle tint (P10) is added
+ * only when THIS row's status changes from broadcast to
+ * confirmed while the panel is open — a real status change
+ * observed by the refresh, never a first render: the previous
+ * state is seeded from the first props the row receives, so a
+ * receipt that was already confirmed when the panel opened
+ * shows its green chip plainly, with no tint.
+ */
+function HistoryStatusChip({
+  t,
+  status,
+}: {
+  t: UiStrings;
+  status: HistoryEntry["status"];
+}) {
+  const confirmed = status.state === "confirmed";
+  const wasConfirmed = useRef(confirmed);
+  const [settling, setSettling] = useState(false);
+  useEffect(() => {
+    const changed = confirmed && !wasConfirmed.current;
+    wasConfirmed.current = confirmed;
+    if (!changed) return;
+    setSettling(true);
+    const timer = window.setTimeout(() => setSettling(false), 650);
+    return () => window.clearTimeout(timer);
+  }, [confirmed]);
+  if (!confirmed) {
+    return <span className="chip">{t.receiptStatusBroadcast}</span>;
+  }
+  return (
+    <span
+      className={settling ? "chip chip-settle" : "chip"}
+      data-status="pass"
+    >
+      {t.receiptStatusConfirmedCount.replace(
+        "{count}",
+        String(status.confirmations),
+      )}
+    </span>
+  );
+}
+
+/**
  * History: the receipts this browser recorded, newest first, from
  * the history store, each joined with its confirmation status. A
  * receipt is the record of a broadcast send: asset, amount,
@@ -398,16 +442,7 @@ export function HistoryPanel({
               {receipt.kind !== "anchor" && (
                 <span className="history-amount">{receipt.amountText}</span>
               )}
-              {status.state === "confirmed" ? (
-                <span className="chip" data-status="pass">
-                  {t.receiptStatusConfirmedCount.replace(
-                    "{count}",
-                    String(status.confirmations),
-                  )}
-                </span>
-              ) : (
-                <span className="chip">{t.receiptStatusBroadcast}</span>
-              )}
+              <HistoryStatusChip t={t} status={status} />
             </div>
             <p className="mono history-recipient" title={receipt.recipient}>
               {shortenMiddle(receipt.recipient, 14)}
