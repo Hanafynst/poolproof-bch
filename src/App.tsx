@@ -7,6 +7,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import {
@@ -375,6 +376,29 @@ function CheckIcon() {
   );
 }
 
+// The copy confirmation crossfade (P10): both glyphs stay
+// mounted, stacked, and the copied state crossfades between
+// them (opacity plus a small settle rotation in the CSS)
+// instead of swapping one for the other in a single frame.
+function CopyGlyphs({
+  copied,
+  icon = "copy",
+}: {
+  copied: boolean;
+  icon?: "copy" | "link";
+}) {
+  return (
+    <span className="glyph-stack" aria-hidden="true">
+      <span className={copied ? "glyph glyph-hide" : "glyph glyph-show"}>
+        {icon === "link" ? <LinkIcon /> : <CopyIcon />}
+      </span>
+      <span className={copied ? "glyph glyph-show" : "glyph glyph-hide"}>
+        <CheckIcon />
+      </span>
+    </span>
+  );
+}
+
 // DETAIL TERKUNCI (9b) actions: copy the category, copy a shareable
 // link (the snapshot travels in the URL), download the report as
 // JSON. Present in both views: a feature that exists in only one
@@ -482,7 +506,7 @@ function ReportActions({
         title={t.copyCategory}
         onClick={() => void copy("category", snapshot.category)}
       >
-        {copiedKey === "category" ? <CheckIcon /> : <CopyIcon />}
+        <CopyGlyphs copied={copiedKey === "category"} />
       </button>
       <button
         type="button"
@@ -491,7 +515,7 @@ function ReportActions({
         title={t.copyLink}
         onClick={() => void copy("link", shareUrl())}
       >
-        {copiedKey === "link" ? <CheckIcon /> : <LinkIcon />}
+        <CopyGlyphs copied={copiedKey === "link"} icon="link" />
       </button>
       <button
         type="button"
@@ -540,16 +564,23 @@ function ScanGroup({
   status,
   t,
   wide,
+  index,
   children,
 }: {
   title: string;
   status: ScanStatus;
   t: UiStrings;
   wide?: boolean;
+  /** Position in the report's reveal stagger (P6): the CSS
+   *  multiplies it by the stagger step. Never above 5. */
+  index: number;
   children: React.ReactNode;
 }) {
   return (
-    <section className={wide ? "scan-group span-2" : "scan-group"}>
+    <section
+      className={wide ? "scan-group span-2" : "scan-group"}
+      style={{ "--i": index } as CSSProperties}
+    >
       <div className="scan-group-head">
         <h3>{title}</h3>
         <StatusChip status={status} t={t} />
@@ -637,7 +668,7 @@ function NotFoundCard({
           title={t.copyCategory}
           onClick={() => void copyCategory()}
         >
-          {copied ? <CheckIcon /> : <CopyIcon />}
+          <CopyGlyphs copied={copied} />
         </button>
         {copyFailed && (
           <span className="action-status" role="status">
@@ -840,6 +871,7 @@ function ScannerReport({
   lang,
   flagTemplates,
   wiring,
+  reveal,
 }: {
   snapshot: TokenSnapshot;
   judgement: PoolJudgement;
@@ -849,13 +881,19 @@ function ScannerReport({
   lang: Lang;
   flagTemplates: Record<FlagCode, string>;
   wiring: AnchorWiring;
+  /** True only while a fresh report's reveal sequence runs
+   *  (P6); re-renders of the same report pass false. */
+  reveal: boolean;
 }) {
   const { facts } = snapshot;
   const exitStatus = exitStatusOf(judgement);
   const concReport = snapshotConcentrationReport(snapshot);
   const concStatus = concentrationStatus(concReport);
   return (
-    <section className="scanner" aria-label={t.reportLabel}>
+    <section
+      className={reveal ? "scanner reveal" : "scanner"}
+      aria-label={t.reportLabel}
+    >
       <div className="scan-head">
         <div>
           <h2>
@@ -877,6 +915,7 @@ function ScannerReport({
         title={t.groupIdentity}
         status={snapshot.bcmrHashVerified ? "pass" : "unknown"}
         t={t}
+        index={0}
       >
         <table className="evidence">
           <tbody>
@@ -896,7 +935,7 @@ function ScannerReport({
         </table>
       </ScanGroup>
 
-      <ScanGroup title={t.groupSupply} status="unknown" t={t}>
+      <ScanGroup title={t.groupSupply} status="unknown" t={t} index={1}>
         <table className="evidence">
           <tbody>
             <tr>
@@ -921,7 +960,7 @@ function ScannerReport({
         <p className="scan-note">{t.authorityUnknown}</p>
       </ScanGroup>
 
-      <ScanGroup title={t.groupExit} status={exitStatus} t={t} wide>
+      <ScanGroup title={t.groupExit} status={exitStatus} t={t} wide index={2}>
         <EvidenceRows
           snapshot={snapshot}
           judgement={judgement}
@@ -933,7 +972,7 @@ function ScannerReport({
         <FlagsList judgement={judgement} t={t} flagTemplates={flagTemplates} />
       </ScanGroup>
 
-      <ScanGroup title={t.groupConcentration} status={concStatus} t={t} wide>
+      <ScanGroup title={t.groupConcentration} status={concStatus} t={t} wide index={3}>
         {concReport === null ? (
           <p className="scan-note">{t.concentrationUnknown}</p>
         ) : (
@@ -943,7 +982,7 @@ function ScannerReport({
       </div>
 
       <ReportActions snapshot={snapshot} judgement={judgement} t={t} />
-      <AnchorBlock snapshot={snapshot} judgement={judgement} t={t} wiring={wiring} />
+      <AnchorBlock snapshot={snapshot} judgement={judgement} t={t} wiring={wiring} index={4} />
       <footer className="provenance">{snapshot.provenance[lang]}</footer>
     </section>
   );
@@ -968,11 +1007,14 @@ function AnchorBlock({
   judgement,
   t,
   wiring,
+  index,
 }: {
   snapshot: TokenSnapshot;
   judgement: PoolJudgement;
   t: UiStrings;
   wiring: AnchorWiring;
+  /** Position in the report's reveal stagger (P6). */
+  index: number;
 }) {
   const [anchor, setAnchor] = useState<{ hash: string; script: string } | null>(null);
   const [anchorFailed, setAnchorFailed] = useState(false);
@@ -1215,7 +1257,10 @@ function AnchorBlock({
   }
 
   return (
-    <section className="anchor">
+    <section
+      className="anchor"
+      style={{ "--i": index } as CSSProperties}
+    >
       <h2>{t.anchorTitle}</h2>
       <p>{t.anchorBody}</p>
       {anchorFailed ? (
@@ -1244,7 +1289,7 @@ function AnchorBlock({
                 title={t.copyHash}
                 onClick={() => void copyHash()}
               >
-                {hashCopied ? <CheckIcon /> : <CopyIcon />}
+                <CopyGlyphs copied={hashCopied} />
               </button>
             </div>
             <div>
@@ -1524,6 +1569,34 @@ export default function App() {
     }, 350);
   }, []);
 
+  // The report reveal (P6): the reveal class rides on the
+  // report section only while a fresh report's stagger runs.
+  // It is set by exactly three events: the first mount, a
+  // snapshot select, and a live audit landing (the call sites
+  // in runLiveAudit distinguish a landing from the identity
+  // upgrade of an already visible report). A timer clears it
+  // once the sequence (240ms plus the 225ms stagger cap) is
+  // done, so re-renders of the same report (the identity
+  // upgrade in place, a language or currency switch) never
+  // carry the class and never re-run the stagger.
+  const [revealing, setRevealing] = useState(true);
+  const revealTimer = useRef<number | null>(null);
+  const triggerReveal = useCallback(() => {
+    setRevealing(true);
+    if (revealTimer.current !== null) {
+      window.clearTimeout(revealTimer.current);
+    }
+    revealTimer.current = window.setTimeout(() => setRevealing(false), 700);
+  }, []);
+  useEffect(() => {
+    triggerReveal();
+    return () => {
+      if (revealTimer.current !== null) {
+        window.clearTimeout(revealTimer.current);
+      }
+    };
+  }, [triggerReveal]);
+
   const [liveInput, setLiveInput] = useState("");
   const [liveInvalid, setLiveInvalid] = useState(false);
   const [liveState, setLiveState] = useState<LiveState>({ phase: "idle" });
@@ -1589,12 +1662,19 @@ export default function App() {
             if (input.poolCount > 0 || input.identity !== null) {
               landing.landed = true;
               setLiveState({ phase: "done", input });
+              // A fresh report lands: its reveal runs (P6).
+              triggerReveal();
             }
           },
           onIdentityUpgrade: (input) => {
+            // The held report's first appearance also lands
+            // through here: that is a landing, so it reveals.
+            // An upgrade of an already visible report does not.
+            const firstAppearance = !landing.landed;
             landing.input = input;
             landing.landed = true;
             setLiveState({ phase: "done", input });
+            if (firstAppearance) triggerReveal();
           },
         },
       );
@@ -1628,6 +1708,7 @@ export default function App() {
       // "report": a real token with no pools and no name yet,
       // the honest unnamed NO_MARKET report.
       setLiveState({ phase: "done", input: finalInput });
+      triggerReveal();
     }
   };
   // A shared live link (?cat=<category>) lands on the audit itself,
@@ -1829,6 +1910,7 @@ export default function App() {
                 liveAttempt.current++;
                 setLiveState({ phase: "idle" });
                 setSelectedId(s.id);
+                triggerReveal();
               }}
             >
               {s.switchLabel[packLang]}
@@ -1864,9 +1946,29 @@ export default function App() {
         </div>
         <div className="layout-report">
         {liveState.phase === "fetching" ? (
-          <p className="live-status" role="status" aria-busy="true">
-            {t.liveFetching}
-          </p>
+          // The skeleton (P7): the report area holds the
+          // report's own geometry while the audit runs: a head
+          // bar and three group-shaped cards of row strips, one
+          // shimmer sweep. No strip is a number and nothing in
+          // it pretends to be data; the loading words stay as
+          // the block's accessible label.
+          <div
+            className="report-skeleton"
+            role="status"
+            aria-busy="true"
+            aria-label={t.liveFetching}
+          >
+            <div className="skeleton-head shimmer" aria-hidden="true" />
+            {[0, 1, 2].map((card) => (
+              <div className="scan-group" key={card} aria-hidden="true">
+                <div className="skeleton-strip skeleton-strip-head shimmer" />
+                <div className="skeleton-strip shimmer" style={{ width: "85%" }} />
+                <div className="skeleton-strip shimmer" style={{ width: "70%" }} />
+                <div className="skeleton-strip shimmer" style={{ width: "55%" }} />
+              </div>
+            ))}
+            <span className="visually-hidden">{t.liveFetching}</span>
+          </div>
         ) : liveState.phase === "failed" ? (
           <p className="live-error" role="alert">
             {t.liveFetchFailed}{" "}
@@ -1920,9 +2022,13 @@ export default function App() {
             lang={packLang}
             flagTemplates={flagTemplates}
             wiring={anchorWiring}
+            reveal={revealing}
           />
         ) : (
-        <section className="report" aria-label={t.reportLabel}>
+        <section
+          className={revealing ? "report reveal" : "report"}
+          aria-label={t.reportLabel}
+        >
           <div className="report-head">
             <div>
               <h2>
@@ -1940,7 +2046,7 @@ export default function App() {
           <p className="summary">{summary}</p>
           <p className="caveat">{t.caveat}</p>
 
-          <ScanGroup title={t.groupExit} status={exitStatusOf(judgement)} t={t}>
+          <ScanGroup title={t.groupExit} status={exitStatusOf(judgement)} t={t} index={0}>
             <EvidenceRows
               snapshot={snapshot}
               judgement={judgement}
@@ -1958,6 +2064,7 @@ export default function App() {
             title={t.groupIdentity}
             status={snapshot.bcmrHashVerified ? "pass" : "unknown"}
             t={t}
+            index={1}
           >
             <table className="evidence identity">
               <tbody>
@@ -1979,7 +2086,7 @@ export default function App() {
 
           <ReportActions snapshot={snapshot} judgement={judgement} t={t} />
 
-          <AnchorBlock snapshot={snapshot} judgement={judgement} t={t} wiring={anchorWiring} />
+          <AnchorBlock snapshot={snapshot} judgement={judgement} t={t} wiring={anchorWiring} index={2} />
 
           <footer className="provenance">{snapshot.provenance[packLang]}</footer>
         </section>
