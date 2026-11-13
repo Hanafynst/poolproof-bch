@@ -76,6 +76,18 @@ const strings: UiStrings = {
     "The hash of this report, ready to be carried in a Bitcoin Cash " +
     "mainnet transaction as an OP_RETURN output. Anyone can check " +
     "the report against the hash in that transaction.",
+  anchorAction: "Anchor this report",
+  anchorNeedsWallet:
+    "Connect a wallet to anchor this report on BCH mainnet. " +
+    "The report stays on this page while you connect.",
+  anchorNoFunds:
+    "Anchoring needs one plain BCH UTXO of at least {sats} sats " +
+    "in this wallet, to cover the fee and leave change above " +
+    "dust. None is available yet.",
+  anchorDone: "Anchored on BCH mainnet.",
+  anchorTampered:
+    "The signed transaction did not match this report's anchor. " +
+    "It was not broadcast.",
   hashing: "hashing...",
   anchorLoadFailed: "The proof anchor could not be loaded.",
   reportHash: "Report SHA-256",
@@ -173,6 +185,7 @@ const strings: UiStrings = {
   historyTitle: "History",
   historyEmpty: "Nothing has been sent from this wallet yet.",
   historySent: "Sent",
+  historyAnchored: "Anchored",
   receiveAddressLabel: "Your address",
   receiveTokenNote:
     "Token-supporting address. Safe for BCH, tokens and NFTs.",

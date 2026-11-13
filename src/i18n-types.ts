@@ -52,6 +52,11 @@ export interface UiStrings {
   decimals: string;
   anchorTitle: string;
   anchorBody: string;
+  anchorAction: string;
+  anchorNeedsWallet: string;
+  anchorNoFunds: string;
+  anchorDone: string;
+  anchorTampered: string;
   hashing: string;
   anchorLoadFailed: string;
   reportHash: string;
@@ -132,6 +137,7 @@ export interface UiStrings {
   historyTitle: string;
   historyEmpty: string;
   historySent: string;
+  historyAnchored: string;
   receiveAddressLabel: string;
   receiveTokenNote: string;
   receivePlainNote: string;

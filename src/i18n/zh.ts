@@ -65,6 +65,15 @@ const strings: UiStrings = {
   anchorBody:
     "本报告的哈希，可作为 OP_RETURN 输出写入一笔 Bitcoin Cash 主网交易。" +
     "任何人都可以将报告与该交易中的哈希进行核对。",
+  anchorAction: "锚定此报告",
+  anchorNeedsWallet:
+    "连接钱包即可将此报告锚定到 BCH 主网。连接期间，报告会保留在此页面上。",
+  anchorNoFunds:
+    "锚定需要此钱包中至少有一个 {sats} 聪的普通 BCH UTXO，" +
+    "用于支付手续费并留下高于粉尘的找零。目前尚无可用。",
+  anchorDone: "已锚定到 BCH 主网。",
+  anchorTampered:
+    "已签名的交易与此报告的锚点不匹配，未进行广播。",
   hashing: "正在计算哈希...",
   anchorLoadFailed: "证明锚点加载失败。",
   reportHash: "报告 SHA-256",
@@ -148,6 +157,7 @@ const strings: UiStrings = {
   historyTitle: "历史记录",
   historyEmpty: "此钱包尚未发送过任何交易。",
   historySent: "已发送",
+  historyAnchored: "已锚定",
   receiveAddressLabel: "你的地址",
   receiveTokenNote: "支持代币的地址。可安全接收 BCH、代币和 NFT。",
   receivePlainNote: "普通地址，仅限 BCH。请勿向此地址发送代币。",

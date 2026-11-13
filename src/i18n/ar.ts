@@ -75,6 +75,17 @@ const strings: UiStrings = {
     "بصمة هذا التقرير، جاهزة للحمل في معاملة على شبكة Bitcoin Cash " +
     "الرئيسية كمخرج OP_RETURN. يمكن لأي شخص التحقق من التقرير مقابل " +
     "البصمة في تلك المعاملة.",
+  anchorAction: "ثبّت هذا التقرير",
+  anchorNeedsWallet:
+    "صِل محفظة لتثبيت هذا التقرير على شبكة BCH الرئيسية. يبقى " +
+    "التقرير على هذه الصفحة أثناء الاتصال.",
+  anchorNoFunds:
+    "يحتاج التثبيت إلى UTXO عادي واحد من BCH بقيمة {sats} سات " +
+    "على الأقل في هذه المحفظة، لتغطية الرسوم وترك باقٍ فوق حد " +
+    "الغبار. لا يوجد أي واحد متاح بعد.",
+  anchorDone: "تم التثبيت على شبكة BCH الرئيسية.",
+  anchorTampered:
+    "المعاملة الموقعة لم تطابق مرساة هذا التقرير. لم يتم بثها.",
   hashing: "جارٍ حساب البصمة...",
   anchorLoadFailed: "تعذّر تحميل مرساة الإثبات.",
   reportHash: "بصمة SHA-256 للتقرير",
@@ -169,6 +180,7 @@ const strings: UiStrings = {
   historyTitle: "السجل",
   historyEmpty: "لم يُرسَل شيء من هذه المحفظة بعد.",
   historySent: "تم الإرسال",
+  historyAnchored: "تم التثبيت",
   receiveAddressLabel: "عنوانك",
   receiveTokenNote: "عنوان يدعم الرموز. آمن لـ BCH والرموز وNFT.",
   receivePlainNote:

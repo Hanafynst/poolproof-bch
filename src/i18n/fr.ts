@@ -85,6 +85,20 @@ const strings: UiStrings = {
     "du réseau principal Bitcoin Cash comme sortie OP_RETURN. " +
     "N'importe qui peut vérifier le rapport par rapport au hash de " +
     "cette transaction.",
+  anchorAction: "Ancrer ce rapport",
+  anchorNeedsWallet:
+    "Connectez un portefeuille pour ancrer ce rapport sur le " +
+    "réseau principal BCH. Le rapport reste sur cette page " +
+    "pendant la connexion.",
+  anchorNoFunds:
+    "L'ancrage nécessite un UTXO BCH simple d'au moins {sats} " +
+    "sats dans ce portefeuille, pour couvrir les frais et " +
+    "laisser un reste au-dessus de la poussière. Aucun n'est " +
+    "encore disponible.",
+  anchorDone: "Ancré sur le réseau principal BCH.",
+  anchorTampered:
+    "La transaction signée ne correspondait pas à l'ancre de ce " +
+    "rapport. Elle n'a pas été diffusée.",
   hashing: "calcul du hash...",
   anchorLoadFailed: "L'ancre de preuve n'a pas chargé.",
   reportHash: "SHA-256 du rapport",
@@ -187,6 +201,7 @@ const strings: UiStrings = {
   historyTitle: "Historique",
   historyEmpty: "Rien n'a encore été envoyé depuis ce portefeuille.",
   historySent: "Envoyé",
+  historyAnchored: "Ancré",
   receiveAddressLabel: "Votre adresse",
   receiveTokenNote:
     "Adresse compatible avec les jetons. Sûre pour BCH, jetons et NFT.",

@@ -81,6 +81,19 @@ const strings: UiStrings = {
     "Hash laporan ini, siap dibawa dalam transaksi mainnet Bitcoin Cash " +
     "sebagai output OP_RETURN. Siapa pun bisa memeriksa laporan terhadap " +
     "hash di transaksi itu.",
+  anchorAction: "Jangkarkan laporan ini",
+  anchorNeedsWallet:
+    "Hubungkan wallet untuk menjangkarkan laporan ini di mainnet " +
+    "BCH. Laporan tetap tampil di halaman ini selama kamu " +
+    "menghubungkan wallet.",
+  anchorNoFunds:
+    "Penjangkaran butuh satu UTXO BCH polos senilai minimal " +
+    "{sats} sats di wallet ini, untuk biaya dan kembalian di " +
+    "atas debu. Belum ada yang tersedia.",
+  anchorDone: "Sudah dijangkarkan di mainnet BCH.",
+  anchorTampered:
+    "Transaksi yang ditandatangani tidak cocok dengan jangkar " +
+    "laporan ini. Transaksi tidak disiarkan.",
   hashing: "menghitung hash...",
   anchorLoadFailed: "Jangkar bukti gagal dimuat.",
   reportHash: "SHA-256 laporan",
@@ -177,6 +190,7 @@ const strings: UiStrings = {
   historyTitle: "Riwayat",
   historyEmpty: "Belum ada yang dikirim dari wallet ini.",
   historySent: "Terkirim",
+  historyAnchored: "Dijangkarkan",
   receiveAddressLabel: "Alamat kamu",
   receiveTokenNote:
     "Alamat pendukung token. Aman untuk BCH, token, dan NFT.",
