@@ -194,6 +194,10 @@ body {
 .top-banner button:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;
+  /* The global focus ring below is a shadow; the banner's
+     exception stays exactly the white outline it has always
+     been, so the shadow is suppressed here. */
+  box-shadow: none;
 }
 
 .banner-ember {
@@ -266,6 +270,7 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 1.25rem;
+  box-shadow: var(--shadow-card);
 }
 
 .balance-hint {
@@ -284,6 +289,11 @@ h1 {
   font-weight: 700;
   line-height: 1.15;
   margin: 0.15rem 0 0.25rem;
+  /* The value runs panel-in once when a real balance lands
+     (the element mounts at that moment, P10), and tabular
+     figures keep its width steady as digits change. */
+  font-variant-numeric: tabular-nums;
+  animation: panel-in var(--dur-reveal) var(--ease-out) both;
 }
 
 .balance-sub {
@@ -314,10 +324,20 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 12px;
   cursor: pointer;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
+/* Hover is a lift, not a colour flood (P3): one tonal step up,
+   a lighter edge, a raised shadow. The accent border is
+   reserved for the selected state (see .asset-row). */
 .tile:hover {
-  border-color: var(--accent);
+  background: var(--surface-3);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-raised);
 }
 
 .tile-icon {
@@ -333,6 +353,11 @@ h1 {
   border-radius: 16px;
   padding: 1.25rem;
   margin-top: 1rem;
+  box-shadow: var(--shadow-card);
+  /* A panel opens below the tile that summoned it, so a small
+     downward rise matches its origin (P5). It mounts fresh on
+     every open, so the entry runs once per open. */
+  animation: panel-in var(--dur-reveal) var(--ease-out) both;
 }
 
 .panel h2 {
@@ -367,6 +392,9 @@ h1 {
   color: var(--text);
   border: 1px solid var(--line);
   border-radius: 10px;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .panel-address {
@@ -396,6 +424,21 @@ h1 {
   border-radius: 10px;
   cursor: pointer;
   text-decoration: none;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
+}
+
+/* Text-button hover (P3): the edge lightens and the surface
+   steps up one tone. The primary action is excluded here; its
+   hover is the P11 glow, stated with the glow budget. */
+.panel-actions button:not(.primary-action):hover:not(:disabled),
+.panel-actions a:hover {
+  background: var(--surface-2);
+  border-color: var(--line-strong);
 }
 
 .panel-actions .primary-action {
@@ -446,6 +489,20 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 10px;
   cursor: pointer;
+  /* An inner slab: only the 3% top line at rest (P8), so it
+     reads as pressed into its card; hover lifts it (P3). */
+  box-shadow: var(--highlight-row);
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.asset-row:hover {
+  background: var(--surface-3);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-raised);
 }
 
 .asset-row[aria-pressed="true"] {
@@ -460,6 +517,7 @@ h1 {
 .asset-amount {
   color: var(--soft);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .shortcut-row {
@@ -478,6 +536,16 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 10px;
   cursor: pointer;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.shortcut-row button:hover {
+  background: var(--surface-3);
+  border-color: var(--line-strong);
 }
 
 /* The Send keypad: 3x4 grid under the amount field. Columns are
@@ -500,6 +568,16 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 12px;
   cursor: pointer;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.keypad button:hover {
+  background: var(--surface-3);
+  border-color: var(--line-strong);
 }
 
 .gate-reasons {
@@ -522,6 +600,7 @@ h1 {
   border-radius: 10px;
   padding: 0.55rem 0.8rem;
   margin-bottom: 0.45rem;
+  box-shadow: var(--highlight-row);
 }
 
 .confirm-rows dt {
@@ -534,6 +613,7 @@ h1 {
   margin: 0;
   text-align: end;
   overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
 }
 
 .history-row {
@@ -541,6 +621,9 @@ h1 {
   border-radius: 12px;
   padding: 0.8rem 1rem;
   margin-bottom: 0.6rem;
+  /* Inner slab (P8): the 3% top line only. The row is not
+     interactive, so it never lifts. */
+  box-shadow: var(--highlight-row);
 }
 
 .history-main {
@@ -555,6 +638,7 @@ h1 {
 
 .history-amount {
   margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
 }
 
 .history-recipient {
@@ -608,6 +692,15 @@ h1 {
   /* Both selects share one width, so the two rows line up. */
   width: 11rem;
   max-width: 55%;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.controls select:hover {
+  background: var(--surface-3);
+  border-color: var(--line-strong);
 }
 
 .switcher {
@@ -631,6 +724,19 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 12px;
   cursor: pointer;
+  /* Selection itself stays instant (it changes data, not
+     position, P4); what transitions is the press settle and
+     the hover edge. */
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+/* Unpressed hover: the edge lightens only; the pressed fill
+   does not move. */
+.switcher button:not([aria-pressed="true"]):hover {
+  border-color: var(--line-strong);
 }
 
 /* An odd item out (the third snapshot) takes the full row at the
@@ -652,6 +758,7 @@ h1 {
    active one is filled. Segment height matches the snapshot
    items, so the block's rows stay uniform. */
 .view-switch {
+  position: relative;
   gap: 0;
   padding: 0.15rem;
   background: var(--surface);
@@ -660,10 +767,52 @@ h1 {
   margin-bottom: 1.25rem;
 }
 
+/* The thumb is a grid child in markup but absolutely
+   positioned, so it never takes a grid cell; the segment
+   buttons keep their two cells. */
+.view-switch > :last-child:nth-child(odd) {
+  grid-column: auto;
+}
+
+/* The sliding thumb (P4): the active indicator travels
+   between segments on the travel curve; it never teleports.
+   Its radius follows the concentric rule: the 12px container
+   radius minus the 0.15rem (about 2.4px) inset. */
+.view-thumb {
+  position: absolute;
+  top: 0.15rem;
+  bottom: 0.15rem;
+  left: 0.15rem;
+  width: calc(50% - 0.15rem);
+  background: var(--text);
+  border-radius: 9px;
+  transition: transform var(--dur-dialog) var(--ease-in-out);
+}
+
+.view-thumb[data-on="scanner"] {
+  transform: translateX(100%);
+}
+
 .view-switch button {
+  position: relative;
+  z-index: 1;
   border: none;
   background: transparent;
   min-height: 40px;
+  color: var(--text);
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    color var(--dur-ui) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+/* The white fill lives on the thumb now, in both states: the
+   pressed segment only changes its label colour, timed with
+   the thumb's travel. */
+.view-switch button[aria-pressed="true"] {
+  background: transparent;
+  border: none;
+  color: var(--bg);
 }
 
 .live-audit {
@@ -693,6 +842,9 @@ h1 {
   color: var(--text);
   border: 1px solid var(--line);
   border-radius: 12px;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .live-audit button {
@@ -705,6 +857,10 @@ h1 {
   border: 1px solid var(--accent);
   border-radius: 12px;
   cursor: pointer;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
 }
 
 .live-audit button:disabled {
@@ -719,6 +875,50 @@ h1 {
 
 .live-status {
   font-size: 0.9rem;
+}
+
+/* Loading geometry (P7): while the live audit fetches, the
+   report area holds the report's own shape: a head bar and
+   group-shaped cards with row strips, swept by one slow
+   shimmer. The skeleton never shows a number: every strip is
+   a surface, and the loading words stay as the block's
+   accessible label. */
+.report-skeleton .skeleton-head {
+  width: 40%;
+  height: 1.25rem;
+  margin-bottom: 0.85rem;
+}
+
+.skeleton-strip {
+  height: 0.9rem;
+  border-radius: 6px;
+  margin-top: 0.55rem;
+}
+
+.skeleton-strip-head {
+  height: 0.8rem;
+  margin-top: 0;
+}
+
+.shimmer {
+  background: var(--surface-2);
+  background-image: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.045) 50%,
+    transparent 70%
+  );
+  background-size: 220% 100%;
+  animation: shimmer var(--dur-shimmer) var(--ease-in-out) infinite;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .live-banner {
@@ -767,6 +967,12 @@ h1 {
   font-size: 0.8rem;
 }
 
+.not-found {
+  /* The miss card arrives like a panel: it mounts fresh on
+     the phase change, so the entry runs once (P5 pattern). */
+  animation: panel-in var(--dur-reveal) var(--ease-out) both;
+}
+
 .not-found-action {
   font: inherit;
   font-size: 0.88rem;
@@ -778,6 +984,9 @@ h1 {
   border: 1px solid var(--accent);
   border-radius: 12px;
   cursor: pointer;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
 /* The audit report. Verdict first, then card-row evidence. */
@@ -902,6 +1111,7 @@ h1 {
   text-align: end;
   font-weight: 500;
   overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
 }
 
 .flags {
@@ -919,6 +1129,7 @@ h1 {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 0.875rem 0.875rem 0.65rem;
+  box-shadow: var(--shadow-card);
 }
 
 .anchor h2 {
@@ -1005,6 +1216,7 @@ h1 {
   border-radius: var(--radius);
   padding: 0.875rem 0.875rem 0.65rem;
   margin-top: 0.85rem;
+  box-shadow: var(--shadow-card);
 }
 
 .scan-group-head {
@@ -1031,6 +1243,20 @@ h1 {
   border-radius: 999px;
   color: var(--soft);
   white-space: nowrap;
+  /* Status changes crossfade (P10): the History confirmation
+     flip is the product's proof moment and must be perceived,
+     not snapped past the eye. Chips never glow (P11). */
+  transition:
+    color var(--dur-ui) var(--ease-out),
+    border-color var(--dur-ui) var(--ease-out),
+    background-color var(--dur-ui) var(--ease-out);
+}
+
+/* The one-shot settle tint, added by the History panel only
+   when a receipt's status really changed to confirmed during
+   a refresh (WalletHome.tsx); never on first render. */
+.chip-settle {
+  animation: chip-settle var(--dur-settle) var(--ease-out) both;
 }
 
 .chip[data-status="pass"] {
@@ -1056,6 +1282,25 @@ h1 {
 
 .scanner .flags {
   color: var(--dead);
+}
+
+/* The report reveal (P6): staged, verdict first. These
+   animations run only while the report section carries the
+   reveal class, which App sets for a fresh report (snapshot
+   select, live audit landing, first mount) and clears once
+   the sequence is done: the identity upgrade in place, the
+   History refresh, and language or currency re-renders never
+   re-run it. Each group rises with a delay from its inline
+   --i index, capped at 5 so the last card starts by 225ms. */
+.reveal .report-head,
+.reveal .scan-head {
+  animation: panel-in var(--dur-reveal) var(--ease-out) both;
+}
+
+.reveal .scan-group,
+.reveal .anchor {
+  animation: group-in var(--dur-reveal) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * var(--stagger-step));
 }
 
 /* Report actions (copy, share, download) and their feedback:
@@ -1085,12 +1330,49 @@ h1 {
   border-radius: 10px;
   cursor: pointer;
   flex: 0 0 auto;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+/* The hover lift is a neutral depth shadow, never the accent
+   glow: the glow budget (P11) does not include icon buttons. */
+.icon-btn:hover {
+  box-shadow: var(--shadow-raised);
 }
 
 .icon-btn svg {
   width: 20px;
   height: 20px;
   display: block;
+}
+
+/* The copy confirmation crossfade (P10): the copy and check
+   glyphs are stacked, and the swap is an opacity + settle
+   rotation instead of an instant exchange. */
+.glyph-stack {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.glyph {
+  position: absolute;
+  inset: 0;
+  transition:
+    opacity var(--dur-press) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
+}
+
+.glyph-hide {
+  opacity: 0;
+  transform: rotate(-8deg);
+}
+
+.glyph-show {
+  opacity: 1;
+  transform: rotate(0deg);
 }
 
 .anchor .icon-btn {
@@ -1103,6 +1385,9 @@ h1 {
   font-size: 0.85rem;
   align-self: center;
   color: var(--soft);
+  /* Feedback words fade in as they land (P10); the element
+     mounts with the outcome, so the entry runs once. */
+  animation: panel-in var(--dur-fast) var(--ease-out) both;
 }
 
 /* The class is shared with the wallet dialog and home; inside
@@ -1135,6 +1420,10 @@ h1 {
   border-radius: 10px;
   color: #fff;
   cursor: pointer;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
 }
 
 .anchor .primary-action:disabled {
@@ -1168,6 +1457,16 @@ h1 {
   border-radius: 8px;
   cursor: pointer;
   white-space: nowrap;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.copy-inline:hover {
+  background: var(--surface-2);
+  border-color: var(--line-strong);
 }
 
 /* Wallet connect in the header row. States come from the
@@ -1190,6 +1489,16 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 10px;
   cursor: pointer;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.wallet button:hover:not(:disabled) {
+  background: var(--surface-3);
+  border-color: var(--line-strong);
 }
 
 .wallet button:disabled {
@@ -1220,7 +1529,17 @@ h1 {
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgb(0 0 0 / 0.72);
+  /* A blurred, softened veil (P5): glass separation between
+     the dialog and the page is what reads as an app sheet
+     rather than a web form. */
+  background: rgb(0 0 0 / 0.6);
+  backdrop-filter: blur(6px);
+  animation: overlay-in var(--dur-ui) var(--ease-out);
+  transition: opacity var(--dur-dialog-exit) var(--ease-out);
+}
+
+.pairing-overlay.closing {
+  opacity: 0;
 }
 
 .pairing-card {
@@ -1231,6 +1550,16 @@ h1 {
   width: 100%;
   max-width: 22rem;
   text-align: center;
+  box-shadow: var(--shadow-dialog);
+  /* Entry on the iOS sheet curve, from near full size, never
+     from scale(0) (P5). */
+  animation: pairing-in var(--dur-dialog) var(--ease-sheet) both;
+}
+
+/* Exit runs at two-thirds of the entry (P5): the dialog's own
+   close paths set the closing class and unmount after it. */
+.pairing-card.closing {
+  animation: pairing-out var(--dur-dialog-exit) var(--ease-out) both;
 }
 
 .pairing-card h2 {
@@ -1249,6 +1578,7 @@ h1 {
   font-weight: 600;
   border-radius: 10px;
   text-decoration: none;
+  transition: box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .pairing-hint {
@@ -1293,6 +1623,16 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 10px;
   cursor: pointer;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.pairing-actions button:hover {
+  background: var(--surface-2);
+  border-color: var(--line-strong);
 }
 
 /* No-wallet fallback: appears when the pairing button got no
@@ -1303,6 +1643,9 @@ h1 {
   margin-top: 1.1rem;
   padding-top: 1rem;
   border-top: 1px solid var(--line);
+  /* New information arriving inside the dialog arrives
+     gently, with the panel entry (P5). */
+  animation: panel-in var(--dur-reveal) var(--ease-out) both;
 }
 
 .pairing-nowallet h3 {
@@ -1334,16 +1677,124 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 10px;
   text-decoration: none;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.pairing-wallets a:hover {
+  background: var(--surface-3);
+  border-color: var(--line-strong);
+}
+
+/* Press feedback (P2): every tappable element settles under
+   the finger, responding on pointer-down. Large surfaces
+   press less, small targets press more. Transform never
+   affects layout, so the locked grids and rows cannot shift.
+   Disabled elements never match :active in practice, and the
+   guard keeps that a rule rather than an accident. */
+.tile:active,
+.switcher button:active,
+.view-switch button:active,
+.asset-row:active,
+.shortcut-row button:active,
+.keypad button:active,
+.panel-actions button:active:not(:disabled),
+.panel-actions a:active,
+.wallet button:active:not(:disabled),
+.pairing-actions button:active,
+.pairing-wallets a:active,
+.copy-inline:active,
+.icon-btn:active,
+.live-audit button:active:not(:disabled),
+.not-found-action:active,
+.anchor .primary-action:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.tile:active,
+.asset-row:active {
+  transform: scale(0.98);
+}
+
+.icon-btn:active {
+  transform: scale(0.94);
+}
+
+/* The glow budget (P11): coloured glow exists at exactly two
+   addresses, the locked banner (identity, untouched above)
+   and the hover of the primary actions below. Everywhere
+   else it is banned: cards, tiles, stamps, chips, icons and
+   text never glow. Pressed means grounded, so the glow is
+   removed on :active; a keyboard-focused control shows its
+   focus ring instead of the glow. */
+.primary-action:hover:not(:disabled):not(:focus-visible),
+.live-audit button:hover:not(:disabled):not(:focus-visible),
+.pairing-open:hover:not(:focus-visible),
+.not-found-action:hover:not(:focus-visible) {
+  box-shadow: var(--glow-accent);
+}
+
+.primary-action:active:not(:disabled),
+.live-audit button:active:not(:disabled),
+.pairing-open:active,
+.not-found-action:active {
+  box-shadow: none;
 }
 
 /* Keyboard focus stays visible everywhere (ui-ux-pro-max
-   priority 1: never remove the focus ring). */
+   priority 1: never remove the focus ring). The ring is a
+   shadow so its arrival can settle over var(--dur-fast)
+   instead of snapping (P9); its geometry is the old
+   outline's: a 2px ring in accent-soft, 2px clear of the
+   element. These rules sit after every hover rule, and the
+   interactive surfaces name themselves again in the second
+   group, so the ring wins over a hover shadow whenever both
+   apply. */
 button:focus-visible,
 select:focus-visible,
 input:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--accent-soft);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent-soft);
+  transition: box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.tile:focus-visible,
+.asset-row:focus-visible,
+.icon-btn:focus-visible,
+.primary-action:focus-visible,
+.live-audit button:focus-visible,
+.not-found-action:focus-visible,
+.pairing-open:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent-soft);
+}
+
+/* Fields react as containers (P9): on focus the border warms
+   toward the accent while the ring settles around the field. */
+.live-audit input:focus,
+.panel-input:focus,
+.controls select:focus {
+  border-color: var(--accent-soft);
+}
+
+/* Forced-colors mode ignores box-shadow: the outline form of
+   the ring stays there. */
+@media (forced-colors: active) {
+  button:focus-visible,
+  select:focus-visible,
+  input:focus-visible,
+  a:focus-visible {
+    outline: 2px solid var(--accent-soft);
+    outline-offset: 2px;
+    box-shadow: none;
+  }
 }
 
 /* Responsive configuration (R18 set: 375 / 768 / 1024 / 1440). */
@@ -1497,5 +1948,23 @@ a:focus-visible {
     max-width: 110rem;
     margin-inline: auto;
     padding-inline: clamp(1rem, 4vw, 3rem);
+  }
+}
+
+/* Reduced motion (DESIGN-REFERENCE §2, mandatory): every
+   entrance freezes in its final state, the shimmer holds as
+   a static skeleton (the loading words remain, so the state
+   is still communicated), the segmented thumb jumps to the
+   correct segment, and press scale never applies. No state
+   in this app depends on an animation finishing, so nothing
+   here can strand a state. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
