@@ -1254,24 +1254,27 @@ a:focus-visible {
 
 /* Desktop composition (user order 2026-11-14): from 1024px up
    the page stops being one narrow centred column. The container
-   widens to about 76rem and main becomes a two-column grid: the
-   wallet block and the audit controls stack in a 26rem left
+   widens to about 88rem and main becomes a two-column grid: the
+   wallet block and the audit controls stack in a 27rem left
    column, the headline plus intro and the report/scanner fill
    the right column. The layout-* wrappers are plain blocks
    below this width, so phone and tablet rendering is exactly
    what it was. Inside the grid the headline block's stacked
    margins are zeroed so both columns start on the same line;
    the row gap carries the vertical rhythm instead. The report
-   keeps its single-column group cards; at 1440px the right
-   column works out near 44rem, a normal desktop reading width
-   for evidence rows, so nothing is capped further. */
+   keeps its single-column group cards; nothing is capped
+   further. Spacing refined the same day on the user's verdict:
+   side padding is slim (1.5rem) so the composition nearly
+   reaches the screen edges, the column gap is a wide 3rem so
+   the middle breathes, and the 2.25rem top padding drops the
+   columns clear of the header row above them. */
 @media (min-width: 1024px) {
   main {
-    max-width: 76rem;
-    padding: 1rem 2rem 3.5rem;
+    max-width: 88rem;
+    padding: 2.25rem 1.5rem 3.5rem;
     display: grid;
-    grid-template-columns: 26rem minmax(0, 1fr);
-    column-gap: 2rem;
+    grid-template-columns: 27rem minmax(0, 1fr);
+    column-gap: 3rem;
     row-gap: 1.5rem;
     align-items: start;
   }
