@@ -135,6 +135,7 @@ const strings: UiStrings = {
   sendTitle: "Escolha um ativo",
   sendAmount: "Valor",
   sendMax: "MÁX.",
+  sendKeypadBackspace: "Apagar",
   sendRecipient: "Destinatário",
   sendRecipientPlaceholder: "Cole um endereço de Bitcoin Cash",
   sendAddressToken: "Endereço compatível com tokens",

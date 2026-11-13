@@ -131,6 +131,7 @@ const strings: UiStrings = {
   sendTitle: "एसेट चुनें",
   sendAmount: "राशि",
   sendMax: "अधिकतम",
+  sendKeypadBackspace: "बैकस्पेस",
   sendRecipient: "प्राप्तकर्ता",
   sendRecipientPlaceholder: "Bitcoin Cash पता चिपकाएँ",
   sendAddressToken: "टोकन-सक्षम पता",

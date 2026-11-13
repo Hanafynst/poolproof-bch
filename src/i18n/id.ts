@@ -132,6 +132,7 @@ const strings: UiStrings = {
   sendTitle: "Pilih aset",
   sendAmount: "Jumlah",
   sendMax: "MAKS",
+  sendKeypadBackspace: "Hapus",
   sendRecipient: "Penerima",
   sendRecipientPlaceholder: "Tempel alamat Bitcoin Cash",
   sendAddressToken: "Alamat pendukung token",

@@ -111,6 +111,7 @@ const strings: UiStrings = {
   sendTitle: "选择资产",
   sendAmount: "金额",
   sendMax: "最大",
+  sendKeypadBackspace: "退格",
   sendRecipient: "收款方",
   sendRecipientPlaceholder: "粘贴 Bitcoin Cash 地址",
   sendAddressToken: "支持代币的地址",

@@ -125,6 +125,7 @@ const strings: UiStrings = {
   sendTitle: "اختر أصلًا",
   sendAmount: "المبلغ",
   sendMax: "الحد الأقصى",
+  sendKeypadBackspace: "مسح",
   sendRecipient: "المستلم",
   sendRecipientPlaceholder: "الصق عنوان Bitcoin Cash",
   sendAddressToken: "عنوان يدعم الرموز",

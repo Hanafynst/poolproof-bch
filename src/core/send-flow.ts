@@ -124,6 +124,59 @@ export function formatBaseUnits(amount: bigint, decimals: number): string {
   return `${intPart}.${frac}`;
 }
 
+/** Longest integer part the keypad will build. Twelve digits of
+ *  whole units is past any amount a wallet send plausibly names
+ *  (a trillion BCH is 47,000× the supply); the cap exists so the
+ *  field can never grow an amount the user did not mean to type. */
+const MAX_AMOUNT_INTEGER_DIGITS = 12;
+
+/**
+ * One keypad press applied to the amount text: the single source
+ * of truth for what the Send amount field may contain, shared by
+ * the on-screen keypad and any other caller that edits the field
+ * one key at a time. Keys are "0".."9", ".", and "backspace";
+ * anything else returns the text unchanged.
+ *
+ * The rules keep every reachable state inside the grammar
+ * parseAmountInput accepts, plus the two transient states an
+ * editor must allow mid-typing: the empty field and a trailing
+ * dot ("5." on the way to "5.25"). Concretely: at most one dot;
+ * fraction digits never exceed the asset's decimals; the integer
+ * part never exceeds twelve digits; a lone leading zero collapses
+ * into the next digit ("0" then "5" is "5", never "05"), while
+ * "0" then "." is "0." so a sub-unit amount can start; a dot on
+ * an empty field yields "0." for the same reason; at zero
+ * decimals the dot is a no-op because the asset has no fraction
+ * to enter. Backspace on a single character empties the field.
+ */
+export function applyAmountKey(
+  current: string,
+  key: string,
+  decimals: number,
+): string {
+  assertDecimals(decimals);
+  if (key === "backspace") {
+    return current.slice(0, -1);
+  }
+  if (key === ".") {
+    if (decimals === 0) return current;
+    if (current.includes(".")) return current;
+    if (current === "") return "0.";
+    return `${current}.`;
+  }
+  if (/^[0-9]$/.test(key)) {
+    const dotAt = current.indexOf(".");
+    if (dotAt !== -1) {
+      const fractionDigits = current.length - dotAt - 1;
+      return fractionDigits < decimals ? current + key : current;
+    }
+    if (current === "0") return key;
+    if (current.length >= MAX_AMOUNT_INTEGER_DIGITS) return current;
+    return current + key;
+  }
+  return current;
+}
+
 export type ShortcutKind = 25 | 50 | 75 | "MAX";
 
 export interface ShortcutOptions {

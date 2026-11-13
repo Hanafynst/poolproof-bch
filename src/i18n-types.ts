@@ -96,6 +96,7 @@ export interface UiStrings {
   sendTitle: string;
   sendAmount: string;
   sendMax: string;
+  sendKeypadBackspace: string;
   sendRecipient: string;
   sendRecipientPlaceholder: string;
   sendAddressToken: string;

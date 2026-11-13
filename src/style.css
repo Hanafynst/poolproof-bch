@@ -369,6 +369,28 @@ h1 {
   cursor: pointer;
 }
 
+/* The Send keypad: 3x4 grid under the amount field. Columns are
+   plain 1fr tracks, so the keys shrink with the panel and can
+   never overflow a narrow phone. Keys stay neutral surface-2;
+   scarlet is reserved for the confirm action. */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.keypad button {
+  min-height: 48px;
+  font: inherit;
+  font-size: 1.05rem;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
 .gate-reasons {
   color: var(--risky);
   font-size: 0.9rem;

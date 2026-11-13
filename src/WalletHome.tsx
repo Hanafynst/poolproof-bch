@@ -8,6 +8,7 @@ import type { ElectrumSession } from "./core/electrum-wss";
 import { DUST_SATS } from "./core/anchor-tx";
 import type { TokenIdentity } from "./core/identity";
 import {
+  applyAmountKey,
   confirmGate,
   detectRecipient,
   feePreview,
@@ -662,6 +663,13 @@ export function SendPanel({
         ? `${formatTokenAmount(available - amount, decimals, lang)} ${identity?.symbol ?? ""}`.trim()
         : null;
 
+  // Every keypad press routes through applyAmountKey with the
+  // selected asset's decimals, editing the same amountText the
+  // input edits — the two entry paths can never diverge.
+  const pressKey = (key: string) => {
+    setAmountText((text) => applyAmountKey(text, key, decimals));
+  };
+
   const applyShortcut = (kind: ShortcutKind) => {
     const value = shortcutAmount(kind, available, template?.feeSats ?? 0n, {
       feePaidInSameAsset: selection.kind === "bch",
@@ -861,6 +869,41 @@ export function SendPanel({
                 onChange={(event) => setAmountText(event.target.value)}
                 autoComplete="off"
               />
+              <div className="keypad" role="group" aria-label={t.sendAmount}>
+                {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map(
+                  (digit) => (
+                    <button
+                      key={digit}
+                      type="button"
+                      aria-label={digit}
+                      onClick={() => pressKey(digit)}
+                    >
+                      {digit}
+                    </button>
+                  ),
+                )}
+                <button
+                  type="button"
+                  aria-label="."
+                  onClick={() => pressKey(".")}
+                >
+                  .
+                </button>
+                <button
+                  type="button"
+                  aria-label="0"
+                  onClick={() => pressKey("0")}
+                >
+                  0
+                </button>
+                <button
+                  type="button"
+                  aria-label={t.sendKeypadBackspace}
+                  onClick={() => pressKey("backspace")}
+                >
+                  ⌫
+                </button>
+              </div>
               <div className="shortcut-row">
                 {([25, 50, 75] as const).map((kind) => (
                   <button
