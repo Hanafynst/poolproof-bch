@@ -32,20 +32,28 @@ body {
   line-height: 1.5;
 }
 
-/* The mandatory banner (see TopBanner in WalletHome.tsx): a slim
-   single strip in solid Blaze scarlet with white small type. The
-   red is the event brand colour, so the strip reads as its own
-   band instead of blending into the near-black page. Links stay
-   distinguishable by weight and a permanent underline. */
+/* The mandatory banner (see TopBanner in WalletHome.tsx): a
+   compact fine-print strip in solid Blaze scarlet. Its four
+   elements flow inline and share wrapped lines instead of each
+   taking its own row. Links are full white, bold, and
+   underlined; the disclosure reads as fine print in slightly
+   softer white. */
 .top-banner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.25rem 1.25rem;
-  padding: 0.5rem 1.25rem;
+  padding: 0.4rem 1rem;
   background: var(--accent);
-  font-size: 0.8rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
   color: #fff;
+}
+
+/* Inline spacing between the banner's elements, in place of
+   the flex gap the strip no longer uses. */
+.top-banner > * {
+  margin-inline-end: 0.9rem;
+}
+
+.top-banner > :last-child {
+  margin-inline-end: 0;
 }
 
 .top-banner a {
@@ -87,8 +95,7 @@ button.banner-ember:hover {
 }
 
 .banner-disclosure {
-  flex: 1 1 24rem;
-  min-width: min(100%, 16rem);
+  color: rgb(255 255 255 / 0.88);
 }
 
 .topbar {
@@ -1058,7 +1065,7 @@ a:focus-visible {
   }
 
   .top-banner {
-    padding: 0.5rem 0.9rem;
+    padding: 0.4rem 0.9rem;
   }
 }
 
@@ -1076,11 +1083,12 @@ a:focus-visible {
     min-height: 44px;
   }
 
+  /* Banner controls stay inline in the fine-print flow; a 44px
+     minimum height would defeat the compact strip, so their
+     hit area grows by block padding instead. */
   .top-banner a,
   .banner-ember {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
+    padding-block: 0.3rem;
   }
 }
 

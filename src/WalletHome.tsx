@@ -48,8 +48,8 @@ export type HomePanel = "send" | "receive" | "history";
 
 /**
  * The mandatory BCH BLAZE banner, styled per the user's orders
- * (2026-11-14): a slim solid scarlet strip at the very top of
- * the page, white small type.
+ * (2026-11-14): a compact solid scarlet strip at the very top
+ * of the page, its elements flowing inline as fine print.
  * Exactly the four required elements: the Widget Factory
  * presentation link, the GitHub repo link, the EMBER2026
  * CashTokens address, and the pre-existing-work disclosure.
