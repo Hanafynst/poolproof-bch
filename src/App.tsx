@@ -1243,6 +1243,7 @@ export default function App() {
       </header>
 
       <main>
+        <div className="layout-wallet">
         <WalletCard
           t={t}
           session={walletSession}
@@ -1276,9 +1277,12 @@ export default function App() {
             loadFailed={history.loadFailed}
           />
         )}
+        </div>
+        <div className="layout-head">
         <h1>{t.headline}</h1>
         <p className="lede">{t.lede}</p>
-
+        </div>
+        <div className="layout-controls">
         <div className="controls">
           <label>
             {t.language}
@@ -1392,6 +1396,8 @@ export default function App() {
           </button>
         </div>
 
+        </div>
+        <div className="layout-report">
         {liveState.phase === "fetching" ? (
           <p className="live-status" role="status" aria-busy="true">
             {t.liveFetching}
@@ -1497,6 +1503,7 @@ export default function App() {
             )}
           </>
         )}
+        </div>
       </main>
     </>
   );

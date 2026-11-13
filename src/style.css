@@ -1251,3 +1251,58 @@ a:focus-visible {
     grid-column: span 2;
   }
 }
+
+/* Desktop composition (user order 2026-11-14): from 1024px up
+   the page stops being one narrow centred column. The container
+   widens to about 76rem and main becomes a two-column grid: the
+   wallet block and the audit controls stack in a 26rem left
+   column, the headline plus intro and the report/scanner fill
+   the right column. The layout-* wrappers are plain blocks
+   below this width, so phone and tablet rendering is exactly
+   what it was. Inside the grid the headline block's stacked
+   margins are zeroed so both columns start on the same line;
+   the row gap carries the vertical rhythm instead. The report
+   keeps its single-column group cards; at 1440px the right
+   column works out near 44rem, a normal desktop reading width
+   for evidence rows, so nothing is capped further. */
+@media (min-width: 1024px) {
+  main {
+    max-width: 76rem;
+    padding: 1rem 2rem 3.5rem;
+    display: grid;
+    grid-template-columns: 26rem minmax(0, 1fr);
+    column-gap: 2rem;
+    row-gap: 1.5rem;
+    align-items: start;
+  }
+
+  .layout-wallet {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .layout-head {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .layout-head h1 {
+    margin-top: 0;
+  }
+
+  .layout-head .lede {
+    margin-bottom: 0;
+  }
+
+  .layout-controls {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .layout-report {
+    grid-column: 2;
+    grid-row: 2;
+    min-width: 0;
+  }
+}
