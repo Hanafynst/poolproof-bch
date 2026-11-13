@@ -18,6 +18,117 @@
   --risky: #fbbf24;
   --lying: #c084fc;
   --radius: 14px;
+
+  /* Neutral state shades: the line/surface family one step up,
+     used ONLY for hover and press states, never for resting
+     surfaces or text (DESIGN-REFERENCE §3, §5). */
+  --line-strong: #34343e;
+  --surface-3: #212127;
+
+  /* Motion tokens (DESIGN-REFERENCE §2): every transition and
+     animation in this file draws its duration and curve from
+     these. Built-in easing keywords are banned as final values;
+     no literal durations live outside this block. */
+  --dur-instant: 80ms;
+  --dur-fast: 120ms;
+  --dur-press: 160ms;
+  --dur-ui: 200ms;
+  --dur-reveal: 240ms;
+  --dur-dialog: 280ms;
+  --dur-dialog-exit: 190ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --stagger-step: 45ms;
+  /* The two named exceptions to the 300ms utility ceiling:
+     background information, non-blocking (P7 shimmer, P10
+     chip settle tint). */
+  --dur-shimmer: 1.4s;
+  --dur-settle: 600ms;
+
+  /* Depth tokens (DESIGN-REFERENCE §3): one job per layer.
+     Layer 1 is light (an inset top hairline), layer 2 is
+     contact, layer 3 is ambient. The existing 1px border
+     stays; the stack complements it, never replaces it. */
+  --highlight-top: inset 0 1px 0 0 rgb(255 255 255 / 0.05);
+  --highlight-row: inset 0 1px 0 0 rgb(255 255 255 / 0.03);
+  --shadow-card:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.05),
+    0 1px 2px rgb(0 0 0 / 0.35),
+    0 12px 32px -12px rgb(0 0 0 / 0.55);
+  --shadow-raised:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+    0 2px 4px rgb(0 0 0 / 0.4),
+    0 16px 40px -12px rgb(0 0 0 / 0.6);
+  --shadow-dialog:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.07),
+    0 4px 16px rgb(0 0 0 / 0.5),
+    0 24px 64px -16px rgb(0 0 0 / 0.75);
+  /* Spent ONLY on hover of the primary actions (P11). */
+  --glow-accent: 0 8px 24px -8px rgb(230 51 41 / 0.55);
+}
+
+/* Keyframes for the finish system. Every entrance is a
+   both-filled keyframe on mount or a transition, so it is
+   interruptible by the next tap and never gates input; every
+   resting state is the element's correct state, so the
+   reduced-motion block at the end of this file can freeze
+   all of it without breaking any state. */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes group-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes pairing-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+}
+
+@keyframes pairing-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The shimmer sweep is the only looping animation in the app. */
+@keyframes shimmer {
+  from {
+    background-position: 120% 0;
+  }
+
+  to {
+    background-position: -120% 0;
+  }
+}
+
+/* The History chip's one-shot settle tint (P10): fires only
+   on a real broadcast-to-confirmed change, never on render. */
+@keyframes chip-settle {
+  from {
+    background-color: rgb(52 211 153 / 0.12);
+  }
+
+  to {
+    background-color: rgb(52 211 153 / 0);
+  }
 }
 
 * {
