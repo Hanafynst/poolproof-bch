@@ -200,6 +200,8 @@ export function WalletCard({
     <section className="wallet-card" aria-label={t.walletBalance}>
       {!session.connected ? (
         <p className="balance-hint">{t.walletDisconnectedHint}</p>
+      ) : session.addressMissing ? (
+        <p className="balance-hint">{t.walletAddressMissing}</p>
       ) : utxoPhase === "loading" || utxoPhase === "idle" ? (
         <p className="balance-hint" aria-busy="true">
           {t.walletBalanceLoading}
@@ -363,14 +365,19 @@ export function HistoryPanel({
   loadFailed: boolean;
 }) {
   const [copiedTxid, setCopiedTxid] = useState<string | null>(null);
+  const [failedTxid, setFailedTxid] = useState<string | null>(null);
   const copyTxid = async (txid: string) => {
     try {
       await navigator.clipboard.writeText(txid);
       setCopiedTxid(txid);
+      setFailedTxid(null);
       setTimeout(() => setCopiedTxid(null), 2000);
     } catch {
-      // The txid stays visible in the explorer link's row; a failed
-      // copy changes nothing about the record.
+      // A failed copy is announced in words, like every other
+      // copy control in the app; the txid stays visible in the
+      // row either way.
+      setFailedTxid(txid);
+      setTimeout(() => setFailedTxid(null), 3000);
     }
   };
   return (
@@ -388,7 +395,9 @@ export function HistoryPanel({
           <article className="history-row" key={receipt.txid}>
             <div className="history-main">
               <span className="history-asset">{receipt.assetLabel}</span>
-              <span className="history-amount">{receipt.amountText}</span>
+              {receipt.kind !== "anchor" && (
+                <span className="history-amount">{receipt.amountText}</span>
+              )}
               {status.state === "confirmed" ? (
                 <span className="chip" data-status="pass">
                   {t.receiptStatusConfirmedCount.replace(
@@ -408,7 +417,7 @@ export function HistoryPanel({
                 dateStyle: "medium",
                 timeStyle: "short",
               }).format(new Date(receipt.sentAtIso))}{" "}
-              · {t.historySent}
+              · {receipt.kind === "anchor" ? t.historyAnchored : t.historySent}
             </p>
             <div className="panel-actions">
               <a href={receipt.explorerUrl} target="_blank" rel="noreferrer">
@@ -417,6 +426,11 @@ export function HistoryPanel({
               <button type="button" onClick={() => void copyTxid(receipt.txid)}>
                 {copiedTxid === receipt.txid ? t.copied : t.copyTxid}
               </button>
+              {failedTxid === receipt.txid && (
+                <span className="action-status" role="status">
+                  {t.copyFailed}
+                </span>
+              )}
             </div>
           </article>
         ))
@@ -534,6 +548,13 @@ export function SendPanel({
     return (
       <section className="panel" aria-label={t.actionSend}>
         <p>{t.walletDisconnectedHint}</p>
+      </section>
+    );
+  }
+  if (session.addressMissing) {
+    return (
+      <section className="panel" aria-label={t.actionSend}>
+        <p>{t.walletAddressMissing}</p>
       </section>
     );
   }

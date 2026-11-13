@@ -26,7 +26,21 @@ import { runLiveAuditReads } from "./core/live-audit";
 import { type LiveReportInput } from "./core/live-report";
 import { classifyLookup } from "./core/lookup";
 import { judgePool, type FlagCode, type PoolJudgement } from "./core/poolproof-core";
-import { createElectrumSession } from "./core/electrum-wss";
+import {
+  buildAnchorTxTemplateForWallet,
+  estimateAnchorFeeSats,
+  minimumAnchorFundingSats,
+  selectAnchorFundingUtxo,
+} from "./core/anchor-tx";
+import {
+  SignFlowError,
+  executeAnchorSignFlow,
+} from "./core/sign-flow";
+import { hexToBin } from "@bitauth/libauth";
+import {
+  createElectrumSession,
+  type ElectrumSession,
+} from "./core/electrum-wss";
 import { HistoryStore, HistoryStoreError } from "./core/history-store";
 import type { HistoryEntry } from "./core/history-store";
 import { fetchConfirmationUpdates } from "./core/history-status";
@@ -825,6 +839,7 @@ function ScannerReport({
   currency,
   lang,
   flagTemplates,
+  wiring,
 }: {
   snapshot: TokenSnapshot;
   judgement: PoolJudgement;
@@ -833,6 +848,7 @@ function ScannerReport({
   currency: Currency;
   lang: Lang;
   flagTemplates: Record<FlagCode, string>;
+  wiring: AnchorWiring;
 }) {
   const { facts } = snapshot;
   const exitStatus = exitStatusOf(judgement);
@@ -927,20 +943,36 @@ function ScannerReport({
       </div>
 
       <ReportActions snapshot={snapshot} judgement={judgement} t={t} />
-      <AnchorBlock snapshot={snapshot} judgement={judgement} t={t} />
+      <AnchorBlock snapshot={snapshot} judgement={judgement} t={t} wiring={wiring} />
       <footer className="provenance">{snapshot.provenance[lang]}</footer>
     </section>
   );
+}
+
+/** What the proof anchor needs from the wallet home: the shared
+ *  session, the UTXO read over that wallet, the broadcast channel,
+ *  and the two ways out: ask App to open pairing (App owns the
+ *  signal the header's WalletConnect listens to), and hand a
+ *  finished anchor's receipt to the history store. */
+interface AnchorWiring {
+  session: WalletSession;
+  utxoPhase: UtxoPhase;
+  utxos: SpendableUtxo[];
+  electrum: ElectrumSession;
+  onConnectRequest: () => void;
+  onAnchored: (receipt: Receipt) => void;
 }
 
 function AnchorBlock({
   snapshot,
   judgement,
   t,
+  wiring,
 }: {
   snapshot: TokenSnapshot;
   judgement: PoolJudgement;
   t: UiStrings;
+  wiring: AnchorWiring;
 }) {
   const [anchor, setAnchor] = useState<{ hash: string; script: string } | null>(null);
   const [anchorFailed, setAnchorFailed] = useState(false);
@@ -963,12 +995,112 @@ function AnchorBlock({
       setTimeout(() => setHashCopyFailed(false), 3000);
     }
   };
+  // The anchor action (R45): until this round the block was
+  // display-only: the hash and script rendered, but nothing in
+  // the app called the sign flow, so the headline mainnet feature
+  // was unreachable. The action below runs the proven chain with
+  // the hash this block computed: keyless template from the
+  // selected funding UTXO, wallet sign, byte-level verification,
+  // broadcast, receipt to History. Its states are all words: no
+  // wallet (with the pairing route), wallet still being read,
+  // nothing that can fund the fee, signing, done (txid in the
+  // report, as the plan locks), or the failure that stopped it.
+  const [anchorPhase, setAnchorPhase] = useState<"idle" | "signing">("idle");
+  const [anchoredReceipt, setAnchoredReceipt] = useState<Receipt | null>(null);
+  const [anchorError, setAnchorError] = useState<string | null>(null);
+  const [txidCopied, setTxidCopied] = useState(false);
+  const [txidCopyFailed, setTxidCopyFailed] = useState(false);
+  const copyTxid = async () => {
+    if (anchoredReceipt === null) return;
+    try {
+      await navigator.clipboard.writeText(anchoredReceipt.txid);
+      setTxidCopied(true);
+      setTxidCopyFailed(false);
+      setTimeout(() => setTxidCopied(false), 2000);
+    } catch {
+      setTxidCopyFailed(true);
+      setTimeout(() => setTxidCopyFailed(false), 3000);
+    }
+  };
+  const runAnchor = async (funding: SpendableUtxo) => {
+    const { session, electrum, onAnchored } = wiring;
+    const manager = session.manager;
+    const address = session.address;
+    if (manager === null || address === null || anchor === null) return;
+    setAnchorPhase("signing");
+    setAnchorError(null);
+    try {
+      const reportHash = hexToBin(anchor.hash);
+      // Change returns to the funding UTXO's own lock, which is
+      // the wallet's derived receive address, the lock the sign
+      // bridge names as the source output's lock.
+      const template = buildAnchorTxTemplateForWallet({
+        utxoTxid: funding.txid,
+        utxoIndex: funding.index,
+        utxoValueSats: funding.valueSats,
+        reportHash,
+        changeLockingBytecode: funding.lockingBytecode,
+        changeAddress: address,
+      });
+      const result = await executeAnchorSignFlow(
+        manager,
+        async (signedTxHex) => {
+          await electrum.call("blockchain.transaction.broadcast", [
+            signedTxHex,
+          ]);
+        },
+        {
+          template,
+          fundingUtxo: {
+            txid: funding.txid,
+            index: funding.index,
+            valueSats: funding.valueSats,
+          },
+          reportHash,
+          receiptFields: {
+            kind: "anchor",
+            assetLabel: `${t.anchorTitle} · ${snapshot.symbol}`,
+            categoryId: snapshot.category,
+            amountBaseUnits: 0n,
+            decimals: 0,
+            recipient: address,
+            feeSats: template.feeSats,
+            sentAtIso: new Date().toISOString(),
+          },
+          userPrompt: t.signPromptAnchor,
+        },
+      );
+      setAnchoredReceipt(result.receipt);
+      setAnchorPhase("idle");
+      onAnchored(result.receipt);
+    } catch (error) {
+      setAnchorPhase("idle");
+      if (error instanceof SignFlowError) {
+        setAnchorError(
+          error.code === "WALLET_REFUSED"
+            ? t.signRejected
+            : error.code === "TAMPERED"
+              ? t.anchorTampered
+              : error.code === "BROADCAST_FAILED"
+                ? t.sendBroadcastFailed
+                : t.sendMalformed,
+        );
+      } else {
+        setAnchorError(error instanceof Error ? error.message : String(error));
+      }
+    }
+  };
   useEffect(() => {
     let cancelled = false;
     // A new report must never wear the previous report's hash while
     // its own is computed: reset to the loading state first.
     setAnchor(null);
     setAnchorFailed(false);
+    // Nor the previous report's anchor outcome: a txid earned by
+    // one report must never sit under another report's hash.
+    setAnchoredReceipt(null);
+    setAnchorError(null);
+    setAnchorPhase("idle");
     const reportText = JSON.stringify({
       token: snapshot.symbol,
       category: snapshot.category,
@@ -992,6 +1124,95 @@ function AnchorBlock({
       cancelled = true;
     };
   }, [snapshot, judgement, anchorAttempt]);
+
+  // The action area under the hash. Every state is words plus,
+  // where an action exists, a real button: the connect button
+  // (App routes it to the pairing dialog; the report is never
+  // touched), or the anchor button itself. The one disabled
+  // state (nothing can fund the fee) carries its reason in the
+  // note directly above it, the Send gate's pattern.
+  const { session, utxoPhase, utxos, onConnectRequest } = wiring;
+  let actionArea: ReactNode = null;
+  if (anchor !== null && anchoredReceipt !== null) {
+    actionArea = (
+      <div className="anchor-done">
+        <p className="anchor-done-line">{t.anchorDone}</p>
+        <p className="mono" title={anchoredReceipt.txid}>
+          {shortenHash(anchoredReceipt.txid)}
+        </p>
+        <div className="panel-actions">
+          <a
+            href={anchoredReceipt.explorerUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t.receiptExplorer}
+          </a>
+          <button type="button" onClick={() => void copyTxid()}>
+            {txidCopied ? t.copied : t.copyTxid}
+          </button>
+          {txidCopyFailed && (
+            <span className="action-status" role="status">
+              {t.copyFailed}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  } else if (anchor !== null) {
+    if (!session.connected || session.manager === null) {
+      actionArea = (
+        <>
+          <p className="scan-note">{t.anchorNeedsWallet}</p>
+          <button
+            id="anchor-action"
+            type="button"
+            className="primary-action"
+            onClick={onConnectRequest}
+          >
+            {t.connectWallet}
+          </button>
+        </>
+      );
+    } else if (session.addressMissing || session.address === null) {
+      actionArea = <p className="scan-note">{t.walletAddressMissing}</p>;
+    } else if (utxoPhase === "loading" || utxoPhase === "idle") {
+      actionArea = (
+        <p className="scan-note" aria-busy="true">
+          {t.walletBalanceLoading}
+        </p>
+      );
+    } else if (utxoPhase === "unavailable") {
+      actionArea = <p className="scan-note">{t.walletBalanceUnavailable}</p>;
+    } else {
+      const feeSats = estimateAnchorFeeSats();
+      const funding = selectAnchorFundingUtxo(utxos, feeSats);
+      actionArea =
+        funding === null ? (
+          <>
+            <p className="scan-note">
+              {t.anchorNoFunds.replace(
+                "{sats}",
+                latinNumberFormat().format(minimumAnchorFundingSats(feeSats)),
+              )}
+            </p>
+            <button type="button" className="primary-action" disabled>
+              {t.anchorAction}
+            </button>
+          </>
+        ) : (
+          <button
+            id="anchor-action"
+            type="button"
+            className="primary-action"
+            disabled={anchorPhase === "signing"}
+            onClick={() => void runAnchor(funding)}
+          >
+            {anchorPhase === "signing" ? t.sendInProgress : t.anchorAction}
+          </button>
+        );
+    }
+  }
 
   return (
     <section className="anchor">
@@ -1037,6 +1258,12 @@ function AnchorBlock({
             </p>
           )}
         </>
+      )}
+      {actionArea}
+      {anchorError !== null && (
+        <p className="anchor-error" role="alert">
+          {anchorError}
+        </p>
       )}
     </section>
   );
@@ -1190,6 +1417,51 @@ export default function App() {
     },
     [history],
   );
+  // An anchor's receipt joins the same store, but the panel does
+  // NOT switch: the txid lands in the report the user is looking
+  // at (the plan locks the txid in the report), and History is
+  // one tile tap away when they want the record.
+  const handleAnchored = useCallback(
+    (receipt: Receipt) => {
+      history.store.append(receipt);
+      history.store.save();
+      setEntries(history.store.list());
+    },
+    [history],
+  );
+  // Pairing requests from inside the report (the anchor action's
+  // connect button): App owns the signal the header's
+  // WalletConnect listens to, and the focus bookkeeping around
+  // it. The report itself is never touched by a connect round
+  // trip: opening, dismissing, or completing pairing changes
+  // only the wallet session.
+  const [connectSignal, setConnectSignal] = useState(0);
+  const anchorConnectPending = useRef(false);
+  const requestAnchorConnect = useCallback(() => {
+    anchorConnectPending.current = true;
+    setConnectSignal((n) => n + 1);
+  }, []);
+  const focusAnchorAction = useCallback(() => {
+    document.getElementById("anchor-action")?.focus();
+  }, []);
+  const handlePairingDialogClose = useCallback(() => {
+    if (!anchorConnectPending.current) return;
+    anchorConnectPending.current = false;
+    focusAnchorAction();
+  }, [focusAnchorAction]);
+  useEffect(() => {
+    if (!walletSession.connected || !anchorConnectPending.current) return;
+    anchorConnectPending.current = false;
+    focusAnchorAction();
+  }, [walletSession.connected, focusAnchorAction]);
+  const anchorWiring: AnchorWiring = {
+    session: walletSession,
+    utxoPhase,
+    utxos: walletUtxos,
+    electrum,
+    onConnectRequest: requestAnchorConnect,
+    onAnchored: handleAnchored,
+  };
   // Confirmation statuses refresh while the History panel is
   // open: once on open, then every 30 seconds until it closes.
   // The fetch never guesses, so a transaction whose check fails
@@ -1417,7 +1689,12 @@ export default function App() {
               </div>
             }
           >
-            <WalletConnect t={t} onSessionChange={setWalletSession} />
+            <WalletConnect
+              t={t}
+              onSessionChange={setWalletSession}
+              connectSignal={connectSignal}
+              onDialogClose={handlePairingDialogClose}
+            />
           </Suspense>
         </LazyBoundary>
       </header>
@@ -1634,6 +1911,7 @@ export default function App() {
             currency={currency}
             lang={packLang}
             flagTemplates={flagTemplates}
+            wiring={anchorWiring}
           />
         ) : (
         <section className="report" aria-label={t.reportLabel}>
@@ -1693,7 +1971,7 @@ export default function App() {
 
           <ReportActions snapshot={snapshot} judgement={judgement} t={t} />
 
-          <AnchorBlock snapshot={snapshot} judgement={judgement} t={t} />
+          <AnchorBlock snapshot={snapshot} judgement={judgement} t={t} wiring={anchorWiring} />
 
           <footer className="provenance">{snapshot.provenance[packLang]}</footer>
         </section>

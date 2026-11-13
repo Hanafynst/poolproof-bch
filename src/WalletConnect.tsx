@@ -33,6 +33,10 @@ export interface WalletSession {
   address: string | null;
   tokenAddress: string | null;
   manager: SignFlowManager | null;
+  /** True when the wallet connected but the address poll gave
+   *  up: the panels must say the address is missing instead of
+   *  showing a balance "loading" state forever. */
+  addressMissing: boolean;
 }
 
 export const DISCONNECTED_SESSION: WalletSession = {
@@ -41,6 +45,7 @@ export const DISCONNECTED_SESSION: WalletSession = {
   address: null,
   tokenAddress: null,
   manager: null,
+  addressMissing: false,
 };
 
 /**
@@ -92,6 +97,7 @@ function PairingDialog({
   onClose: () => void;
 }) {
   const openWalletRef = useRef<HTMLAnchorElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [uriCopied, setUriCopied] = useState(false);
   const [uriCopyFailed, setUriCopyFailed] = useState(false);
   const [noWallet, setNoWallet] = useState(false);
@@ -142,6 +148,30 @@ function PairingDialog({
     watchCleanup.current = cancel;
   };
 
+  // The dialog declares aria-modal, so Tab must cycle inside it:
+  // a keyboard user who tabs past the last control would
+  // otherwise land on the page behind the overlay and lose the
+  // dialog entirely. The focusable set is re-read per keypress:
+  // the no-wallet fallback adds links while the dialog is open.
+  const trapTab = (event: React.KeyboardEvent) => {
+    if (event.key !== "Tab") return;
+    const card = cardRef.current;
+    if (card === null) return;
+    const focusables = card.querySelectorAll<HTMLElement>(
+      "a[href], button:not([disabled])",
+    );
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
   const copyUri = async () => {
     try {
       await navigator.clipboard.writeText(uri);
@@ -170,6 +200,8 @@ function PairingDialog({
         role="dialog"
         aria-modal="true"
         aria-label={t.connectWallet}
+        ref={cardRef}
+        onKeyDown={trapTab}
       >
         <h2>{t.connectWallet}</h2>
         <a
@@ -230,9 +262,20 @@ function PairingDialog({
 export default function WalletConnect({
   t,
   onSessionChange,
+  connectSignal,
+  onDialogClose,
 }: {
   t: UiStrings;
   onSessionChange?: (session: WalletSession) => void;
+  /** External "open the pairing dialog" requests (the report's
+   *  anchor action is the caller): each INCREASE asks for the
+   *  dialog, so a report-side button can route a wallet-less
+   *  visitor into pairing without owning any wallet state. */
+  connectSignal?: number;
+  /** Fires when a signal-opened dialog closes WITHOUT a
+   *  connection, so the caller can return focus to the control
+   *  that asked for the dialog. */
+  onDialogClose?: () => void;
 }) {
   const {
     state,
@@ -254,6 +297,31 @@ export default function WalletConnect({
   // only that) is scoped to dialogs the user actually opened. An
   // auto-reconnect on page load must never steal focus.
   const dialogOpenedByUser = useRef(false);
+  // Signal-opened dialogs (see the connectSignal prop): the last
+  // signal value acted on, and whether the currently open dialog
+  // came from a signal: its unconnected close belongs to the
+  // caller (onDialogClose), not to the connect button's focus
+  // return. The counter starts at 0, NOT at the prop's first
+  // value: this component is lazy-loaded, and a signal bumped
+  // before the chunk landed must still be acted on when it does.
+  const lastConnectSignal = useRef(0);
+  const signalOpenedDialog = useRef(false);
+
+  useEffect(() => {
+    const signal = connectSignal ?? 0;
+    if (signal <= lastConnectSignal.current) {
+      lastConnectSignal.current = signal;
+      return;
+    }
+    lastConnectSignal.current = signal;
+    // A signal that lands while a dialog is already open, while
+    // connected, or while a session is reconnecting has nothing
+    // to do: the visitor is already where the signal points.
+    if (state !== "idle" && state !== "disconnected") return;
+    dialogOpenedByUser.current = true;
+    signalOpenedDialog.current = true;
+    connect();
+  }, [connectSignal, state, connect]);
 
   // The dialog dismisses on backdrop click and its buttons, and
   // Escape takes the same path as its onClose. When the dialog
@@ -270,10 +338,19 @@ export default function WalletConnect({
   useEffect(() => {
     if (state === "connecting" || !dialogOpenedByUser.current) return;
     dialogOpenedByUser.current = false;
+    if (signalOpenedDialog.current) {
+      signalOpenedDialog.current = false;
+      // A signal-opened dialog's close is the caller's to finish:
+      // on an unconnected close it returns focus to the control
+      // that asked for pairing; on success the caller sees the
+      // session flip and does the same.
+      if (state !== "connected") onDialogClose?.();
+      return;
+    }
     // On success the connect button unmounts (status takes its
     // place); on dismissal it is back, so give it the focus.
     if (state !== "connected") connectButtonRef.current?.focus();
-  }, [state]);
+  }, [state, onDialogClose]);
 
   useEffect(() => {
     let cancelled = false;
@@ -323,8 +400,17 @@ export default function WalletConnect({
       address,
       tokenAddress,
       manager: signManager,
+      addressMissing,
     });
-  }, [state, walletName, address, tokenAddress, signManager, onSessionChange]);
+  }, [
+    state,
+    walletName,
+    address,
+    tokenAddress,
+    signManager,
+    addressMissing,
+    onSessionChange,
+  ]);
 
   const copyAddress = async () => {
     if (address === null) return;

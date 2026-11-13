@@ -1005,6 +1005,47 @@ h1 {
   color: var(--dead);
 }
 
+/* The anchor action area (R45): the primary button under the
+   hash wears the panels' primary-action treatment (scarlet is
+   reserved for the one action that matters in a block); the
+   done block keeps its txid on one shortened mono line, like
+   the hash rows above it. */
+.anchor .primary-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 0.95rem;
+  margin-top: 0.35rem;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.anchor .primary-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.anchor-done {
+  margin-top: 0.35rem;
+}
+
+.anchor-done-line {
+  color: var(--alive);
+  font-weight: 600;
+}
+
+.anchor-done .mono {
+  white-space: nowrap;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
 .copy-inline {
   font: inherit;
   font-size: 0.78rem;
