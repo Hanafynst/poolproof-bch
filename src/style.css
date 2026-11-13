@@ -1,0 +1,749 @@
+/* PoolProof practice UI — direction A: the audit report.
+   Paper, ink, and one accent. No gradients, no card soup: the product
+   is a due-diligence document, so it looks like one. */
+
+:root {
+  --paper: #faf9f5;
+  --ink: #15211b;
+  --ink-soft: #43524a;
+  --rule: #d8d4c8;
+  --on-ink: #f2f0e9;
+  --on-ink-soft: #b9c4bc;
+  --bch: #0a9e76;
+  --dead: #b3261e;
+  --risky: #8a5a00;
+  --lying: #6a1b9a;
+  /* Variant B (scanner) tokens — dark console, kept separate so the
+     two directions never leak into each other. */
+  --scan-bg: #0f172a;
+  --scan-panel: #182238;
+  --scan-line: #2b3a55;
+  --scan-text: #e8edf5;
+  --scan-soft: #9fb0c9;
+  --scan-pass: #34d399;
+  --scan-warn: #fbbf24;
+  --scan-fail: #f87171;
+  --scan-lying: #c084fc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: baseline;
+  padding: 0.7rem 1.25rem;
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.wordmark {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.topbar nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  align-items: baseline;
+  font-size: 0.875rem;
+}
+
+.topbar a {
+  color: var(--on-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.topbar .ember {
+  color: var(--on-ink-soft);
+}
+
+main {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3.5rem;
+}
+
+h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2rem;
+  line-height: 1.2;
+  margin: 0 0 0.75rem;
+}
+
+.lede {
+  color: var(--ink-soft);
+  max-width: 38rem;
+  margin: 0 0 1.75rem;
+}
+
+.switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.switcher button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.45rem 0.9rem;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  cursor: pointer;
+}
+
+.switcher button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.report {
+  border-top: 3px double var(--ink);
+  padding-top: 1.25rem;
+}
+
+.report-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.report-head h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.report-head .symbol {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+
+.category {
+  margin: 0.25rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.stamp {
+  flex-shrink: 0;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 0.4rem 0.8rem;
+  border: 3px solid var(--ink);
+  transform: rotate(-2deg);
+}
+
+.stamp[data-verdict="ALIVE"] {
+  color: var(--bch);
+  border-color: var(--bch);
+}
+
+.stamp[data-verdict="DEAD"],
+.stamp[data-verdict="NO_MARKET"] {
+  color: var(--dead);
+  border-color: var(--dead);
+}
+
+.stamp[data-verdict="RISKY"] {
+  color: var(--risky);
+  border-color: var(--risky);
+}
+
+.stamp[data-verdict="LYING_DISPLAY"] {
+  color: var(--lying);
+  border-color: var(--lying);
+}
+
+.summary {
+  font-size: 1.05rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.caveat {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  margin: 0 0 1.25rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0 0 1rem;
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.controls select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.3rem 0.5rem;
+}
+
+.fiat-note {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  margin: 0.5rem 0 0;
+}
+
+.evidence {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.evidence th,
+.evidence td {
+  text-align: left;
+  padding: 0.45rem 0.5rem 0.45rem 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+.evidence th {
+  font-weight: 600;
+  color: var(--ink-soft);
+  width: 42%;
+}
+
+.evidence.identity {
+  margin-top: 0.5rem;
+}
+
+.flags {
+  margin: 1rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--dead);
+}
+
+.anchor {
+  margin-top: 2rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1rem;
+}
+
+.anchor h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.1rem;
+  margin: 0 0 0.4rem;
+}
+
+.anchor p {
+  color: var(--ink-soft);
+  margin: 0 0 0.75rem;
+  max-width: 38rem;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.anchor dl {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.anchor dl div {
+  display: flex;
+  gap: 1rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.anchor dt {
+  flex-shrink: 0;
+  width: 10rem;
+  color: var(--ink-soft);
+}
+
+.anchor dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+.provenance {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--rule);
+  padding-top: 0.75rem;
+}
+
+/* Keyboard focus must stay visible in both directions
+   (ui-ux-pro-max priority 1 — never remove the focus ring). */
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--bch);
+  outline-offset: 2px;
+}
+
+.view-switch {
+  margin-bottom: 1.25rem;
+}
+
+/* Variant B — the grouped scanner. Dense dark console: the evidence
+   is grouped by the question it answers, each group carries a status
+   word (never colour alone), and numbers sit in monospace. */
+.scanner {
+  background: var(--scan-bg);
+  color: var(--scan-text);
+  border: 1px solid var(--scan-line);
+  padding: 1.25rem 1.25rem 1rem;
+}
+
+.scan-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.scan-head h2 {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.scanner .symbol,
+.scanner .category,
+.scanner .caveat {
+  color: var(--scan-soft);
+}
+
+.scanner .stamp {
+  border-color: var(--scan-text);
+  color: var(--scan-text);
+}
+
+.scanner .stamp[data-verdict="ALIVE"] {
+  color: var(--scan-pass);
+  border-color: var(--scan-pass);
+}
+
+.scanner .stamp[data-verdict="DEAD"],
+.scanner .stamp[data-verdict="NO_MARKET"] {
+  color: var(--scan-fail);
+  border-color: var(--scan-fail);
+}
+
+.scanner .stamp[data-verdict="RISKY"] {
+  color: var(--scan-warn);
+  border-color: var(--scan-warn);
+}
+
+.scanner .stamp[data-verdict="LYING_DISPLAY"] {
+  color: var(--scan-lying);
+  border-color: var(--scan-lying);
+}
+
+.scan-group {
+  background: var(--scan-panel);
+  border: 1px solid var(--scan-line);
+  padding: 0.85rem 1rem 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.scan-group-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.scan-group-head h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.chip {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--scan-soft);
+  color: var(--scan-soft);
+  white-space: nowrap;
+}
+
+.chip[data-status="pass"] {
+  border-color: var(--scan-pass);
+  color: var(--scan-pass);
+}
+
+.chip[data-status="warn"] {
+  border-color: var(--scan-warn);
+  color: var(--scan-warn);
+}
+
+.chip[data-status="fail"] {
+  border-color: var(--scan-fail);
+  color: var(--scan-fail);
+}
+
+.scanner .evidence th,
+.scanner .evidence td {
+  border-bottom-color: var(--scan-line);
+}
+
+.scanner .evidence th {
+  color: var(--scan-soft);
+}
+
+.scanner .evidence td {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+}
+
+.scan-note {
+  color: var(--scan-soft);
+  font-size: 0.9rem;
+  margin: 0.35rem 0 0.6rem;
+}
+
+.scanner .flags {
+  color: var(--scan-fail);
+}
+
+.scanner .fiat-note {
+  color: var(--scan-soft);
+}
+
+.scanner .anchor {
+  border-top-color: var(--scan-line);
+}
+
+.scanner .anchor h2 {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.scanner .anchor p,
+.scanner .anchor dt {
+  color: var(--scan-soft);
+}
+
+.scanner .anchor dl div {
+  border-bottom-color: var(--scan-line);
+}
+
+.scanner .provenance {
+  border-top-color: var(--scan-line);
+  color: var(--scan-soft);
+}
+
+/* Report actions (copy / share / download) — same buttons in both
+   directions, themed by the container they sit in. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+
+.actions button {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.85rem;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  cursor: pointer;
+}
+
+.scanner .actions button {
+  color: var(--scan-text);
+  border-color: var(--scan-line);
+}
+
+/* Transient action feedback (R34): copy/download outcomes are
+   announced in words beside the buttons, never left silent. */
+.action-status {
+  font-size: 0.85rem;
+  align-self: center;
+  color: var(--ink-soft);
+}
+
+.scanner .action-status {
+  color: var(--scan-soft);
+}
+
+/* Language-pack load failure (R34): the previous language stays on
+   screen; this line says why, in that language, with a retry. */
+.pack-error {
+  color: var(--dead);
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+/* Anchor chunk load failure (R34). */
+.anchor-error {
+  color: var(--dead);
+}
+
+.scanner .anchor-error {
+  color: var(--scan-fail);
+}
+
+/* Live audit (R38): the category front door. Same paper/ink
+   language as the switcher and controls — a form, not a panel. */
+.live-audit {
+  margin: 0 0 1.5rem;
+}
+
+.live-audit label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin-bottom: 0.4rem;
+}
+
+.live-audit-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.live-audit input {
+  flex: 1 1 16rem;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.45rem 0.7rem;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+}
+
+.live-audit button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.45rem 0.9rem;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+  cursor: pointer;
+}
+
+.live-audit button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+/* Inline rejection of a malformed category and the fetch-failure
+   line share the error voice (R34: in words, never an alert). */
+.live-error {
+  color: var(--dead);
+  font-size: 0.9rem;
+}
+
+/* The fetching line REPLACES the report while a read is in flight —
+   a previous report is never left standing as the new result. */
+.live-status {
+  font-size: 1rem;
+}
+
+/* Live-result label: fetched-at time, plus the stand-in disclosure
+   whenever the live supply carries the flag. */
+.live-banner {
+  border: 1px solid var(--rule);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  margin: 0 0 1.25rem;
+}
+
+/* Responsive configuration (R18). Until this pass the stylesheet had
+   ZERO media queries — the layout had never been configured for
+   phones or wide screens at all. Breakpoints follow the
+   ui-ux-pro-max pre-delivery set: 375 / 768 / 1024 / 1440. */
+@media (max-width: 560px) {
+  main {
+    padding: 1.25rem 0.9rem 2.5rem;
+  }
+
+  h1 {
+    font-size: 1.55rem;
+  }
+
+  .report-head,
+  .scan-head {
+    flex-direction: column;
+  }
+
+  .stamp {
+    align-self: flex-start;
+  }
+
+  /* Evidence rows stack: label above value, nothing can push the
+     row wider than the phone. */
+  .evidence th,
+  .evidence td {
+    display: block;
+    width: auto;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .evidence td {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.45rem;
+    overflow-wrap: anywhere;
+  }
+
+  .scanner .evidence td {
+    border-bottom-color: var(--scan-line);
+  }
+
+  .anchor dl div {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .anchor dt {
+    width: auto;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .switcher button,
+  .actions button {
+    flex: 1 1 42%;
+  }
+
+  .scanner {
+    padding: 1rem 0.85rem 0.85rem;
+  }
+}
+
+/* Touch targets: 44px minimum on coarse pointers
+   (ui-ux-pro-max priority 2). R34 extended the R18 set: the wallet
+   buttons, the inline copy/retry buttons and the topbar links were
+   still ~26-34px tall on touch devices. */
+@media (pointer: coarse) {
+  .switcher button,
+  .actions button,
+  .controls select,
+  .wallet button,
+  .copy-inline,
+  .live-audit button,
+  .live-audit input {
+    min-height: 44px;
+  }
+
+  .topbar nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+/* Wide screens: the scanner's groups go two-up — identity beside
+   supply, exit and concentration full width because their content
+   is the widest. The audit report keeps its document column. */
+@media (min-width: 1024px) {
+  .scan-groups {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+    margin-top: 0.85rem;
+  }
+
+  .scan-groups .scan-group {
+    margin-top: 0;
+  }
+
+  .scan-groups .span-2 {
+    grid-column: span 2;
+  }
+}
+
+/* Wallet connect (topbar, on ink). States come from the
+   WizardConnect hook; errors render inline, never as alerts. */
+.wallet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  align-items: center;
+  margin-left: auto;
+  font-size: 0.85rem;
+}
+
+.wallet button {
+  font: inherit;
+  padding: 0.4rem 0.85rem;
+  background: transparent;
+  color: var(--on-ink);
+  border: 1px solid var(--on-ink);
+  cursor: pointer;
+}
+
+.wallet button:disabled {
+  color: var(--on-ink-soft);
+  border-color: var(--on-ink-soft);
+  cursor: wait;
+}
+
+.wallet-address {
+  color: var(--on-ink-soft);
+  font-size: 0.8rem;
+}
+
+/* Connected but the wallet shared no address (R34): the gap is
+   labelled instead of silent. */
+.wallet-note {
+  color: var(--on-ink-soft);
+  font-size: 0.8rem;
+}
+
+.wallet-error {
+  color: #ffb4ab;
+}
+
+.copy-inline {
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.6rem;
+  margin-left: auto;
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.scanner .copy-inline {
+  border-color: var(--scan-line);
+}
