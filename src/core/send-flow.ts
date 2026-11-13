@@ -321,11 +321,19 @@ export function deliveryEstimate(): DeliveryEstimate {
 
 export type SendKind = "bch" | "fungible" | "nft";
 
+/** Every kind a History receipt can carry: the three sends plus
+ *  the report anchor. The anchor is not a send — nothing moves to
+ *  a recipient; the wallet pays only the fee to pin a report hash
+ *  in an OP_RETURN output — so it is not a SendKind and the
+ *  confirm gate never sees it. It still earns a receipt: a
+ *  broadcast anchor is a fact the History exists to record. */
+export type ReceiptKind = SendKind | "anchor";
+
 export interface ReceiptInput {
   /** Transaction id in display order (the order explorers print),
    *  64 hex characters. */
   txid: string;
-  kind: SendKind;
+  kind: ReceiptKind;
   /** What the user calls the asset: "BCH", "ParyonUSD", an NFT name. */
   assetLabel: string;
   /** Category id (display-order hex) — required for token kinds,
@@ -349,7 +357,7 @@ export interface ReceiptInput {
 
 export interface Receipt {
   txid: string;
-  kind: SendKind;
+  kind: ReceiptKind;
   assetLabel: string;
   categoryId?: string;
   commitment?: string;
@@ -395,9 +403,14 @@ export function buildReceipt(input: ReceiptInput): Receipt {
       "send-flow: receipt txid must be 64 hex characters in display order",
     );
   }
-  if (input.kind !== "bch" && input.kind !== "fungible" && input.kind !== "nft") {
+  if (
+    input.kind !== "bch" &&
+    input.kind !== "fungible" &&
+    input.kind !== "nft" &&
+    input.kind !== "anchor"
+  ) {
     throw new RangeError(
-      `send-flow: receipt kind must be "bch", "fungible" or "nft", ` +
+      `send-flow: receipt kind must be "bch", "fungible", "nft" or "anchor", ` +
         `got ${JSON.stringify(input.kind)}`,
     );
   }
@@ -428,6 +441,17 @@ export function buildReceipt(input: ReceiptInput): Receipt {
   }
   if (input.kind === "nft" && !hasCommitment) {
     throw new Error("send-flow: an NFT receipt requires the commitment");
+  }
+  if (input.kind === "anchor" && hasCommitment) {
+    throw new Error("send-flow: an anchor receipt carries no NFT commitment");
+  }
+  if (input.kind === "anchor" && input.amountBaseUnits !== 0n) {
+    // The anchored output is an OP_RETURN: it carries the report
+    // hash and no value at all. A nonzero "anchor amount" would
+    // record a payment that never happened.
+    throw new RangeError(
+      `send-flow: an anchor receipt's amount must be 0 (the OP_RETURN output carries no value), got ${input.amountBaseUnits}`,
+    );
   }
   if (
     hasCommitment &&
