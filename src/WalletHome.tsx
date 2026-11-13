@@ -47,8 +47,9 @@ export type UtxoPhase = "idle" | "loading" | "ready" | "unavailable";
 export type HomePanel = "send" | "receive" | "history";
 
 /**
- * The mandatory BCH BLAZE banner, styled per the user's order
- * (2026-11-14): a slim, quiet band at the very top of the page.
+ * The mandatory BCH BLAZE banner, styled per the user's orders
+ * (2026-11-14): a slim solid scarlet strip at the very top of
+ * the page, white small type.
  * Exactly the four required elements: the Widget Factory
  * presentation link, the GitHub repo link, the EMBER2026
  * CashTokens address, and the pre-existing-work disclosure.

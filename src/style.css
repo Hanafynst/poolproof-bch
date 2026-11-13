@@ -32,30 +32,39 @@ body {
   line-height: 1.5;
 }
 
-/* The mandatory banner (see TopBanner in WalletHome.tsx): a slim,
-   quiet band. Small type on a slightly lifted near-black, one
-   hairline under it, scarlet only as the link hover accent. */
+/* The mandatory banner (see TopBanner in WalletHome.tsx): a slim
+   single strip in solid Blaze scarlet with white small type. The
+   red is the event brand colour, so the strip reads as its own
+   band instead of blending into the near-black page. Links stay
+   distinguishable by weight and a permanent underline. */
 .top-banner {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.25rem 1.25rem;
   padding: 0.5rem 1.25rem;
-  background: #101013;
-  border-bottom: 1px solid var(--line);
+  background: var(--accent);
   font-size: 0.8rem;
-  color: var(--soft);
+  color: #fff;
 }
 
 .top-banner a {
-  color: var(--soft);
-  text-decoration: none;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .top-banner a:hover {
-  color: var(--accent-soft);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+}
+
+/* The global focus ring is accent-soft, which disappears on the
+   scarlet band; banner controls get a white ring instead. */
+.top-banner a:focus-visible,
+.top-banner button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .banner-ember {
@@ -63,17 +72,18 @@ body {
   background: transparent;
   border: none;
   padding: 0;
-  color: var(--soft);
+  color: #fff;
   cursor: pointer;
   text-align: start;
 }
 
 button.banner-ember:hover {
-  color: var(--accent-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .banner-status {
-  color: var(--text);
+  color: #fff;
 }
 
 .banner-disclosure {
@@ -965,8 +975,24 @@ a:focus-visible {
     font-size: 1.55rem;
   }
 
+  /* The four action tiles stay in one row at phone widths too
+     (user order 2026-11-14, Binance-home reference): they shrink
+     instead of wrapping into a 2x2 grid. At a 360px viewport
+     each tile is still about 67px wide and 64px tall, above
+     the 44px tap-target floor. */
   .tiles {
-    grid-template-columns: repeat(2, 1fr);
+    gap: 0.45rem;
+  }
+
+  .tile {
+    min-height: 64px;
+    padding: 0.5rem 0.1rem;
+    font-size: 0.82rem;
+  }
+
+  .tile-icon {
+    width: 20px;
+    height: 20px;
   }
 
   .report-head,
