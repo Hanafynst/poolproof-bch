@@ -617,12 +617,22 @@ h1 {
 
 .report-head h2 {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .report-head .symbol {
   color: var(--soft);
-  font-weight: 400;
+}
+
+/* The token title is one typographic piece in both views: the
+   symbol takes the name's size and weight, only its colour is
+   muted. Keep in step with .report-head h2 and .scan-head h2. */
+.report-head .symbol,
+.scanner .symbol {
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 .category {
@@ -800,7 +810,9 @@ h1 {
 }
 
 .scan-head h2 {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
   margin: 0;
 }
 
