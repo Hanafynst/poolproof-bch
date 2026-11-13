@@ -1837,6 +1837,14 @@ export default function App() {
         </div>
 
         <div className="switcher view-switch" role="group" aria-label={t.viewsLabel}>
+          {/* The sliding thumb (P4): the active indicator
+              travels between the segments; the buttons above it
+              only change their label colour. */}
+          <span
+            className="view-thumb"
+            data-on={view}
+            aria-hidden="true"
+          />
           <button
             type="button"
             aria-pressed={view === "report"}
