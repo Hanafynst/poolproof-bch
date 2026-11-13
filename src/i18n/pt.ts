@@ -3,32 +3,60 @@ import type { UiStrings } from "../i18n-types";
 
 const strings: UiStrings = {
   presentation: "Apresentação",
-  source: "Código-fonte",
-  ember: "Gorjetas EMBER2026: o endereço aparece com a carteira conectada",
+  source: "GitHub",
+  ember: "Gorjetas EMBER2026: o endereço aparece aqui quando uma carteira é conectada.",
+  preExistingDisclosure:
+    "Trabalho anterior: a semântica dos vereditos foi prototipada " +
+    "primeiro em um projeto pessoal anterior, um detector de pools " +
+    "mortos da BSC. A implementação em BCH, a interface e este " +
+    "repositório são novos, criados para o BCH BLAZE dentro do " +
+    "período de 14 a 22 de novembro de 2026.",
+  copyAddress: "Copiar endereço",
+  openWalletApp: "Abrir o app da carteira",
+  copyConnectionLink: "Copiar link de conexão",
+  pairingScanHint: "Ou escaneie este código com uma carteira em outro dispositivo.",
+  walletBalanceLoading: "Carregando saldo...",
+  walletBalanceUnavailable:
+    "Saldo indisponível. O indexador de UTXO não pôde ser contatado.",
+  sendInProgress: "Aguardando a assinatura da carteira...",
+  sendTampered:
+    "A transação assinada não corresponde ao envio que você confirmou. " +
+    "Ela não foi transmitida.",
+  sendBroadcastFailed:
+    "A transmissão falhou. A transação assinada pode ser transmitida " +
+    "de novo. Não é preciso assiná-la outra vez.",
+  sendMalformed:
+    "A carteira devolveu uma resposta que não pôde ser verificada. " +
+    "Nada foi transmitido.",
+  historyUnavailable:
+    "O histórico salvo não pôde ser lido. Esta lista começa vazia.",
+  receivePlainLabel: "Endereço simples",
   headline: "Este pool de CashToken está realmente ativo?",
   lede:
-    "O PoolProof lê as reservas reais de um pool no Cauldron e simula uma venda antes " +
-    "de acreditar em qualquer número. Um valor de liquidez exibido é um rumor; reservas " +
-    "mais uma saída simulada são a verdade.",
+    "O PoolProof verifica um pool de CashToken antes de você confiar " +
+    "nos números dele. Ele lê as reservas do pool no Cauldron e simula " +
+    "uma venda. O veredito vem das reservas e da venda simulada, não " +
+    "do valor de liquidez exibido.",
   language: "Idioma",
   currency: "Moeda",
-  languageLoadFailed: "Esse idioma não carregou — o anterior continua exibido.",
+  languageLoadFailed: "Esse idioma não carregou. O anterior continua exibido.",
   snapshotsLabel: "Instantâneos de demonstração",
   reportLabel: "Relatório de diligência",
   caveat:
-    "Verificação pontual — as reservas ou a autoridade de emissão podem mudar depois " +
-    "deste relatório. Execute a verificação novamente antes de agir.",
+    "Este relatório é uma verificação em um momento específico. As " +
+    "reservas e a autoridade de emissão podem mudar depois dele. " +
+    "Execute a verificação de novo antes de agir com base no relatório.",
   summaryByVerdict: {
     ALIVE:
       "Ativo: as reservas são reais e a venda simulada sai perto do preço spot " +
       "(taxa de saída {ratio}).",
     RISKY:
       "Arriscado: a venda simulada mantém apenas parte do valor spot " +
-      "(taxa de saída {ratio}); a saída é possível, mas perde valor.",
-    DEAD: "Morto: as reservas são poeira — uma posição não pode sair por um valor significativo.",
+      "(taxa de saída {ratio}). A saída é possível, mas perde valor.",
+    DEAD: "Morto: as reservas são poeira. Uma posição não pode sair por um valor significativo.",
     NO_MARKET: "Sem mercado: este token não tem pool ativo no Cauldron.",
     LYING_DISPLAY:
-      "Exibição enganosa: a liquidez exibida supera em muito as reservas reais.",
+      "Exibição enganosa: a liquidez exibida está muito acima das reservas reais.",
   },
   pools: "Pools ativos do Cauldron",
   bchReserve: "Reserva de BCH (todos os pools)",
@@ -37,7 +65,7 @@ const strings: UiStrings = {
   referenceSellCap: "(limitada a 10% da reserva do pool)",
   simulatedExit: "Saída simulada",
   exitOfSpot: "{out} BCH de um valor spot de {spot} BCH",
-  exitNotSimulated: "não simulado — as reservas já decidem este veredito",
+  exitNotSimulated: "não simulado: as reservas já decidem este veredito",
   exitRouteFailed: "a rota não pôde ser simulada",
   exitRatio: "Taxa de saída",
   identity: "Identidade (BCMR)",
@@ -46,10 +74,11 @@ const strings: UiStrings = {
   decimals: "Decimais",
   anchorTitle: "Âncora de prova",
   anchorBody:
-    "O hash deste relatório, pronto para ser incluído em uma transação da rede " +
-    "principal do Bitcoin Cash como uma saída OP_RETURN — verificável por qualquer " +
-    "pessoa, para sempre.",
-  hashing: "calculando hash…",
+    "O hash deste relatório, pronto para ser incluído em uma transação " +
+    "da rede principal do Bitcoin Cash como uma saída OP_RETURN. " +
+    "Qualquer pessoa pode conferir o relatório contra o hash dessa " +
+    "transação.",
+  hashing: "calculando hash...",
   anchorLoadFailed: "A âncora de prova não carregou.",
   reportHash: "SHA-256 do relatório",
   opReturnScript: "Script OP_RETURN",
@@ -60,21 +89,21 @@ const strings: UiStrings = {
   downloadJson: "Baixar relatório (JSON)",
   copyLink: "Copiar link de compartilhamento",
   copied: "Copiado",
-  copyFailed: "A cópia falhou — copie o valor à mão",
+  copyFailed: "A cópia falhou. Copie o valor à mão.",
   downloaded: "Baixado",
   downloadFailed: "O download falhou",
   retry: "Tentar de novo",
   connectWallet: "Conectar wallet",
-  walletConnecting: "Aguardando a wallet…",
+  walletConnecting: "Aguardando a wallet...",
   walletConnected: "Conectado · {name}",
-  walletLoading: "Carregando wallet…",
-  walletLoadFailed: "A wallet não carregou — recarregue a página para tentar de novo",
+  walletLoading: "Carregando wallet...",
+  walletLoadFailed: "A wallet não carregou. Recarregue a página para tentar de novo.",
   disconnectWallet: "Desconectar",
   walletAddressMissing: "Conectado, mas a wallet ainda não compartilhou um endereço.",
   viewScanner: "Vista de scanner",
   groupIdentity: "Identidade",
   groupSupply: "Suprimento e autoridade",
-  groupExit: "Verdade da saída",
+  groupExit: "Simulação de saída",
   groupConcentration: "Concentração",
   statusPass: "APROVADO",
   statusWarn: "ALERTA",
@@ -82,15 +111,15 @@ const strings: UiStrings = {
   statusUnknown: "DESCONHECIDO",
   totalSupply: "Suprimento total",
   supplyStandInNote:
-    "O suprimento total é um valor substituto (10x a reserva de tokens do " +
-    "pool) até a segunda fonte chegar—a venda de referência é calculada " +
-    "pelo limite de reserva.",
+    "O suprimento total é um valor substituto (10x a reserva de tokens " +
+    "do pool) até a segunda fonte chegar. A venda de referência é " +
+    "calculada pelo limite de reserva.",
   authorityUnknown:
-    "A autoridade de emissão ainda não foi verificada: os números de " +
-    "suprimento são mostrados, nada se afirma sobre a autoridade.",
+    "A autoridade de emissão ainda não foi verificada. Os números de " +
+    "suprimento são mostrados. Nada se afirma sobre a autoridade.",
   concentrationUnknown:
-    "A concentração de holders ainda não tem fonte: mostrada como " +
-    "desconhecida, nunca como aprovada.",
+    "A concentração de holders ainda não tem fonte. Ela é mostrada " +
+    "como desconhecida, nunca como aprovada.",
   walletBalance: "Saldo",
   walletDisconnectedHint:
     "Conecte uma carteira para ver seu saldo, seus ativos e seu histórico.",
@@ -104,7 +133,7 @@ const strings: UiStrings = {
   sendRecipient: "Destinatário",
   sendRecipientPlaceholder: "Cole um endereço de Bitcoin Cash",
   sendAddressToken: "Endereço compatível com tokens",
-  sendAddressPlain: "Endereço simples — só BCH",
+  sendAddressPlain: "Endereço simples, só BCH",
   sendNetwork: "Rede: rede principal do Bitcoin Cash",
   confirmTitle: "Confirmar envio",
   confirmAsset: "Ativo",
@@ -113,23 +142,23 @@ const strings: UiStrings = {
   confirmFee: "Taxa da rede",
   confirmBalanceAfter: "Saldo depois",
   feeEstimateNote:
-    "A taxa é uma estimativa — a taxa final é definida quando a carteira assina.",
+    "A taxa é uma estimativa. A taxa final é definida quando a carteira assina.",
   deliveryEstimate:
-    "Envio imediato · primeira confirmação em ~10 minutos (estimativa)",
+    "A transmissão é imediata. Primeira confirmação em cerca de 10 minutos (estimativa).",
   sendConfirm: "Confirmar e enviar",
   sendCancel: "Cancelar",
   gateWrongNetwork: "Este endereço não está na rede principal do Bitcoin Cash.",
   gateInvalidAddress:
-    "Isso não é um endereço de Bitcoin Cash válido — confira e tente de novo.",
+    "Isso não é um endereço de Bitcoin Cash válido. Confira e tente de novo.",
   gateTokenToPlainAddress:
-    "Esse endereço não pode guardar tokens — os tokens ficariam presos. " +
-    "Use um endereço compatível com tokens.",
+    "Esse endereço não pode guardar tokens. Tokens enviados para ele " +
+    "ficariam presos. Use um endereço compatível com tokens.",
   gateAmountMissing: "Digite um valor.",
   gateAmountInvalid:
-    "Esse valor não pôde ser lido — confira o número e tente de novo.",
+    "Esse valor não pôde ser lido. Confira o número e tente de novo.",
   gateAmountZero: "Digite um valor acima de zero.",
   gateAmountBelowDust:
-    "O envio mínimo é de {dustSats} sats — saídas menores são poeira.",
+    "O envio mínimo é de {dustSats} sats. Saídas menores são poeira.",
   gateInsufficientBalance:
     "O saldo não basta para este valor mais a taxa.",
   gateInsufficientFeeBalance:
@@ -146,9 +175,9 @@ const strings: UiStrings = {
   historySent: "Enviado",
   receiveAddressLabel: "Seu endereço",
   receiveTokenNote:
-    "Endereço compatível com tokens — seguro para BCH, tokens e NFTs.",
+    "Endereço compatível com tokens. Seguro para BCH, tokens e NFTs.",
   receivePlainNote:
-    "Endereço simples — só BCH. Não envie tokens para este endereço.",
+    "Endereço simples, só BCH. Não envie tokens para este endereço.",
   receiveQrCaption: "QR Code do endereço",
   holdingsTotal: "Saldo total",
   holdingsTokens: "Tokens",
@@ -173,16 +202,16 @@ const strings: UiStrings = {
   liveCategoryPlaceholder: "Cole um ID de categoria de 64 caracteres",
   liveAuditAction: "Auditar ao vivo",
   liveCategoryInvalid:
-    "Esse ID de categoria não é válido: uma categoria tem " +
-    "exatamente 64 caracteres hexadecimais.",
-  liveFetching: "Buscando dados do pool ao vivo…",
+    "Esse ID de categoria não é válido. Uma categoria tem exatamente " +
+    "64 caracteres hexadecimais.",
+  liveFetching: "Buscando dados do pool ao vivo...",
   liveFetchFailed:
-    "A leitura ao vivo falhou — nenhum veredito foi produzido. " +
+    "A leitura ao vivo falhou. Nenhum veredito foi produzido. " +
     "Verifique a conexão e tente de novo.",
-  liveResultLabel: "Resultado ao vivo — obtido {time}",
+  liveResultLabel: "Resultado ao vivo, obtido {time}",
   liveProvenance:
     "Leitura ao vivo do indexador da Cauldron (indexer.riften.net), " +
-    "{time}. Nome, símbolo e decimais ainda não têm fonte — os " +
+    "{time}. Nome, símbolo e decimais ainda não têm fonte. Os " +
     "valores são unidades base brutas.",
   liveProvenanceIdentity:
     "Leitura ao vivo do indexador da Cauldron (indexer.riften.net), " +
@@ -194,20 +223,22 @@ const strings: UiStrings = {
     "do Bitcoin Cash?",
   signPromptSend: "Assine este envio na sua carteira para transmiti-lo.",
   signRejected:
-    "A carteira rejeitou o pedido de assinatura — nada foi enviado.",
+    "A carteira rejeitou o pedido de assinatura. Nada foi enviado.",
 };
 
-export const flags: Record<FlagCode, string> = {    TOKEN_UNREADABLE: "as leituras de identidade/fornecimento do token falharam",
-    NO_POOL: "nenhum pool do Cauldron contra BCH — nenhum mercado para vender",
-    DUST_RESERVE: "reserva de cotação de {reserveSats} sats (limite de poeira {dustSats})",
-    DISPLAYED_LIQUIDITY_LIES:
-      "liquidez exibida de ${displayedUsd}, mas as reservas reais implicam " +
-      "~${realUsd} (<1% do alegado)",
-    EXIT_WORTHLESS:
-      "a simulação de venda retorna {ratio} do valor spot — a saída não vale nada",
-    EXIT_LEAKS_VALUE:
-      "a simulação de venda mantém apenas {ratio} do valor spot " +
-      "(taxas e/ou impacto no preço)",
-    ROUTE_UNSIMULATED: "há reservas, mas a rota de venda não pôde ser simulada",};
+export const flags: Record<FlagCode, string> = {
+  TOKEN_UNREADABLE: "as leituras de identidade e fornecimento do token falharam",
+  NO_POOL: "nenhum pool do Cauldron contra BCH: nenhum mercado para vender",
+  DUST_RESERVE: "reserva de cotação de {reserveSats} sats (limite de poeira {dustSats})",
+  DISPLAYED_LIQUIDITY_LIES:
+    "liquidez exibida de ${displayedUsd}, mas as reservas reais implicam " +
+    "cerca de ${realUsd} (menos de 1% do alegado)",
+  EXIT_WORTHLESS:
+    "a simulação de venda retorna {ratio} do valor spot: a saída não vale nada",
+  EXIT_LEAKS_VALUE:
+    "a simulação de venda mantém apenas {ratio} do valor spot " +
+    "(taxas e/ou impacto no preço)",
+  ROUTE_UNSIMULATED: "há reservas, mas a rota de venda não pôde ser simulada",
+};
 
 export default strings;

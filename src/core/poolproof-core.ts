@@ -258,7 +258,7 @@ function judgePoolInner(facts: PoolFacts): PoolJudgement {
     return base;
   }
   if (!facts.hasPool) {
-    pushFlag("NO_POOL", "no Cauldron pool against BCH — no market to sell into");
+    pushFlag("NO_POOL", "no Cauldron pool against BCH: no market to sell into");
     return base;
   }
 
@@ -346,7 +346,7 @@ function judgePoolInner(facts: PoolFacts): PoolJudgement {
   if (exitRatio !== null && exitRatio < EXIT_RATIO_DEAD) {
     pushFlag(
       "EXIT_WORTHLESS",
-      `sell simulation returns ${exitRatio.toFixed(4)} of spot value — exit is worthless`,
+      `sell simulation returns ${exitRatio.toFixed(4)} of spot value: exit is worthless`,
       { ratio: exitRatio.toFixed(4) },
     );
     return { ...judgement, verdict: "DEAD" };
@@ -370,10 +370,10 @@ function judgePoolInner(facts: PoolFacts): PoolJudgement {
 }
 
 const VERDICT_SUMMARIES: Record<Verdict, string> = {
-  NO_MARKET: "No market: there is no BCH pool to sell into, or the token itself cannot be read.",
+  NO_MARKET: "No market: the token cannot be read, or it has no BCH pool to sell into.",
   DEAD: "Dead pool: reserves are dust, or the simulated exit returns almost nothing.",
   LYING_DISPLAY: "Lying display: the liquidity shown is not backed by real reserves.",
-  RISKY: "Risky exit: the pool is alive, but selling leaks value or could not be fully simulated.",
+  RISKY: "Risky: the simulated sell keeps only part of the spot value, or the sell route could not be simulated.",
   ALIVE: "Alive: reserves are real and the simulated sell exits near the spot price.",
 };
 

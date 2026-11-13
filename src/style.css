@@ -1,29 +1,23 @@
-/* PoolProof practice UI — direction A: the audit report.
-   Paper, ink, and one accent. No gradients, no card soup: the product
-   is a due-diligence document, so it looks like one. */
+/* PoolProof: one dark wallet theme, per the locked UI direction.
+   Near-black surfaces, white text, Blaze scarlet as the single
+   accent. Report groups are rounded card rows, never ruled
+   hairline tables: the old paper and ink document look is gone. */
 
 :root {
-  --paper: #faf9f5;
-  --ink: #15211b;
-  --ink-soft: #43524a;
-  --rule: #d8d4c8;
-  --on-ink: #f2f0e9;
-  --on-ink-soft: #b9c4bc;
-  --bch: #0a9e76;
-  --dead: #b3261e;
-  --risky: #8a5a00;
-  --lying: #6a1b9a;
-  /* Variant B (scanner) tokens — dark console, kept separate so the
-     two directions never leak into each other. */
-  --scan-bg: #0f172a;
-  --scan-panel: #182238;
-  --scan-line: #2b3a55;
-  --scan-text: #e8edf5;
-  --scan-soft: #9fb0c9;
-  --scan-pass: #34d399;
-  --scan-warn: #fbbf24;
-  --scan-fail: #f87171;
-  --scan-lying: #c084fc;
+  --bg: #0b0b0d;
+  --surface: #141418;
+  --surface-2: #1c1c21;
+  --field: #0f0f12;
+  --line: #26262d;
+  --text: #f5f5f7;
+  --soft: #a3a3ad;
+  --accent: #e63329;
+  --accent-soft: #ff6b5e;
+  --alive: #34d399;
+  --dead: #f87171;
+  --risky: #fbbf24;
+  --lying: #c084fc;
+  --radius: 14px;
 }
 
 * {
@@ -32,63 +26,407 @@
 
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--bg);
+  color: var(--text);
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   line-height: 1.5;
+}
+
+/* The mandatory banner (see TopBanner in WalletHome.tsx): a slim,
+   quiet band. Small type on a slightly lifted near-black, one
+   hairline under it, scarlet only as the link hover accent. */
+.top-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.25rem;
+  padding: 0.5rem 1.25rem;
+  background: #101013;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.8rem;
+  color: var(--soft);
+}
+
+.top-banner a {
+  color: var(--soft);
+  text-decoration: none;
+}
+
+.top-banner a:hover {
+  color: var(--accent-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.banner-ember {
+  font: inherit;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--soft);
+  cursor: pointer;
+  text-align: start;
+}
+
+button.banner-ember:hover {
+  color: var(--accent-soft);
+}
+
+.banner-status {
+  color: var(--text);
+}
+
+.banner-disclosure {
+  flex: 1 1 24rem;
+  min-width: min(100%, 16rem);
 }
 
 .topbar {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1.5rem;
-  align-items: baseline;
+  align-items: center;
   padding: 0.7rem 1.25rem;
-  background: var(--ink);
-  color: var(--on-ink);
 }
 
 .wordmark {
-  font-family: Georgia, "Times New Roman", serif;
   font-weight: 700;
   letter-spacing: 0.14em;
-}
-
-.topbar nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
-  align-items: baseline;
-  font-size: 0.875rem;
-}
-
-.topbar a {
-  color: var(--on-ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.topbar .ember {
-  color: var(--on-ink-soft);
 }
 
 main {
   max-width: 46rem;
   margin: 0 auto;
-  padding: 2rem 1.25rem 3.5rem;
+  padding: 1rem 1.25rem 3.5rem;
 }
 
 h1 {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 2rem;
+  font-size: 1.9rem;
   line-height: 1.2;
-  margin: 0 0 0.75rem;
+  margin: 1.75rem 0 0.75rem;
 }
 
 .lede {
-  color: var(--ink-soft);
+  color: var(--soft);
   max-width: 38rem;
   margin: 0 0 1.75rem;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Wallet home: the balance card and its action tiles. */
+.wallet-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.balance-hint {
+  color: var(--soft);
+  margin: 0.25rem 0 1rem;
+}
+
+.balance-label {
+  color: var(--soft);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.balance-value {
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0.15rem 0 0.25rem;
+}
+
+.balance-sub {
+  color: var(--soft);
+  font-size: 0.85rem;
+  margin: 0 0 0.25rem;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 68px;
+  padding: 0.6rem 0.25rem;
+  font: inherit;
+  font-size: 0.9rem;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.tile:hover {
+  border-color: var(--accent);
+}
+
+.tile-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--accent-soft);
+}
+
+/* The tile panels: send, receive, history. */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.panel h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+}
+
+.panel h3 {
+  font-size: 0.95rem;
+  margin: 1.25rem 0 0.35rem;
+}
+
+.panel-note {
+  color: var(--soft);
+  font-size: 0.85rem;
+  margin: 0.35rem 0 0.6rem;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--soft);
+  margin: 0.9rem 0 0.35rem;
+}
+
+.panel-input {
+  width: 100%;
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--field);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.panel-address {
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+}
+
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.panel-actions button,
+.panel-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.95rem;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.panel-actions .primary-action {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.panel-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qr {
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.75rem;
+  width: min(220px, 70vw);
+  margin: 0.75rem 0;
+}
+
+.qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.asset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+}
+
+.asset-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  min-height: 44px;
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: start;
+  padding: 0.55rem 0.8rem;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.asset-row[aria-pressed="true"] {
+  border-color: var(--accent);
+}
+
+.asset-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.asset-amount {
+  color: var(--soft);
+  white-space: nowrap;
+}
+
+.shortcut-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.shortcut-row button {
+  flex: 1;
+  min-height: 44px;
+  font: inherit;
+  font-size: 0.9rem;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.gate-reasons {
+  color: var(--risky);
+  font-size: 0.9rem;
+  margin: 0.75rem 0 0;
+  padding-inline-start: 1.2rem;
+}
+
+.confirm-rows {
+  margin: 0.75rem 0 0;
+}
+
+.confirm-rows div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 0.55rem 0.8rem;
+  margin-bottom: 0.45rem;
+}
+
+.confirm-rows dt {
+  color: var(--soft);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.confirm-rows dd {
+  margin: 0;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
+.history-row {
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.history-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.history-asset {
+  font-weight: 600;
+}
+
+.history-amount {
+  margin-inline-start: auto;
+}
+
+.history-recipient {
+  color: var(--soft);
+  font-size: 0.8rem;
+  margin: 0.3rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.history-meta {
+  color: var(--soft);
+  font-size: 0.8rem;
+  margin: 0.2rem 0 0;
+}
+
+/* Controls, switcher, live audit form. */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0 0 1rem;
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: var(--soft);
+}
+
+.controls select {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.3rem 0.5rem;
 }
 
 .switcher {
@@ -101,21 +439,97 @@ h1 {
 .switcher button {
   font: inherit;
   font-size: 0.9rem;
+  min-height: 44px;
   padding: 0.45rem 0.9rem;
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--ink);
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 999px;
   cursor: pointer;
 }
 
 .switcher button[aria-pressed="true"] {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
 }
 
+.view-switch {
+  margin-bottom: 1.25rem;
+}
+
+.live-audit {
+  margin: 0 0 1.5rem;
+}
+
+.live-audit label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--soft);
+  margin-bottom: 0.4rem;
+}
+
+.live-audit-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.live-audit input {
+  flex: 1 1 16rem;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.45rem 0.7rem;
+  background: var(--field);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.live-audit button {
+  font: inherit;
+  font-size: 0.9rem;
+  min-height: 44px;
+  padding: 0.45rem 0.9rem;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.live-audit button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.live-error {
+  color: var(--dead);
+  font-size: 0.9rem;
+}
+
+.live-status {
+  font-size: 1rem;
+}
+
+.live-banner {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  margin: 0 0 1.25rem;
+}
+
+.pack-error {
+  color: var(--dead);
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+/* The audit report. Verdict first, then card-row evidence. */
 .report {
-  border-top: 3px double var(--ink);
-  padding-top: 1.25rem;
+  padding-top: 0.5rem;
 }
 
 .report-head {
@@ -126,34 +540,35 @@ h1 {
 }
 
 .report-head h2 {
-  font-family: Georgia, "Times New Roman", serif;
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
 }
 
 .report-head .symbol {
-  color: var(--ink-soft);
+  color: var(--soft);
   font-weight: 400;
 }
 
 .category {
   margin: 0.25rem 0 0;
-  color: var(--ink-soft);
+  color: var(--soft);
   font-size: 0.85rem;
+  overflow-wrap: anywhere;
 }
 
 .stamp {
   flex-shrink: 0;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  padding: 0.4rem 0.8rem;
-  border: 3px solid var(--ink);
-  transform: rotate(-2deg);
+  letter-spacing: 0.1em;
+  padding: 0.35rem 0.8rem;
+  border: 2px solid var(--text);
+  border-radius: 999px;
+  color: var(--text);
 }
 
 .stamp[data-verdict="ALIVE"] {
-  color: var(--bch);
-  border-color: var(--bch);
+  color: var(--alive);
+  border-color: var(--alive);
 }
 
 .stamp[data-verdict="DEAD"],
@@ -178,91 +593,67 @@ h1 {
 }
 
 .caveat {
-  color: var(--ink-soft);
+  color: var(--soft);
   font-size: 0.85rem;
   margin: 0 0 1.25rem;
 }
 
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin: 0 0 1rem;
-}
-
-.controls label {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 0.85rem;
-  color: var(--ink-soft);
-}
-
-.controls select {
-  font: inherit;
-  color: var(--ink);
-  background: var(--paper);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  padding: 0.3rem 0.5rem;
-}
-
 .fiat-note {
-  color: var(--ink-soft);
+  color: var(--soft);
   font-size: 0.8rem;
   margin: 0.5rem 0 0;
 }
 
+/* Evidence as wallet-style card rows: each field is a rounded row
+   card, label cell and value cell sharing the surface. */
 .evidence {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 0.5rem;
   font-size: 0.95rem;
 }
 
 .evidence th,
 .evidence td {
-  text-align: left;
-  padding: 0.45rem 0.5rem 0.45rem 0;
-  border-bottom: 1px solid var(--rule);
+  text-align: start;
+  padding: 0.6rem 0.85rem;
+  background: var(--surface);
   vertical-align: top;
 }
 
 .evidence th {
-  font-weight: 600;
-  color: var(--ink-soft);
+  font-weight: 500;
+  color: var(--soft);
   width: 42%;
+  border-radius: 10px 0 0 10px;
 }
 
-.evidence.identity {
-  margin-top: 0.5rem;
+.evidence td {
+  border-radius: 0 10px 10px 0;
+  overflow-wrap: anywhere;
 }
 
 .flags {
   margin: 1rem 0 0;
-  padding-left: 1.2rem;
+  padding-inline-start: 1.2rem;
   color: var(--dead);
 }
 
 .anchor {
   margin-top: 2rem;
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--line);
   padding-top: 1rem;
 }
 
 .anchor h2 {
-  font-family: Georgia, "Times New Roman", serif;
   font-size: 1.1rem;
   margin: 0 0 0.4rem;
 }
 
 .anchor p {
-  color: var(--ink-soft);
+  color: var(--soft);
   margin: 0 0 0.75rem;
   max-width: 38rem;
-}
-
-.mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .anchor dl {
@@ -273,51 +664,35 @@ h1 {
 .anchor dl div {
   display: flex;
   gap: 1rem;
-  padding: 0.3rem 0;
-  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 0.55rem 0.8rem;
+  margin-bottom: 0.5rem;
 }
 
 .anchor dt {
   flex-shrink: 0;
   width: 10rem;
-  color: var(--ink-soft);
+  color: var(--soft);
 }
 
 .anchor dd {
   margin: 0;
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .provenance {
   margin-top: 2rem;
   font-size: 0.85rem;
-  color: var(--ink-soft);
-  border-top: 1px solid var(--rule);
+  color: var(--soft);
+  border-top: 1px solid var(--line);
   padding-top: 0.75rem;
 }
 
-/* Keyboard focus must stay visible in both directions
-   (ui-ux-pro-max priority 1 — never remove the focus ring). */
-button:focus-visible,
-select:focus-visible,
-input:focus-visible,
-a:focus-visible {
-  outline: 2px solid var(--bch);
-  outline-offset: 2px;
-}
-
-.view-switch {
-  margin-bottom: 1.25rem;
-}
-
-/* Variant B — the grouped scanner. Dense dark console: the evidence
-   is grouped by the question it answers, each group carries a status
-   word (never colour alone), and numbers sit in monospace. */
+/* Scanner view: the same surfaces, grouped. Group cards were
+   already card rows; they now share the page theme tokens. */
 .scanner {
-  background: var(--scan-bg);
-  color: var(--scan-text);
-  border: 1px solid var(--scan-line);
-  padding: 1.25rem 1.25rem 1rem;
+  padding-top: 0.5rem;
 }
 
 .scan-head {
@@ -329,7 +704,6 @@ a:focus-visible {
 }
 
 .scan-head h2 {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 1.15rem;
   margin: 0;
 }
@@ -337,38 +711,13 @@ a:focus-visible {
 .scanner .symbol,
 .scanner .category,
 .scanner .caveat {
-  color: var(--scan-soft);
-}
-
-.scanner .stamp {
-  border-color: var(--scan-text);
-  color: var(--scan-text);
-}
-
-.scanner .stamp[data-verdict="ALIVE"] {
-  color: var(--scan-pass);
-  border-color: var(--scan-pass);
-}
-
-.scanner .stamp[data-verdict="DEAD"],
-.scanner .stamp[data-verdict="NO_MARKET"] {
-  color: var(--scan-fail);
-  border-color: var(--scan-fail);
-}
-
-.scanner .stamp[data-verdict="RISKY"] {
-  color: var(--scan-warn);
-  border-color: var(--scan-warn);
-}
-
-.scanner .stamp[data-verdict="LYING_DISPLAY"] {
-  color: var(--scan-lying);
-  border-color: var(--scan-lying);
+  color: var(--soft);
 }
 
 .scan-group {
-  background: var(--scan-panel);
-  border: 1px solid var(--scan-line);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   padding: 0.85rem 1rem 0.6rem;
   margin-top: 0.85rem;
 }
@@ -391,80 +740,45 @@ a:focus-visible {
 .chip {
   font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   padding: 0.15rem 0.55rem;
-  border: 1px solid var(--scan-soft);
-  color: var(--scan-soft);
+  border: 1px solid var(--soft);
+  border-radius: 999px;
+  color: var(--soft);
   white-space: nowrap;
 }
 
 .chip[data-status="pass"] {
-  border-color: var(--scan-pass);
-  color: var(--scan-pass);
+  border-color: var(--alive);
+  color: var(--alive);
 }
 
 .chip[data-status="warn"] {
-  border-color: var(--scan-warn);
-  color: var(--scan-warn);
+  border-color: var(--risky);
+  color: var(--risky);
 }
 
 .chip[data-status="fail"] {
-  border-color: var(--scan-fail);
-  color: var(--scan-fail);
+  border-color: var(--dead);
+  color: var(--dead);
 }
 
 .scanner .evidence th,
 .scanner .evidence td {
-  border-bottom-color: var(--scan-line);
-}
-
-.scanner .evidence th {
-  color: var(--scan-soft);
-}
-
-.scanner .evidence td {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.9rem;
+  background: var(--surface-2);
 }
 
 .scan-note {
-  color: var(--scan-soft);
+  color: var(--soft);
   font-size: 0.9rem;
   margin: 0.35rem 0 0.6rem;
 }
 
 .scanner .flags {
-  color: var(--scan-fail);
+  color: var(--dead);
 }
 
-.scanner .fiat-note {
-  color: var(--scan-soft);
-}
-
-.scanner .anchor {
-  border-top-color: var(--scan-line);
-}
-
-.scanner .anchor h2 {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-
-.scanner .anchor p,
-.scanner .anchor dt {
-  color: var(--scan-soft);
-}
-
-.scanner .anchor dl div {
-  border-bottom-color: var(--scan-line);
-}
-
-.scanner .provenance {
-  border-top-color: var(--scan-line);
-  color: var(--scan-soft);
-}
-
-/* Report actions (copy / share / download) — same buttons in both
-   directions, themed by the container they sit in. */
+/* Report actions (copy, share, download) and their feedback. */
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -475,124 +789,184 @@ a:focus-visible {
 .actions button {
   font: inherit;
   font-size: 0.85rem;
+  min-height: 44px;
   padding: 0.45rem 0.85rem;
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--ink);
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
   cursor: pointer;
 }
 
-.scanner .actions button {
-  color: var(--scan-text);
-  border-color: var(--scan-line);
-}
-
-/* Transient action feedback (R34): copy/download outcomes are
+/* Transient action feedback (R34): copy and download outcomes are
    announced in words beside the buttons, never left silent. */
 .action-status {
   font-size: 0.85rem;
   align-self: center;
-  color: var(--ink-soft);
+  color: var(--soft);
 }
 
-.scanner .action-status {
-  color: var(--scan-soft);
-}
-
-/* Language-pack load failure (R34): the previous language stays on
-   screen; this line says why, in that language, with a retry. */
-.pack-error {
-  color: var(--dead);
-  font-size: 0.9rem;
-  margin: 0 0 1rem;
-}
-
-/* Anchor chunk load failure (R34). */
 .anchor-error {
   color: var(--dead);
 }
 
-.scanner .anchor-error {
-  color: var(--scan-fail);
+.copy-inline {
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.6rem;
+  margin-inline-start: auto;
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-/* Live audit (R38): the category front door. Same paper/ink
-   language as the switcher and controls — a form, not a panel. */
-.live-audit {
-  margin: 0 0 1.5rem;
-}
-
-.live-audit label {
-  display: block;
-  font-size: 0.85rem;
-  color: var(--ink-soft);
-  margin-bottom: 0.4rem;
-}
-
-.live-audit-row {
+/* Wallet connect in the header row. States come from the
+   WizardConnect hook; errors render inline, never as alerts. */
+.wallet {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.5rem 0.9rem;
+  align-items: center;
+  margin-inline-start: auto;
+  font-size: 0.85rem;
 }
 
-.live-audit input {
-  flex: 1 1 16rem;
+.wallet button {
   font: inherit;
-  font-size: 0.9rem;
-  padding: 0.45rem 0.7rem;
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--ink);
-}
-
-.live-audit button {
-  font: inherit;
-  font-size: 0.9rem;
-  padding: 0.45rem 0.9rem;
-  background: var(--ink);
-  color: var(--paper);
-  border: 1px solid var(--ink);
+  min-height: 44px;
+  padding: 0.4rem 0.85rem;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
   cursor: pointer;
 }
 
-.live-audit button:disabled {
-  opacity: 0.55;
+.wallet button:disabled {
+  color: var(--soft);
+  border-color: var(--line);
   cursor: wait;
 }
 
-/* Inline rejection of a malformed category and the fetch-failure
-   line share the error voice (R34: in words, never an alert). */
-.live-error {
-  color: var(--dead);
+.wallet-status,
+.wallet-address,
+.wallet-note {
+  color: var(--soft);
+  font-size: 0.8rem;
+}
+
+.wallet-error {
+  color: #ffb4ab;
+}
+
+/* Same-device pairing dialog (WalletConnect.tsx). The primary
+   action is the deep link into the wallet app; the QR below it is
+   the cross-device fallback. */
+.pairing-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 0.72);
+}
+
+.pairing-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.25rem;
+  width: 100%;
+  max-width: 22rem;
+  text-align: center;
+}
+
+.pairing-card h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.75rem;
+}
+
+.pairing-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.7rem 1rem;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.pairing-hint {
+  color: var(--soft);
+  font-size: 0.85rem;
+  margin: 0.9rem 0 0.5rem;
+}
+
+.pairing-qr {
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.75rem;
+  width: min(210px, 70vw);
+  margin: 0 auto;
+}
+
+.pairing-qr img,
+.pairing-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pairing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.pairing-actions button {
+  font: inherit;
   font-size: 0.9rem;
+  min-height: 44px;
+  padding: 0.5rem 0.95rem;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
 }
 
-/* The fetching line REPLACES the report while a read is in flight —
-   a previous report is never left standing as the new result. */
-.live-status {
-  font-size: 1rem;
+/* Keyboard focus stays visible everywhere (ui-ux-pro-max
+   priority 1: never remove the focus ring). */
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
 }
 
-/* Live-result label: fetched-at time, plus the stand-in disclosure
-   whenever the live supply carries the flag. */
-.live-banner {
-  border: 1px solid var(--rule);
-  padding: 0.5rem 0.75rem;
-  font-size: 0.9rem;
-  margin: 0 0 1.25rem;
-}
-
-/* Responsive configuration (R18). Until this pass the stylesheet had
-   ZERO media queries — the layout had never been configured for
-   phones or wide screens at all. Breakpoints follow the
-   ui-ux-pro-max pre-delivery set: 375 / 768 / 1024 / 1440. */
+/* Responsive configuration (R18 set: 375 / 768 / 1024 / 1440). */
 @media (max-width: 560px) {
   main {
-    padding: 1.25rem 0.9rem 2.5rem;
+    padding: 0.75rem 0.9rem 2.5rem;
   }
 
   h1 {
     font-size: 1.55rem;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .report-head,
@@ -604,24 +978,22 @@ a:focus-visible {
     align-self: flex-start;
   }
 
-  /* Evidence rows stack: label above value, nothing can push the
-     row wider than the phone. */
+  /* Evidence rows stack inside their card: label above value. */
   .evidence th,
   .evidence td {
     display: block;
     width: auto;
-    border-bottom: none;
-    padding-bottom: 0;
+  }
+
+  .evidence th {
+    border-radius: 10px 10px 0 0;
+    padding-bottom: 0.15rem;
   }
 
   .evidence td {
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 0.45rem;
+    border-radius: 0 0 10px 10px;
+    padding-top: 0.15rem;
     overflow-wrap: anywhere;
-  }
-
-  .scanner .evidence td {
-    border-bottom-color: var(--scan-line);
   }
 
   .anchor dl div {
@@ -643,15 +1015,22 @@ a:focus-visible {
     flex: 1 1 42%;
   }
 
-  .scanner {
-    padding: 1rem 0.85rem 0.85rem;
+  .confirm-rows div {
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .confirm-rows dd {
+    text-align: start;
+  }
+
+  .top-banner {
+    padding: 0.5rem 0.9rem;
   }
 }
 
 /* Touch targets: 44px minimum on coarse pointers
-   (ui-ux-pro-max priority 2). R34 extended the R18 set: the wallet
-   buttons, the inline copy/retry buttons and the topbar links were
-   still ~26-34px tall on touch devices. */
+   (ui-ux-pro-max priority 2). */
 @media (pointer: coarse) {
   .switcher button,
   .actions button,
@@ -659,20 +1038,21 @@ a:focus-visible {
   .wallet button,
   .copy-inline,
   .live-audit button,
-  .live-audit input {
+  .live-audit input,
+  .panel-input {
     min-height: 44px;
   }
 
-  .topbar nav a {
+  .top-banner a,
+  .banner-ember {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
   }
 }
 
-/* Wide screens: the scanner's groups go two-up — identity beside
-   supply, exit and concentration full width because their content
-   is the widest. The audit report keeps its document column. */
+/* Wide screens: the scanner's groups go two-up, identity beside
+   supply, exit and concentration full width. */
 @media (min-width: 1024px) {
   .scan-groups {
     display: grid;
@@ -688,62 +1068,4 @@ a:focus-visible {
   .scan-groups .span-2 {
     grid-column: span 2;
   }
-}
-
-/* Wallet connect (topbar, on ink). States come from the
-   WizardConnect hook; errors render inline, never as alerts. */
-.wallet {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 0.9rem;
-  align-items: center;
-  margin-left: auto;
-  font-size: 0.85rem;
-}
-
-.wallet button {
-  font: inherit;
-  padding: 0.4rem 0.85rem;
-  background: transparent;
-  color: var(--on-ink);
-  border: 1px solid var(--on-ink);
-  cursor: pointer;
-}
-
-.wallet button:disabled {
-  color: var(--on-ink-soft);
-  border-color: var(--on-ink-soft);
-  cursor: wait;
-}
-
-.wallet-address {
-  color: var(--on-ink-soft);
-  font-size: 0.8rem;
-}
-
-/* Connected but the wallet shared no address (R34): the gap is
-   labelled instead of silent. */
-.wallet-note {
-  color: var(--on-ink-soft);
-  font-size: 0.8rem;
-}
-
-.wallet-error {
-  color: #ffb4ab;
-}
-
-.copy-inline {
-  font: inherit;
-  font-size: 0.78rem;
-  padding: 0.25rem 0.6rem;
-  margin-left: auto;
-  background: transparent;
-  color: inherit;
-  border: 1px solid var(--rule);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.scanner .copy-inline {
-  border-color: var(--scan-line);
 }

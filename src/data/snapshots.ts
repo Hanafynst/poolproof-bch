@@ -11,11 +11,11 @@ import { OLANDO_HOLDERS, PUSD_HOLDERS } from "./holders";
  * endpoint agreed to the satoshi. Its totalSupplyRaw is set to 10x the
  * pool's token reserve on purpose: the real supply is not yet sourced
  * (second-source work), and 10x makes the reference sell land on the
- * 10%-of-reserve cap — the worst case for the exit simulation.
+ * 10%-of-reserve cap, the worst case for the exit simulation.
  *
  * The GHOST entry is a PATTERN fixture (labelled as such in the UI):
- * it encodes the documented dead-pool shape — dust BCH reserve against
- * a large token reserve — not a real token. The 0LANDO entry (R15) is
+ * it encodes the documented dead-pool shape, dust BCH reserve against
+ * a large token reserve, not a real token. The 0LANDO entry (R15) is
  * the real thing: a live category whose only pool holds 753 sats.
  *
  * Every user-visible string here is keyed by language: a snapshot is
@@ -34,7 +34,7 @@ export interface SnapshotConcentration {
   // Holders known to exist beyond the list, per the source.
   totalHolderCount: number;
   // The source's reported supply in base units. For PUSD this is
-  // the int64 genesis sentinel, NOT a count — supplyIsSentinel
+  // the int64 genesis sentinel, NOT a count: supplyIsSentinel
   // carries that fact and the module refuses to divide by it.
   supplyRaw: bigint;
   supplyIsSentinel: boolean;
@@ -56,7 +56,7 @@ export interface TokenSnapshot {
   // must disclose it (the scanner's supply group does).
   supplyIsStandIn?: boolean;
   // Fiat reference rates captured WITH the snapshot, for orientation
-  // only — every verdict is computed in BCH. Absent = no fiat figures
+  // only. Every verdict is computed in BCH. Absent = no fiat figures
   // are shown for this snapshot (never invent a rate).
   fiat?: { bchUsd: number; usdIdr: number; note: Record<Lang, string> };
   concentration?: SnapshotConcentration;
@@ -67,14 +67,14 @@ export const SNAPSHOTS: TokenSnapshot[] = [
   {
     id: "pusd-live",
     switchLabel: {
-      en: "PUSD — live snapshot",
-      id: "PUSD — snapshot langsung",
-      zh: "PUSD — 实时快照",
-      es: "PUSD — instantánea en vivo",
-      hi: "PUSD — लाइव स्नैपशॉट",
-      ar: "PUSD — لقطة حية",
-      pt: "PUSD — instantâneo ao vivo",
-      fr: "PUSD — instantané en direct",
+      en: "PUSD (live snapshot)",
+      id: "PUSD (snapshot langsung)",
+      zh: "PUSD（实时快照）",
+      es: "PUSD (instantánea en vivo)",
+      hi: "PUSD (लाइव स्नैपशॉट)",
+      ar: "PUSD (لقطة حية)",
+      pt: "PUSD (instantâneo ao vivo)",
+      fr: "PUSD (instantané en direct)",
     },
     provenance: {
       en:
@@ -120,44 +120,44 @@ export const SNAPSHOTS: TokenSnapshot[] = [
         en:
           "Fiat figures use reference rates captured with this snapshot: BCH $221.85 " +
           "(Selene market page, 13 Nov 2026) and USD/IDR 18,220.5 (Finnhub, 13 Nov 2026). " +
-          "Orientation only — every verdict is computed in BCH.",
+          "Fiat figures are for orientation only. Every verdict is computed in BCH.",
         id:
           "Angka fiat memakai kurs referensi yang ditangkap bersama snapshot ini: " +
           "BCH $221,85 (halaman pasar Selene, 13 Nov 2026) dan USD/IDR 18.220,5 " +
-          "(Finnhub, 13 Nov 2026). Hanya untuk orientasi — setiap vonis dihitung dalam BCH.",
+          "(Finnhub, 13 Nov 2026). Angka fiat hanya untuk orientasi. Setiap vonis dihitung dalam BCH.",
         zh:
           "法定货币数字使用与此快照一同捕获的参考汇率：BCH $221.85（Selene 市场页面，" +
           "2026 年 11 月 13 日）和 USD/IDR 18,220.5（Finnhub，2026 年 11 月 13 日）。" +
-          "仅供参考——每个结论都以 BCH 计算。",
+          "法币数字仅供参考。每个结论都以 BCH 计算。",
         es:
           "Las cifras en fiat usan tipos de referencia capturados con esta " +
           "instantánea: BCH $221,85 (página de mercado de Selene, 13 de nov. de " +
-          "2026) y USD/IDR 18.220,5 (Finnhub, 13 de nov. de 2026). Solo como " +
-          "orientación: cada veredicto se calcula en BCH.",
+          "2026) y USD/IDR 18.220,5 (Finnhub, 13 de nov. de 2026). Las cifras " +
+          "en fiat son solo orientativas. Cada veredicto se calcula en BCH.",
         hi:
           "फ़िएट आंकड़े इस स्नैपशॉट के साथ लिए गए संदर्भ दरों का उपयोग करते हैं: " +
           "BCH $221.85 (Selene बाज़ार पृष्ठ, 13 नवंबर 2026) और USD/IDR 18,220.5 " +
-          "(Finnhub, 13 नवंबर 2026)। केवल दिशा-निर्देश के लिए—हर निर्णय BCH में " +
-          "गणना किया जाता है।",
+          "(Finnhub, 13 नवंबर 2026)। फ़िएट आंकड़े केवल दिशा-निर्देश के लिए हैं। " +
+          "हर निर्णय BCH में गणना किया जाता है।",
         ar:
           "تستخدم أرقام العملات الورقية أسعارًا مرجعية التُقطت مع هذه اللقطة: " +
           "BCH بقيمة $221.85 (صفحة سوق Selene، 13 نوفمبر 2026) وUSD/IDR بقيمة " +
-          "18,220.5 (Finnhub، 13 نوفمبر 2026). للإرشاد فقط — كل حكم يُحسب بـBCH.",
+          "18,220.5 (Finnhub، 13 نوفمبر 2026). أرقام العملات الورقية للإرشاد فقط. كل حكم يُحسب بـBCH.",
         pt:
           "Os valores em fiat usam taxas de referência capturadas com este " +
           "instantâneo: BCH $221,85 (página de mercado da Selene, 13 de nov. de " +
-          "2026) e USD/IDR 18.220,5 (Finnhub, 13 de nov. de 2026). Apenas como " +
-          "orientação — cada veredito é calculado em BCH.",
+          "2026) e USD/IDR 18.220,5 (Finnhub, 13 de nov. de 2026). Os valores " +
+          "em fiat servem apenas como orientação. Cada veredito é calculado em BCH.",
         fr:
           "Les montants en fiat utilisent les taux de référence capturés avec " +
           "cet instantané : BCH $221,85 (page de marché Selene, 13 nov. 2026) " +
-          "et USD/IDR 18 220,5 (Finnhub, 13 nov. 2026). À titre indicatif " +
-          "seulement — chaque verdict est calculé en BCH.",
+          "et USD/IDR 18 220,5 (Finnhub, 13 nov. 2026). Les montants en fiat " +
+          "sont donnés à titre indicatif. Chaque verdict est calculé en BCH.",
       },
     },
     // TokenStork capture (R26): the source caps the list at the
     // top 100 of 153 holders, and its reported supply is the
-    // int64 sentinel — concentration renders on the listed basis
+    // int64 sentinel: concentration renders on the listed basis
     // and share-of-supply stays null by construction.
     concentration: {
       holders: PUSD_HOLDERS,
@@ -176,40 +176,40 @@ export const SNAPSHOTS: TokenSnapshot[] = [
   {
     id: "dead-pattern",
     switchLabel: {
-      en: "Dead pool — pattern fixture",
-      id: "Pool mati — fixture pola",
-      zh: "死亡池 — 模式样本",
-      es: "Pool muerto — ejemplo de patrón",
-      hi: "मृत पूल — पैटर्न फ़िक्स्चर",
-      ar: "مجمع ميت — نموذج نمطي",
-      pt: "Pool morto — exemplo de padrão",
-      fr: "Pool mort — modèle type",
+      en: "Dead pool (pattern fixture)",
+      id: "Pool mati (fixture pola)",
+      zh: "死亡池（模式样本）",
+      es: "Pool muerto (ejemplo de patrón)",
+      hi: "मृत पूल (पैटर्न फ़िक्स्चर)",
+      ar: "مجمع ميت (نموذج نمطي)",
+      pt: "Pool morto (exemplo de padrão)",
+      fr: "Pool mort (modèle type)",
     },
     provenance: {
       en:
-        "Pattern fixture, not a real token: dust BCH reserve against a large " +
-        "token reserve — the shape a dead pool takes on Cauldron.",
+        "Pattern fixture, not a real token. It pairs a dust BCH reserve " +
+        "with a large token reserve, the shape a dead pool takes on Cauldron.",
       id:
-        "Fixture pola, bukan token asli: cadangan BCH debu melawan cadangan " +
-        "token besar — bentuk pool mati di Cauldron.",
+        "Fixture pola, bukan token asli. Cadangan BCH debu melawan cadangan " +
+        "token besar. Itulah bentuk pool mati di Cauldron.",
       zh:
-        "模式样本，并非真实代币：极少的 BCH 储备对着庞大的代币储备——这正是 " +
-        "Cauldron 上死亡池的形态。",
+        "模式样本，并非真实代币：极少的 BCH 储备对着庞大的代币储备。" +
+        "这是 Cauldron 上死亡池的形态。",
       es:
         "Ejemplo de patrón, no un token real: una reserva de BCH ínfima frente " +
-        "a una gran reserva del token: la forma que adopta un pool muerto en Cauldron.",
+        "a una gran reserva del token. Es la forma que adopta un pool muerto en Cauldron.",
       hi:
         "पैटर्न फ़िक्स्चर, असली टोकन नहीं: बड़े टोकन भंडार के सामने नाममात्र " +
-        "BCH भंडार—Cauldron पर मृत पूल का आकार यही होता है।",
+        "BCH भंडार है। Cauldron पर मृत पूल का आकार यही होता है।",
       ar:
         "نموذج نمطي، وليس رمزًا حقيقيًا: احتياطي BCH ضئيل مقابل احتياطي رمز " +
-        "كبير — هذا هو شكل المجمع الميت على Cauldron.",
+        "كبير. هذا هو شكل المجمع الميت على Cauldron.",
       pt:
         "Exemplo de padrão, não um token real: reserva de BCH ínfima contra " +
-        "uma grande reserva do token — a forma de um pool morto no Cauldron.",
+        "uma grande reserva do token. É a forma de um pool morto no Cauldron.",
       fr:
         "Modèle type, pas un vrai jeton : une réserve BCH dérisoire face à " +
-        "une grande réserve du jeton — la forme d'un pool mort sur Cauldron.",
+        "une grande réserve du jeton. C'est la forme d'un pool mort sur Cauldron.",
     },
     name: "Ghost Pool (pattern)",
     symbol: "GHOST",
@@ -228,19 +228,19 @@ export const SNAPSHOTS: TokenSnapshot[] = [
   },
   {
     // REAL dead token, captured live 2026-11-13 (R15): the category's
-    // only Cauldron pool holds 753 sats — real dust, not a pattern.
+    // only Cauldron pool holds 753 sats, real dust, not a pattern.
     // Supply is TokenStork's figure for this category, so this
     // snapshot carries no stand-in at all.
     id: "olando-real-dead",
     switchLabel: {
-      en: "0LANDO — real dead pool",
-      id: "0LANDO — pool mati asli",
-      zh: "0LANDO — 真实死亡池",
-      es: "0LANDO — pool muerto real",
-      hi: "0LANDO — असली मृत पूल",
-      ar: "0LANDO — مجمع ميت حقيقي",
-      pt: "0LANDO — pool morto real",
-      fr: "0LANDO — pool mort réel",
+      en: "0LANDO (real dead pool)",
+      id: "0LANDO (pool mati asli)",
+      zh: "0LANDO（真实死亡池）",
+      es: "0LANDO (pool muerto real)",
+      hi: "0LANDO (असली मृत पूल)",
+      ar: "0LANDO (مجمع ميت حقيقي)",
+      pt: "0LANDO (pool morto real)",
+      fr: "0LANDO (pool mort réel)",
     },
     provenance: {
       en:
@@ -284,7 +284,7 @@ export const SNAPSHOTS: TokenSnapshot[] = [
     bcmrSource: "none",
     poolCount: 1,
     // TokenStork capture (R26): the full holder list, 48 of 48,
-    // against the real supply below — the same figure our R15
+    // against the real supply below, the same figure our R15
     // Cauldron read produced independently.
     concentration: {
       holders: OLANDO_HOLDERS,

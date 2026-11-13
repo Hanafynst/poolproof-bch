@@ -2,6 +2,7 @@ import {
   Component,
   Suspense,
   lazy,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -24,6 +25,22 @@ import {
 import { runLiveAuditReads } from "./core/live-audit";
 import { type LiveReportInput } from "./core/live-report";
 import { judgePool, type FlagCode, type PoolJudgement } from "./core/poolproof-core";
+import { createElectrumSession } from "./core/electrum-wss";
+import { HistoryStore, HistoryStoreError } from "./core/history-store";
+import type { Receipt } from "./core/send-flow";
+import type { SpendableUtxo } from "./core/transfer-tx";
+import { fetchAddressUtxos, indexWalletHoldings, type WalletHoldings } from "./core/wallet-utxos";
+import { formatBch, formatTokenAmount, shortenMiddle } from "./format";
+import {
+  HistoryPanel,
+  ReceivePanel,
+  SendPanel,
+  TopBanner,
+  WalletCard,
+  type HomePanel,
+  type UtxoPhase,
+} from "./WalletHome";
+import { DISCONNECTED_SESSION, type WalletSession } from "./WalletConnect";
 import { SNAPSHOTS, type TokenSnapshot } from "./data/snapshots";
 import {
   ENGLISH_PACK,
@@ -36,14 +53,14 @@ import {
   type LanguagePack,
   type UiStrings,
 } from "./i18n";
-// The WizardConnect stack (relay + crypto) is ~800 kB — heavier than
+// The WizardConnect stack (relay + crypto) is ~800 kB, heavier than
 // the whole report. Lazy-load it like the anchor module (R5): the
 // topbar paints a same-shaped disabled button instantly and swaps in
 // the live control when the chunk lands.
 const WalletConnect = lazy(() => import("./WalletConnect"));
 
 // A lazy chunk that fails (slow network, dead tunnel) must surface as
-// words, never as a silently dead button — the 2026-11-13 tunnel test
+// words, never as a silently dead button. The 2026-11-13 tunnel test
 // sat on the disabled fallback for 15 s with no clue why. This
 // boundary renders the localised failure line; the Suspense fallback
 // below it renders the localised loading line.
@@ -69,35 +86,49 @@ class LazyBoundary extends Component<
   }
 }
 
-const PRESENTATION_URL =
-  "https://docs.google.com/presentation/d/1Yfuk9CJkf4U9M_WukcELhumWgj3Ak6345Ewy8hSp-Hk/edit?usp=sharing";
-const SOURCE_URL = "https://github.com/Hanafynst";
+// The wallet home state lives in App: the WizardConnect session
+// (reported up by the lazy WalletConnect chunk), one Electrum
+// session shared by the balance read, the send panel and the
+// broadcast, the indexed holdings, and the send receipts persisted
+// in this browser's history store.
+const HISTORY_STORAGE_KEY = "poolproof-history-v1";
 
-function formatBch(sats: bigint): string {
-  const whole = sats / 100_000_000n;
-  const fraction = (sats % 100_000_000n).toString().padStart(8, "0").replace(/0+$/, "");
-  return fraction ? `${whole}.${fraction}` : `${whole}`;
-}
+const historyStorageAdapter = {
+  read(): string | null {
+    try {
+      return window.localStorage.getItem(HISTORY_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  },
+  write(serialized: string): void {
+    try {
+      window.localStorage.setItem(HISTORY_STORAGE_KEY, serialized);
+    } catch {
+      // Private mode or a full quota: the receipt still shows in
+      // the running list; it just does not survive a reload.
+    }
+  },
+};
 
-function formatTokenAmount(raw: bigint, decimals: number, lang: Lang): string {
-  const base = 10n ** BigInt(decimals);
-  const whole = raw / base;
-  const fraction = (raw % base).toString().padStart(decimals, "0").replace(/0+$/, "");
-  const locale = languageOption(lang).locale;
-  const numberFormat = new Intl.NumberFormat(locale, {
-    useGrouping: true,
-    maximumFractionDigits: 0,
-  });
-  const grouped = numberFormat.format(whole);
-  const decimalSeparator =
-    numberFormat.formatToParts(1.1).find((part) => part.type === "decimal")?.value ?? ".";
-  return fraction ? `${grouped}${decimalSeparator}${fraction}` : grouped;
-}
-
-function shortenMiddle(text: string, keep = 10): string {
-  return text.length > keep * 2 + 1
-    ? `${text.slice(0, keep)}…${text.slice(-keep)}`
-    : text;
+function loadHistoryStore(): { store: HistoryStore; loadFailed: boolean } {
+  try {
+    return { store: HistoryStore.load(historyStorageAdapter), loadFailed: false };
+  } catch (error) {
+    if (!(error instanceof HistoryStoreError)) throw error;
+    // Explicit recovery only: a corrupt store is reported via the
+    // loadFailed flag and starts empty, never silently merged.
+    try {
+      return {
+        store: HistoryStore.load(historyStorageAdapter, {
+          onCorrupt: "start-empty",
+        }),
+        loadFailed: true,
+      };
+    } catch {
+      return { store: new HistoryStore(), loadFailed: true };
+    }
+  }
 }
 
 // Fiat is orientation only (the verdict is computed in BCH). It is
@@ -137,7 +168,7 @@ function simulatedExitText(
   if (judgement.simulatedOutSats !== null) {
     const spot =
       judgement.spotOutSats === null
-        ? "—"
+        ? "n/a"
         : formatBch(BigInt(Math.round(judgement.spotOutSats)));
     return t.exitOfSpot
       .replace("{out}", formatBch(judgement.simulatedOutSats))
@@ -171,7 +202,7 @@ function EvidenceRows({
       ? simulatedExitText(judgement, t)
       : simulatedExitText(judgement, t).replace(formatBch(simOut), (out) => {
           // The fiat figure belongs to the simulated out, so it sits
-          // directly behind that number — not at the end of the
+          // directly behind that number, not at the end of the
           // sentence, where it would read as the spot value's.
           const fiat = fiatText(simOut, snapshot, currency, lang);
           return fiat === null ? out : `${out} (≈ ${fiat})`;
@@ -181,7 +212,7 @@ function EvidenceRows({
     [
       t.pools,
       snapshot.poolCount === null
-        ? "—"
+        ? "n/a"
         : new Intl.NumberFormat(locale).format(snapshot.poolCount),
     ],
     [
@@ -207,7 +238,7 @@ function EvidenceRows({
     [
       t.exitRatio,
       judgement.exitRatio === null
-        ? "—"
+        ? "n/a"
         : new Intl.NumberFormat(locale, {
             minimumFractionDigits: 3,
             maximumFractionDigits: 3,
@@ -255,7 +286,7 @@ function FlagsList({
 
 // DETAIL TERKUNCI (9b) actions: copy the category, copy a shareable
 // link (the snapshot travels in the URL), download the report as
-// JSON. Present in both views — a feature that exists in only one
+// JSON. Present in both views: a feature that exists in only one
 // direction is a feature half the judges never see.
 function ReportActions({
   snapshot,
@@ -267,7 +298,7 @@ function ReportActions({
   t: UiStrings;
 }) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  // Every action answers in words next to the buttons — success AND
+  // Every action answers in words next to the buttons, success AND
   // failure. A silent failure (clipboard denied, download blocked)
   // leaves the user guessing whether anything happened at all.
   const [status, setStatus] = useState<
@@ -287,7 +318,7 @@ function ReportActions({
       if (statusTimer.current !== null) clearTimeout(statusTimer.current);
       setStatus(null);
     } catch {
-      // Clipboard unavailable (permissions): say so — never fake a
+      // Clipboard unavailable (permissions): say so, never fake a
       // "copied" state. The value stays visible on the page to copy
       // by hand, and the status line says exactly that.
       flashStatus("copy-failed", 3000);
@@ -297,7 +328,7 @@ function ReportActions({
     const url = new URL(window.location.href);
     if (snapshot.id.startsWith("live-")) {
       // A live result is named by its category (?cat=), not by a
-      // snapshot id the loader would not find — a link that lands
+      // snapshot id the loader would not find: a link that lands
       // on the default snapshot instead would be a silent lie.
       url.searchParams.delete("snap");
       url.searchParams.set("cat", snapshot.category);
@@ -425,7 +456,7 @@ function ScanGroup({
 // Holder concentration (R35): the R32 module, computed at render
 // time from the snapshot's captured holder list (R26 fixtures).
 // A snapshot without captured holders returns null here and its
-// group keeps the honest unknown note — never a silent pass.
+// group keeps the honest unknown note, never a silent pass.
 function snapshotConcentrationReport(
   snapshot: TokenSnapshot,
 ): ConcentrationReport | null {
@@ -450,16 +481,16 @@ type LiveState =
   | { phase: "done"; input: LiveReportInput };
 
 // A live audit result dressed as a snapshot so BOTH report views
-// render it through the exact components the saved snapshots use —
+// render it through the exact components the saved snapshots use, and
 // one rendering path, no live-only fork. Only what the reads prove
-// is real: the category, the pool count, the reserves — and, since
+// is real: the category, the pool count, the reserves, and, since
 // R40, the identity when TokenStork resolved one for this exact
 // category: the real name, symbol and decimals, so amounts render
 // in units (PUSD at 2 decimals), not raw base units. When identity
 // is null the header says so instead: the name is the pack's
 // "unnamed" label, the symbol is the category's own first six hex
 // characters, decimals stay 0 so amounts render as the raw base
-// units they are, and there is no fiat block and no holder list —
+// units they are, and there is no fiat block and no holder list,
 // those absences render as the honest unknown notes, never as
 // invented figures. The
 // switchLabel/provenance records exist only to satisfy the shared
@@ -534,7 +565,7 @@ function concentrationTierLabel(tier: GiniTier, t: UiStrings): string {
 }
 
 // The group's status word follows the tier: a whale-controlled
-// distribution is a failure of distribution, stated as one —
+// distribution is a failure of distribution, stated as one:
 // the word is the signal, colour only reinforces it.
 function concentrationStatus(report: ConcentrationReport | null): ScanStatus {
   if (report === null || report.tier === null) return "unknown";
@@ -608,7 +639,7 @@ function ConcentrationTable({
   );
 }
 
-// Variant B — the grouped scanner (REFERENCE-TEARDOWN: GoPlus grouping,
+// Variant B, the grouped scanner (REFERENCE-TEARDOWN: GoPlus grouping,
 // Honeypot flag severity, Selene snapshot honesty). Same data, same
 // core, different question order: identity, supply, exit, concentration.
 // A check we cannot source is UNKNOWN in words, never a silent pass.
@@ -751,14 +782,14 @@ function AnchorBlock({
     if (anchor === null) return;
     try {
       // The row displays a shortened hash; the button copies the
-      // FULL hash — copying the ellipsis form would be a silent lie.
+      // FULL hash. Copying the ellipsis form would be a silent lie.
       await navigator.clipboard.writeText(anchor.hash);
       setHashCopied(true);
       setHashCopyFailed(false);
       setTimeout(() => setHashCopied(false), 2000);
     } catch {
       // Clipboard unavailable: the failure is announced in words
-      // (same rule as ReportActions — never fake a copied state).
+      // (same rule as ReportActions: never fake a copied state).
       setHashCopyFailed(true);
       setTimeout(() => setHashCopyFailed(false), 3000);
     }
@@ -898,11 +929,11 @@ export default function App() {
   }, [currency]);
 
   // The active language pack: English until the selected pack's
-  // chunk lands (usually one frame — the packs are ~10 kB each).
+  // chunk lands (usually one frame, as the packs are ~10 kB each).
   // Everything language-dependent renders from packLang (the pack
   // actually on screen), never from the bare selection: the
   // data-layer strings used to flip with the selection while the UI
-  // strings waited for the chunk, leaving a mixed-language page —
+  // strings waited for the chunk, leaving a mixed-language page,
   // and, on a failed chunk, a permanently mixed one. A failed load
   // now also speaks up instead of stranding the UI silently.
   const [pack, setPack] = useState<LanguagePack>(ENGLISH_PACK);
@@ -928,6 +959,76 @@ export default function App() {
   const t = pack.strings;
   const flagTemplates = pack.flags;
 
+  const [walletSession, setWalletSession] =
+    useState<WalletSession>(DISCONNECTED_SESSION);
+  const [electrum] = useState(() => createElectrumSession());
+  useEffect(() => {
+    // Close the read socket when App unmounts. A remount (React
+    // StrictMode in dev) creates a fresh session; the old one is
+    // closed here, never leaked.
+    return () => electrum.close();
+  }, [electrum]);
+  const [utxoPhase, setUtxoPhase] = useState<UtxoPhase>("idle");
+  const [walletUtxos, setWalletUtxos] = useState<SpendableUtxo[]>([]);
+  const [walletHoldings, setWalletHoldings] =
+    useState<WalletHoldings | null>(null);
+  const [openPanel, setOpenPanel] = useState<HomePanel | null>(null);
+  const [history] = useState(loadHistoryStore);
+  const [receipts, setReceipts] = useState<Receipt[]>(() =>
+    history.store.list(),
+  );
+  const walletAddress = walletSession.address;
+  useEffect(() => {
+    if (walletAddress === null) {
+      setUtxoPhase("idle");
+      setWalletUtxos([]);
+      setWalletHoldings(null);
+      return;
+    }
+    let live = true;
+    setUtxoPhase("loading");
+    void fetchAddressUtxos(walletAddress, electrum.call)
+      .then((utxos) => {
+        if (!live) return;
+        setWalletUtxos(utxos);
+        setWalletHoldings(indexWalletHoldings(utxos));
+        setUtxoPhase("ready");
+      })
+      .catch(() => {
+        if (!live) return;
+        setUtxoPhase("unavailable");
+      });
+    return () => {
+      live = false;
+    };
+  }, [walletAddress, electrum]);
+  const resolveTokenIdentity = useCallback(
+    (category: string) => resolveIdentity(category, fetchTokenStorkCandidates),
+    [],
+  );
+  const handleSent = useCallback(
+    (receipt: Receipt) => {
+      history.store.append(receipt);
+      history.store.save();
+      setReceipts(history.store.list());
+      setOpenPanel("history");
+    },
+    [history],
+  );
+  const togglePanel = useCallback(
+    (panel: HomePanel) =>
+      setOpenPanel((current) => (current === panel ? null : panel)),
+    [],
+  );
+  const focusAudit = useCallback(() => {
+    const input = document.getElementById("live-category");
+    if (input === null) return;
+    input.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => {
+      input.focus({ preventScroll: true });
+    }, 350);
+  }, []);
+
   const [liveInput, setLiveInput] = useState("");
   const [liveInvalid, setLiveInvalid] = useState(false);
   const [liveState, setLiveState] = useState<LiveState>({ phase: "idle" });
@@ -939,7 +1040,7 @@ export default function App() {
       category = normalizeCategory(raw);
     } catch {
       // Malformed input is rejected here, in words, before any
-      // fetch — never an alert, never a silent no-op (R34 rule).
+      // fetch, never an alert, never a silent no-op (R34 rule).
       setLiveInvalid(true);
       return;
     }
@@ -951,14 +1052,14 @@ export default function App() {
     try {
       // The pool read and the identity read run concurrently
       // (R41, core/live-audit.ts): the report lands the moment
-      // the pool read does — TokenStork's identity scan no
-      // longer gates it — with the identity already carried when
+      // the pool read does. TokenStork's identity scan no
+      // longer gates it, with the identity already carried when
       // it won the race, or as an in-place upgrade when it lands
       // after. The orchestration consults the attempt guard
       // before each landing, so a superseded audit is never
       // upgraded by a stale identity; a pool failure rejects
       // promptly (below) without waiting on the identity read,
-      // and an identity failure is a null — the report renders
+      // and an identity failure is a null: the report renders
       // unnamed, the audit never dies on a lookup.
       await runLiveAuditReads(
         category,
@@ -1016,7 +1117,7 @@ export default function App() {
       : t.summaryByVerdict[judgement.verdict].replace(
           "{ratio}",
           judgement.exitRatio === null
-            ? "—"
+            ? "n/a"
             : new Intl.NumberFormat(languageOption(packLang).locale, {
                 minimumFractionDigits: 3,
                 maximumFractionDigits: 3,
@@ -1025,17 +1126,9 @@ export default function App() {
 
   return (
     <>
+      <TopBanner t={t} tokenAddress={walletSession.tokenAddress} />
       <header className="topbar">
         <span className="wordmark">POOLPROOF</span>
-        <nav>
-          <a href={PRESENTATION_URL} target="_blank" rel="noreferrer">
-            {t.presentation}
-          </a>
-          <a href={SOURCE_URL} target="_blank" rel="noreferrer">
-            {t.source}
-          </a>
-          <span className="ember">{t.ember}</span>
-        </nav>
         <LazyBoundary label={t.walletLoadFailed}>
           <Suspense
             fallback={
@@ -1046,12 +1139,45 @@ export default function App() {
               </div>
             }
           >
-            <WalletConnect t={t} />
+            <WalletConnect t={t} onSessionChange={setWalletSession} />
           </Suspense>
         </LazyBoundary>
       </header>
 
       <main>
+        <WalletCard
+          t={t}
+          session={walletSession}
+          utxoPhase={utxoPhase}
+          holdings={walletHoldings}
+          openPanel={openPanel}
+          onTogglePanel={togglePanel}
+          onAudit={focusAudit}
+        />
+        {openPanel === "send" && (
+          <SendPanel
+            t={t}
+            lang={packLang}
+            session={walletSession}
+            electrum={electrum}
+            utxoPhase={utxoPhase}
+            utxos={walletUtxos}
+            holdings={walletHoldings}
+            resolveIdentity={resolveTokenIdentity}
+            onSent={handleSent}
+          />
+        )}
+        {openPanel === "receive" && (
+          <ReceivePanel t={t} session={walletSession} />
+        )}
+        {openPanel === "history" && (
+          <HistoryPanel
+            t={t}
+            lang={packLang}
+            receipts={receipts}
+            loadFailed={history.loadFailed}
+          />
+        )}
         <h1>{t.headline}</h1>
         <p className="lede">{t.lede}</p>
 
@@ -1194,7 +1320,7 @@ export default function App() {
                 {t.liveResultLabel.replace("{time}", liveTime)}
                 {liveState.phase === "done" &&
                   liveState.input.supplyIsStandIn && (
-                    <> — {t.supplyStandInNote}</>
+                    <> {t.supplyStandInNote}</>
                   )}
               </p>
             )}
