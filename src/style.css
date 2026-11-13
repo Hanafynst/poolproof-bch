@@ -441,7 +441,12 @@ h1 {
    as one balanced block (user order 2026-11-14): uniform selector
    rows, an equal-height snapshot grid, and a true segmented
    control for the view toggle. Ragged mixed-height pills were
-   the defect this replaces. */
+   the defect this replaces. A second order the same day scaled
+   the block down to the app's compact density (the Send panel
+   rows, the report's rows, the 40px icon buttons): 0.85rem type,
+   40px items, the app's 12px button radius instead of pills.
+   On coarse pointers the standing 44px tap floor below still
+   sets the touch size; nothing inflates past it. */
 .controls {
   display: flex;
   flex-direction: column;
@@ -460,10 +465,12 @@ h1 {
 
 .controls select {
   font: inherit;
+  font-size: 0.9rem;
+  min-height: 44px;
   color: var(--text);
   background: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 0.3rem 0.5rem;
   /* Both selects share one width, so the two rows line up. */
   width: 11rem;
@@ -483,13 +490,13 @@ h1 {
   justify-content: center;
   text-align: center;
   font: inherit;
-  font-size: 0.9rem;
-  min-height: 48px;
-  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  min-height: 40px;
+  padding: 0.45rem 0.8rem;
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 12px;
   cursor: pointer;
 }
 
@@ -516,14 +523,14 @@ h1 {
   padding: 0.15rem;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 12px;
   margin-bottom: 1.25rem;
 }
 
 .view-switch button {
   border: none;
   background: transparent;
-  min-height: 44px;
+  min-height: 40px;
 }
 
 .live-audit {
@@ -547,11 +554,12 @@ h1 {
   flex: 1 1 16rem;
   font: inherit;
   font-size: 0.9rem;
+  min-height: 44px;
   padding: 0.45rem 0.7rem;
   background: var(--field);
   color: var(--text);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .live-audit button {
@@ -562,7 +570,7 @@ h1 {
   background: var(--accent);
   color: #fff;
   border: 1px solid var(--accent);
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
 }
 
