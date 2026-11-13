@@ -33,14 +33,19 @@ body {
 }
 
 /* The mandatory banner (see TopBanner in WalletHome.tsx): a
-   compact fine-print strip in solid Blaze scarlet. Its four
-   elements flow inline and share wrapped lines instead of each
-   taking its own row. Links are full white, bold, and
-   underlined; the disclosure reads as fine print in slightly
-   softer white. */
+   compact fine-print strip on near-black with a scarlet radial
+   glow pooling from the top-left, like the official event
+   banner, closed by a scarlet hairline so the strip's edge
+   stays unmistakable against the page. Its four elements flow
+   inline and share wrapped lines instead of each taking its
+   own row. Links are full white, bold, and underlined; the
+   disclosure reads as fine print in slightly softer white. */
 .top-banner {
   padding: 0.4rem 1rem;
-  background: var(--accent);
+  background:
+    radial-gradient(130% 190% at 10% 0%, rgb(230 51 41 / 0.55), rgb(230 51 41 / 0.14) 46%, transparent 72%),
+    #0c0c10;
+  border-bottom: 1px solid rgb(230 51 41 / 0.45);
   font-size: 0.72rem;
   line-height: 1.35;
   color: #fff;
@@ -131,6 +136,12 @@ h1 {
 
 .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* The report header's category ID is shortened mono (first 12,
+   last 8) and never wraps; the full ID rides in its title. */
+.category {
+  white-space: nowrap;
 }
 
 /* Wallet home: the balance card and its action tiles. */
@@ -711,7 +722,9 @@ h1 {
 
 .anchor dd {
   margin: 0;
-  overflow-wrap: anywhere;
+  /* Hash and script render shortened mono (first 12, last 8):
+     one line, never the four-line wrap the long values took. */
+  white-space: nowrap;
 }
 
 .provenance {
@@ -807,7 +820,7 @@ h1 {
 }
 
 /* Report actions (copy, share, download) and their feedback:
-   one compact row of small buttons under the group cards. */
+   one compact row of icon buttons under the group cards. */
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -815,16 +828,34 @@ h1 {
   margin-top: 0.85rem;
 }
 
-.actions button {
-  font: inherit;
-  font-size: 0.82rem;
-  min-height: 38px;
-  padding: 0.4rem 0.7rem;
-  background: var(--surface-2);
-  color: var(--text);
-  border: 1px solid var(--line);
+/* Icon-only actions, in the report row and on the proof
+   anchor's hash row: a white glyph on solid accent scarlet.
+   The words the text buttons carried live on as each
+   button's aria-label and title; a copied state swaps the
+   glyph for a check. */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: var(--accent);
+  color: #fff;
+  border: none;
   border-radius: 10px;
   cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.anchor .icon-btn {
+  margin-inline-start: auto;
 }
 
 /* Transient action feedback (R34): copy and download outcomes are
@@ -1038,6 +1069,16 @@ a:focus-visible {
     gap: 0.6rem;
   }
 
+  /* The anchor rows stay on one line at phone width: slightly
+     smaller label and mono value beside the 40px copy button. */
+  .anchor dt {
+    font-size: 0.78rem;
+  }
+
+  .anchor dd {
+    font-size: 0.72rem;
+  }
+
   .controls {
     flex-direction: column;
     align-items: stretch;
@@ -1047,12 +1088,10 @@ a:focus-visible {
     flex: 1 1 42%;
   }
 
-  /* The three report actions share one compact row. */
-  .actions button {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 0.4rem 0.35rem;
-    text-align: center;
+  /* The report actions are fixed-size icon buttons: they keep
+     their 40px squares on phones instead of stretching. */
+  .actions .icon-btn {
+    flex: 0 0 auto;
   }
 
   .confirm-rows div {
@@ -1074,6 +1113,7 @@ a:focus-visible {
 @media (pointer: coarse) {
   .switcher button,
   .actions button,
+  .icon-btn,
   .controls select,
   .wallet button,
   .copy-inline,

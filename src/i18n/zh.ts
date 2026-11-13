@@ -47,7 +47,7 @@ const strings: UiStrings = {
   bchReserve: "BCH 储备（所有池）",
   tokenReserve: "{symbol} 储备（所有池）",
   referenceSell: "参考卖出",
-  referenceSellCap: "（上限为池储备的 10%）",
+  referenceSellCap: "（上限：池储备10%）",
   simulatedExit: "模拟退出",
   exitOfSpot: "{out} BCH，现货价值为 {spot} BCH",
   exitNotSimulated: "未模拟：仅凭储备即可判定此结论",

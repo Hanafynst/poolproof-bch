@@ -60,7 +60,7 @@ const strings: UiStrings = {
   bchReserve: "BCH भंडार (सभी पूल)",
   tokenReserve: "{symbol} भंडार (सभी पूल)",
   referenceSell: "संदर्भ बिक्री",
-  referenceSellCap: "(पूल भंडार के 10% तक सीमित)",
+  referenceSellCap: "(पूल भंडार का अधिकतम 10%)",
   simulatedExit: "अनुकरणीय निकास",
   exitOfSpot: "{spot} BCH स्पॉट मूल्य में से {out} BCH",
   exitNotSimulated: "अनुकरण नहीं किया गया: भंडार ही यह निर्णय तय करते हैं",

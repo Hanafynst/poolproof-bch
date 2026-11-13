@@ -56,7 +56,7 @@ const strings: UiStrings = {
   bchReserve: "احتياطي BCH (كل المجمعات)",
   tokenReserve: "احتياطي {symbol} (كل المجمعات)",
   referenceSell: "بيع مرجعي",
-  referenceSellCap: "(بحد أقصى 10% من احتياطي المجمع)",
+  referenceSellCap: "(بحد أقصى 10% من الاحتياطي)",
   simulatedExit: "خروج محاكى",
   exitOfSpot: "{out} BCH من قيمة فورية قدرها {spot} BCH",
   exitNotSimulated: "لم تتم محاكاته: الاحتياطيات وحدها تحسم هذا الحكم",

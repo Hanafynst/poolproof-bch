@@ -62,7 +62,7 @@ const strings: UiStrings = {
   bchReserve: "Cadangan BCH (semua pool)",
   tokenReserve: "Cadangan {symbol} (semua pool)",
   referenceSell: "Jual referensi",
-  referenceSellCap: "(dibatasi 10% dari cadangan pool)",
+  referenceSellCap: "(maks 10% dari cadangan pool)",
   simulatedExit: "Simulasi keluar",
   exitOfSpot: "{out} BCH dari nilai spot {spot} BCH",
   exitNotSimulated: "tidak disimulasikan: cadangan saja sudah menentukan vonis ini",

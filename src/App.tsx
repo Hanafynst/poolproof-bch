@@ -30,7 +30,7 @@ import { HistoryStore, HistoryStoreError } from "./core/history-store";
 import type { Receipt } from "./core/send-flow";
 import type { SpendableUtxo } from "./core/transfer-tx";
 import { fetchAddressUtxos, indexWalletHoldings, type WalletHoldings } from "./core/wallet-utxos";
-import { formatBch, formatTokenAmount, shortenMiddle } from "./format";
+import { formatBchShort, formatTokenAmount, shortenHash } from "./format";
 import {
   HistoryPanel,
   ReceivePanel,
@@ -169,9 +169,9 @@ function simulatedExitText(
     const spot =
       judgement.spotOutSats === null
         ? "n/a"
-        : formatBch(BigInt(Math.round(judgement.spotOutSats)));
+        : formatBchShort(BigInt(Math.round(judgement.spotOutSats)));
     return t.exitOfSpot
-      .replace("{out}", formatBch(judgement.simulatedOutSats))
+      .replace("{out}", formatBchShort(judgement.simulatedOutSats))
       .replace("{spot}", spot);
   }
   // No simulation ran, for two different reasons that must not share
@@ -200,7 +200,7 @@ function EvidenceRows({
   const exitValue =
     simOut === null
       ? simulatedExitText(judgement, t)
-      : simulatedExitText(judgement, t).replace(formatBch(simOut), (out) => {
+      : simulatedExitText(judgement, t).replace(formatBchShort(simOut), (out) => {
           // The fiat figure belongs to the simulated out, so it sits
           // directly behind that number, not at the end of the
           // sentence, where it would read as the spot value's.
@@ -218,7 +218,7 @@ function EvidenceRows({
     [
       t.bchReserve,
       withFiat(
-        `${formatBch(facts.reserveQuoteSats)} BCH`,
+        `${formatBchShort(facts.reserveQuoteSats)} BCH`,
         facts.reserveQuoteSats,
         snapshot,
         currency,
@@ -281,6 +281,78 @@ function FlagsList({
         return <li key={flag.code}>{text}</li>;
       })}
     </ul>
+  );
+}
+
+// Icon-only report actions: white glyphs on solid scarlet.
+// The words live on as each button's aria-label and title; a
+// successful copy swaps the glyph for a check, the feedback the
+// old "Copied" text swap used to give.
+function CopyIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="9" y="9" width="12" height="12" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
   );
 }
 
@@ -386,15 +458,30 @@ function ReportActions({
     <div className="actions">
       <button
         type="button"
+        className="icon-btn"
+        aria-label={t.copyCategory}
+        title={t.copyCategory}
         onClick={() => void copy("category", snapshot.category)}
       >
-        {copiedKey === "category" ? t.copied : t.copyCategory}
+        {copiedKey === "category" ? <CheckIcon /> : <CopyIcon />}
       </button>
-      <button type="button" onClick={() => void copy("link", shareUrl())}>
-        {copiedKey === "link" ? t.copied : t.copyLink}
+      <button
+        type="button"
+        className="icon-btn"
+        aria-label={t.copyLink}
+        title={t.copyLink}
+        onClick={() => void copy("link", shareUrl())}
+      >
+        {copiedKey === "link" ? <CheckIcon /> : <LinkIcon />}
       </button>
-      <button type="button" onClick={download}>
-        {t.downloadJson}
+      <button
+        type="button"
+        className="icon-btn"
+        aria-label={t.downloadJson}
+        title={t.downloadJson}
+        onClick={download}
+      >
+        <DownloadIcon />
       </button>
       {status !== null && (
         <span className="action-status" role="status">
@@ -682,7 +769,7 @@ function ScannerReport({
             {snapshot.name} <span className="symbol">({snapshot.symbol})</span>
           </h2>
           <p className="mono category" title={snapshot.category}>
-            {shortenMiddle(snapshot.category, 14)}
+            {shortenHash(snapshot.category)}
           </p>
         </div>
         <div className="stamp" data-verdict={judgement.verdict} aria-live="polite">
@@ -851,14 +938,20 @@ function AnchorBlock({
           <dl className="mono">
             <div>
               <dt>{t.reportHash}</dt>
-              <dd>{shortenMiddle(anchor.hash, 16)}</dd>
-              <button type="button" className="copy-inline" onClick={() => void copyHash()}>
-                {hashCopied ? t.copied : t.copyHash}
+              <dd title={anchor.hash}>{shortenHash(anchor.hash)}</dd>
+              <button
+                type="button"
+                className="icon-btn"
+                aria-label={t.copyHash}
+                title={t.copyHash}
+                onClick={() => void copyHash()}
+              >
+                {hashCopied ? <CheckIcon /> : <CopyIcon />}
               </button>
             </div>
             <div>
               <dt>{t.opReturnScript}</dt>
-              <dd>{shortenMiddle(anchor.script, 16)}</dd>
+              <dd title={anchor.script}>{shortenHash(anchor.script)}</dd>
             </div>
           </dl>
           {hashCopyFailed && (
@@ -1347,7 +1440,7 @@ export default function App() {
                 {snapshot.name} <span className="symbol">({snapshot.symbol})</span>
               </h2>
               <p className="mono category" title={snapshot.category}>
-                {shortenMiddle(snapshot.category, 14)}
+                {shortenHash(snapshot.category)}
               </p>
             </div>
             <div className="stamp" data-verdict={judgement.verdict} aria-live="polite">

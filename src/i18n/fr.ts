@@ -64,7 +64,7 @@ const strings: UiStrings = {
   bchReserve: "Réserve BCH (tous les pools)",
   tokenReserve: "Réserve de {symbol} (tous les pools)",
   referenceSell: "Vente de référence",
-  referenceSellCap: "(plafonnée à 10 % de la réserve du pool)",
+  referenceSellCap: "(max. 10 % de la réserve du pool)",
   simulatedExit: "Sortie simulée",
   exitOfSpot: "{out} BCH pour une valeur spot de {spot} BCH",
   exitNotSimulated: "non simulé : les réserves décident déjà de ce verdict",
