@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useWizardConnect } from "@wizardconnect/react";
+import { AlphanumericQRCode, useWizardConnect } from "@wizardconnect/react";
 import type { UiStrings } from "./i18n";
 import type { SignFlowManager } from "./core/sign-flow";
 import {
@@ -65,6 +65,14 @@ function asSignManager(manager: unknown): SignFlowManager | null {
  * scan it is a dead end), so the dialog is rebuilt around the
  * hook: the connection URI as a tappable deep link first, the QR
  * and a copyable URI as the cross-device fallback.
+ *
+ * The QR is drawn exactly the way the stock dialog draws it: the
+ * hook's qrUri is a payload string (the connection URI uppercased
+ * and percent-escaped for QR alphanumeric mode), NOT an image URL.
+ * The library's AlphanumericQRCode encodes that payload onto a
+ * canvas. An earlier version of this dialog put qrUri in an img
+ * src, which renders as an empty white box: the bug the user
+ * reported from his phone on 2026-11-14.
  */
 function PairingDialog({
   t,
@@ -122,7 +130,9 @@ function PairingDialog({
           {t.openWalletApp}
         </a>
         <p className="pairing-hint">{t.pairingScanHint}</p>
-        <img className="pairing-qr" src={qrUri} alt="" />
+        <div className="pairing-qr">
+          <AlphanumericQRCode value={qrUri} size={210} />
+        </div>
         <div className="pairing-actions">
           <button type="button" onClick={() => void copyUri()}>
             {uriCopied ? t.copied : t.copyConnectionLink}

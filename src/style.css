@@ -1,7 +1,7 @@
 /* PoolProof: one dark wallet theme, per the locked UI direction.
    Near-black surfaces, white text, Blaze scarlet as the single
-   accent. Report groups are rounded card rows, never ruled
-   hairline tables: the old paper and ink document look is gone. */
+   accent. The report is one rounded card per group holding
+   compact wallet rows with hairline dividers. */
 
 :root {
   --bg: #0b0b0d;
@@ -605,7 +605,7 @@ h1 {
 .caveat {
   color: var(--soft);
   font-size: 0.85rem;
-  margin: 0 0 1.25rem;
+  margin: 0 0 0.4rem;
 }
 
 .fiat-note {
@@ -614,55 +614,69 @@ h1 {
   margin: 0.5rem 0 0;
 }
 
-/* Evidence as wallet-style card rows: each field is a rounded row
-   card, label cell and value cell sharing the surface. */
+/* Evidence as compact wallet rows inside a group card: small
+   label on the left, value on the right, hairline dividers
+   between rows. One card per group carries the surface; the rows
+   themselves stay flat so the report reads at wallet density. */
 .evidence {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 0.5rem;
+  border-collapse: collapse;
   font-size: 0.95rem;
 }
 
 .evidence th,
 .evidence td {
-  text-align: start;
-  padding: 0.6rem 0.85rem;
-  background: var(--surface);
+  padding: 0.5rem 0;
   vertical-align: top;
 }
 
+.evidence tbody tr:not(:last-child) th,
+.evidence tbody tr:not(:last-child) td {
+  border-bottom: 1px solid var(--line);
+}
+
 .evidence th {
+  text-align: start;
   font-weight: 500;
+  font-size: 0.82rem;
   color: var(--soft);
   width: 42%;
-  border-radius: 10px 0 0 10px;
+  padding-inline-end: 0.75rem;
 }
 
 .evidence td {
-  border-radius: 0 10px 10px 0;
+  text-align: end;
   overflow-wrap: anywhere;
 }
 
 .flags {
-  margin: 1rem 0 0;
+  margin: 0.6rem 0 0.2rem;
   padding-inline-start: 1.2rem;
+  font-size: 0.9rem;
   color: var(--dead);
 }
 
+/* The proof anchor is a group card like the others: same surface,
+   same head style, hash rows as compact wallet rows inside it. */
 .anchor {
-  margin-top: 2rem;
-  border-top: 1px solid var(--line);
-  padding-top: 1rem;
+  margin-top: 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.875rem 0.875rem 0.65rem;
 }
 
 .anchor h2 {
-  font-size: 1.1rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   margin: 0 0 0.4rem;
 }
 
 .anchor p {
   color: var(--soft);
-  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
   max-width: 38rem;
 }
 
@@ -673,16 +687,18 @@ h1 {
 
 .anchor dl div {
   display: flex;
+  align-items: center;
   gap: 1rem;
-  background: var(--surface);
-  border-radius: 10px;
-  padding: 0.55rem 0.8rem;
-  margin-bottom: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.anchor dl div + div {
+  border-top: 1px solid var(--line);
 }
 
 .anchor dt {
   flex-shrink: 0;
-  width: 10rem;
+  font-size: 0.82rem;
   color: var(--soft);
 }
 
@@ -728,7 +744,7 @@ h1 {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 0.85rem 1rem 0.6rem;
+  padding: 0.875rem 0.875rem 0.65rem;
   margin-top: 0.85rem;
 }
 
@@ -773,14 +789,9 @@ h1 {
   color: var(--dead);
 }
 
-.scanner .evidence th,
-.scanner .evidence td {
-  background: var(--surface-2);
-}
-
 .scan-note {
   color: var(--soft);
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   margin: 0.35rem 0 0.6rem;
 }
 
@@ -788,19 +799,20 @@ h1 {
   color: var(--dead);
 }
 
-/* Report actions (copy, share, download) and their feedback. */
+/* Report actions (copy, share, download) and their feedback:
+   one compact row of small buttons under the group cards. */
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 1.1rem;
+  margin-top: 0.85rem;
 }
 
 .actions button {
   font: inherit;
-  font-size: 0.85rem;
-  min-height: 44px;
-  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem;
+  min-height: 38px;
+  padding: 0.4rem 0.7rem;
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--line);
@@ -920,18 +932,21 @@ h1 {
   margin: 0.9rem 0 0.5rem;
 }
 
+/* The white QR box, mirroring the stock WizardConnect dialog:
+   white background, 12px padding, 12px radius, sized to the
+   canvas the library draws (210px modules plus its quiet zone). */
 .pairing-qr {
   background: #fff;
   border-radius: 12px;
   padding: 0.75rem;
-  width: min(210px, 70vw);
+  width: fit-content;
+  max-width: 100%;
   margin: 0 auto;
 }
 
-.pairing-qr img,
-.pairing-qr svg {
+.pairing-qr canvas {
   display: block;
-  width: 100%;
+  max-width: 100%;
   height: auto;
 }
 
@@ -1004,31 +1019,16 @@ a:focus-visible {
     align-self: flex-start;
   }
 
-  /* Evidence rows stack inside their card: label above value. */
-  .evidence th,
-  .evidence td {
-    display: block;
-    width: auto;
-  }
-
+  /* Evidence rows keep the wallet layout on phones too: label
+     left, value right, just with a slightly narrower label
+     column. The anchor hash rows stay on one line the same way;
+     their values are shortened mono, so they fit. */
   .evidence th {
-    border-radius: 10px 10px 0 0;
-    padding-bottom: 0.15rem;
-  }
-
-  .evidence td {
-    border-radius: 0 0 10px 10px;
-    padding-top: 0.15rem;
-    overflow-wrap: anywhere;
+    width: 36%;
   }
 
   .anchor dl div {
-    flex-direction: column;
-    gap: 0.15rem;
-  }
-
-  .anchor dt {
-    width: auto;
+    gap: 0.6rem;
   }
 
   .controls {
@@ -1036,9 +1036,16 @@ a:focus-visible {
     align-items: stretch;
   }
 
-  .switcher button,
-  .actions button {
+  .switcher button {
     flex: 1 1 42%;
+  }
+
+  /* The three report actions share one compact row. */
+  .actions button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.4rem 0.35rem;
+    text-align: center;
   }
 
   .confirm-rows div {

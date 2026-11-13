@@ -576,6 +576,16 @@ function concentrationStatus(report: ConcentrationReport | null): ScanStatus {
   return "fail";
 }
 
+// The exit group's status word follows the verdict, in both
+// report views: alive passes, risky warns, everything else fails.
+function exitStatusOf(judgement: PoolJudgement): ScanStatus {
+  return judgement.verdict === "ALIVE"
+    ? "pass"
+    : judgement.verdict === "RISKY"
+      ? "warn"
+      : "fail";
+}
+
 function ConcentrationTable({
   report,
   t,
@@ -661,12 +671,7 @@ function ScannerReport({
   flagTemplates: Record<FlagCode, string>;
 }) {
   const { facts } = snapshot;
-  const exitStatus: ScanStatus =
-    judgement.verdict === "ALIVE"
-      ? "pass"
-      : judgement.verdict === "RISKY"
-        ? "warn"
-        : "fail";
+  const exitStatus = exitStatusOf(judgement);
   const concReport = snapshotConcentrationReport(snapshot);
   const concStatus = concentrationStatus(concReport);
   return (
@@ -1353,35 +1358,43 @@ export default function App() {
           <p className="summary">{summary}</p>
           <p className="caveat">{t.caveat}</p>
 
-          <EvidenceRows
-            snapshot={snapshot}
-            judgement={judgement}
+          <ScanGroup title={t.groupExit} status={exitStatusOf(judgement)} t={t}>
+            <EvidenceRows
+              snapshot={snapshot}
+              judgement={judgement}
+              t={t}
+              currency={currency}
+              lang={packLang}
+            />
+            {snapshot.fiat && (
+              <p className="fiat-note">{snapshot.fiat.note[packLang]}</p>
+            )}
+            <FlagsList judgement={judgement} t={t} flagTemplates={flagTemplates} />
+          </ScanGroup>
+
+          <ScanGroup
+            title={t.groupIdentity}
+            status={snapshot.bcmrHashVerified ? "pass" : "unknown"}
             t={t}
-            currency={currency}
-            lang={packLang}
-          />
-          {snapshot.fiat && (
-            <p className="fiat-note">{snapshot.fiat.note[packLang]}</p>
-          )}
+          >
+            <table className="evidence identity">
+              <tbody>
+                <tr>
+                  <th scope="row">{t.identity}</th>
+                  <td>
+                    {snapshot.bcmrHashVerified
+                      ? t.identityVerified.replace("{source}", snapshot.bcmrSource)
+                      : t.identityNone}
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">{t.decimals}</th>
+                  <td>{snapshot.decimals}</td>
+                </tr>
+              </tbody>
+            </table>
+          </ScanGroup>
 
-          <table className="evidence identity">
-            <tbody>
-              <tr>
-                <th scope="row">{t.identity}</th>
-                <td>
-                  {snapshot.bcmrHashVerified
-                    ? t.identityVerified.replace("{source}", snapshot.bcmrSource)
-                    : t.identityNone}
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">{t.decimals}</th>
-                <td>{snapshot.decimals}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <FlagsList judgement={judgement} t={t} flagTemplates={flagTemplates} />
           <ReportActions snapshot={snapshot} judgement={judgement} t={t} />
 
           <AnchorBlock snapshot={snapshot} judgement={judgement} t={t} />
