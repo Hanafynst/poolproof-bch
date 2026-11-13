@@ -36,10 +36,11 @@ body {
    compact fine-print strip on near-black with a scarlet radial
    glow pooling from the top-left, like the official event
    banner, closed by a scarlet hairline so the strip's edge
-   stays unmistakable against the page. Its four elements flow
-   inline and share wrapped lines instead of each taking its
-   own row. Links are full white, bold, and underlined; the
-   disclosure reads as fine print in slightly softer white. */
+   stays unmistakable against the page. Inside, the EMBER2026
+   slot and the disclosure flow as one paragraph of prose, and
+   the presentation and repo links close the band on their own
+   row underneath. Links are full white, bold, and underlined;
+   the disclosure reads as fine print in slightly softer white. */
 .top-banner {
   padding: 0.4rem 1rem;
   background:
@@ -51,14 +52,18 @@ body {
   color: #fff;
 }
 
-/* Inline spacing between the banner's elements, in place of
-   the flex gap the strip no longer uses. */
-.top-banner > * {
-  margin-inline-end: 0.9rem;
+/* The prose paragraph carries no default margins; the band's
+   own padding is its only breathing room. */
+.banner-text {
+  margin: 0;
 }
 
-.top-banner > :last-child {
-  margin-inline-end: 0;
+/* The two links close the band on their own row under the
+   prose, with a modest gap between them. */
+.banner-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.3rem;
 }
 
 .top-banner a {

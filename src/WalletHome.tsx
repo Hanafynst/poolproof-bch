@@ -48,11 +48,12 @@ export type HomePanel = "send" | "receive" | "history";
 
 /**
  * The mandatory BCH BLAZE banner, styled per the user's orders
- * (2026-11-14): a compact solid scarlet strip at the very top
- * of the page, its elements flowing inline as fine print.
- * Exactly the four required elements: the Widget Factory
- * presentation link, the GitHub repo link, the EMBER2026
- * CashTokens address, and the pre-existing-work disclosure.
+ * (2026-11-14): a compact fine-print strip at the very top of
+ * the page, black with a scarlet glow. Exactly the four required
+ * elements: the EMBER2026 CashTokens address and the
+ * pre-existing-work disclosure flow first as one paragraph of
+ * prose, and the Widget Factory presentation link and the GitHub
+ * repo link close the band on their own row underneath.
  * The EMBER2026 slot shows the connected wallet's token-aware
  * address (a copy button, since a tipping address is only useful
  * if it can be copied exactly) and the pack's placeholder sentence
@@ -82,32 +83,37 @@ export function TopBanner({
   };
   return (
     <div className="top-banner">
-      <a href={PRESENTATION_URL} target="_blank" rel="noreferrer">
-        {t.presentation}
-      </a>
-      <a href={REPO_URL} target="_blank" rel="noreferrer">
-        {t.source}
-      </a>
-      {tokenAddress !== null ? (
-        <button
-          type="button"
-          className="banner-ember mono"
-          title={tokenAddress}
-          onClick={() => void copyEmber()}
-        >
-          {emberCopied
-            ? t.copied
-            : `EMBER2026 · ${shortenMiddle(tokenAddress, 12)}`}
-        </button>
-      ) : (
-        <span className="banner-ember">{t.ember}</span>
-      )}
-      {emberCopyFailed && (
-        <span className="banner-status" role="status">
-          {t.copyFailed}
-        </span>
-      )}
-      <span className="banner-disclosure">{t.preExistingDisclosure}</span>
+      <p className="banner-text">
+        {tokenAddress !== null ? (
+          <button
+            type="button"
+            className="banner-ember mono"
+            title={tokenAddress}
+            onClick={() => void copyEmber()}
+          >
+            {emberCopied
+              ? t.copied
+              : `EMBER2026 · ${shortenMiddle(tokenAddress, 12)}`}
+          </button>
+        ) : (
+          <span className="banner-ember">{t.ember}</span>
+        )}
+        {emberCopyFailed && (
+          <span className="banner-status" role="status">
+            {" "}
+            {t.copyFailed}
+          </span>
+        )}{" "}
+        <span className="banner-disclosure">{t.preExistingDisclosure}</span>
+      </p>
+      <div className="banner-links">
+        <a href={PRESENTATION_URL} target="_blank" rel="noreferrer">
+          {t.presentation}
+        </a>
+        <a href={REPO_URL} target="_blank" rel="noreferrer">
+          {t.source}
+        </a>
+      </div>
     </div>
   );
 }
