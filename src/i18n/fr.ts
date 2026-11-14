@@ -8,9 +8,9 @@ const strings: UiStrings = {
   preExistingDisclosure:
     "Travail préexistant : la sémantique des verdicts a d'abord été " +
     "prototypée dans un projet personnel antérieur, un détecteur de " +
-    "pools morts sur BSC. L'implémentation BCH, l'interface et ce " +
-    "dépôt sont nouveaux, créés pour BCH BLAZE entre le 14 et le " +
-    "22 novembre 2026.",
+    "pools morts qui n'a jamais été publié. L'implémentation BCH, " +
+    "l'interface et ce dépôt sont nouveaux, créés pour BCH BLAZE " +
+    "entre le 14 et le 22 novembre 2026.",
   copyAddress: "Copier l'adresse",
   openWalletApp: "Ouvrir l'application du portefeuille",
   copyConnectionLink: "Copier le lien de connexion",

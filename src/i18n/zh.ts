@@ -6,8 +6,8 @@ const strings: UiStrings = {
   source: "GitHub",
   ember: "EMBER2026 小费：钱包连接后，地址会显示在这里。",
   preExistingDisclosure:
-    "已有工作：判定逻辑最初在一个更早的个人项目中做出原型，那是一个 BSC " +
-    "死亡池检测器。BCH 实现、界面和本仓库都是新的，为 BCH BLAZE 在 " +
+    "已有工作：判定逻辑最初在一个更早的个人项目中做出原型，那是一个从未" +
+    "发布的死亡池检测器。BCH 实现、界面和本仓库都是新的，为 BCH BLAZE 在 " +
     "2026 年 11 月 14 日至 22 日期间完成。",
   copyAddress: "复制地址",
   openWalletApp: "打开钱包应用",

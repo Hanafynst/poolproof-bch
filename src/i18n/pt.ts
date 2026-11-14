@@ -8,9 +8,9 @@ const strings: UiStrings = {
   preExistingDisclosure:
     "Trabalho anterior: a semântica dos vereditos foi prototipada " +
     "primeiro em um projeto pessoal anterior, um detector de pools " +
-    "mortos da BSC. A implementação em BCH, a interface e este " +
-    "repositório são novos, criados para o BCH BLAZE dentro do " +
-    "período de 14 a 22 de novembro de 2026.",
+    "mortos que nunca foi lançado. A implementação em BCH, a " +
+    "interface e este repositório são novos, criados para o BCH " +
+    "BLAZE dentro do período de 14 a 22 de novembro de 2026.",
   copyAddress: "Copiar endereço",
   openWalletApp: "Abrir o app da carteira",
   copyConnectionLink: "Copiar link de conexão",

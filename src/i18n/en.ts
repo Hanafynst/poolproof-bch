@@ -7,9 +7,9 @@ const strings: UiStrings = {
   ember: "EMBER2026 tips: the address appears here once a wallet is connected.",
   preExistingDisclosure:
     "Pre-existing work: the verdict semantics were first prototyped in an " +
-    "earlier personal project (a BSC dead-pool detector). The BCH " +
-    "implementation, the UI, and this repository are new, built for " +
-    "BCH BLAZE inside the 14 to 22 Nov 2026 window.",
+    "earlier personal project, a dead-pool detector that was never " +
+    "released. The BCH implementation, the UI, and this repository " +
+    "are new, built for BCH BLAZE inside the 14 to 22 Nov 2026 window.",
   copyAddress: "Copy address",
   openWalletApp: "Open wallet app",
   copyConnectionLink: "Copy connection link",

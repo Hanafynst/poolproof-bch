@@ -31,7 +31,7 @@ The report also includes:
 - **Honest negative states.** A category ID that matches nothing on chain gets a "Category not found" answer naming the sources that were checked. It never gets dressed up as a verdict.
 - **Proof anchor.** The finished report's SHA-256 hash is written into an OP_RETURN output of a Bitcoin Cash mainnet transaction, signed in your own wallet through WizardConnect. At the default fee rate of 1 sat per byte the anchor costs 235 sats. Anyone can re-hash the report and match the hash against the chain.
 - **Report files.** Download the report as JSON, or share it as a link (`?cat=` for a live category, `?snap=` for a bundled snapshot).
-- **Wallet home.** Balance, Send, Receive, History and Audit in one screen. Send has an asset picker covering BCH, CashTokens and NFTs, address-type detection that blocks token sends to plain addresses, a confirmation sheet with a fee preview, and receipts whose confirmation status updates in History.
+- **Wallet home.** The app opens on the Wallet room: balance, Send, Receive and History in one screen, and the Audit tile switches to the Check room, where the reports live. The bundled PUSD verdict is one tap away in Check, and a shared report link (`?cat=` or `?snap=`) lands on its report directly. Send has an asset picker covering BCH, CashTokens and NFTs, address-type detection that blocks token sends to plain addresses, a confirmation sheet with a fee preview, and receipts whose confirmation status updates in History.
 - **Eight languages.** English by default, plus Bahasa Indonesia, Mandarin (Simplified), Español, हिन्दी, العربية (right-to-left), Português and Français. Numbers render in Latin digits in every language. Fiat figures (USD only) appear only with a labelled, dated reference rate; verdicts are always computed in BCH and satoshis.
 
 Three bundled snapshots (ParyonUSD, a dead-pool pattern fixture and 0LANDO, a real dead pool) let you read a full report without typing a category ID.
@@ -85,7 +85,7 @@ The suite runs locally. There is no CI badge here because there is no CI claim t
 
 Built solo by Hanafi (@hannn) from Indonesia for [BCH BLAZE 2026](https://dorahacks.io/hackathon/bchblaze2026/detail) on DoraHacks, Mainnet Track. This repository was created on 14 November 2026, inside the event's 14 to 22 November 2026 build window.
 
-Pre-existing work disclosure, the same wording as the banner at the top of the demo: the verdict semantics were first prototyped in an earlier personal project (a BSC dead-pool detector). The BCH implementation, the UI, and this repository are new, built for BCH BLAZE inside the 14 to 22 Nov 2026 window.
+Pre-existing work disclosure, the same wording as the banner at the top of the demo: the verdict semantics were first prototyped in an earlier personal project, a dead-pool detector that was never released. The BCH implementation, the UI, and this repository are new, built for BCH BLAZE inside the 14 to 22 Nov 2026 window.
 
 ## License
 

@@ -7,9 +7,9 @@ const strings: UiStrings = {
   ember: "Tip EMBER2026: alamat muncul di sini setelah wallet terhubung.",
   preExistingDisclosure:
     "Pekerjaan sebelumnya: semantik vonis pertama kali dibuat prototipenya " +
-    "di proyek pribadi terdahulu (detektor dead pool BSC). Implementasi BCH, " +
-    "UI, dan repositori ini baru, dibuat untuk BCH BLAZE di dalam jendela " +
-    "14 sampai 22 Nov 2026.",
+    "di proyek pribadi terdahulu, sebuah detektor dead pool yang tidak " +
+    "pernah dirilis. Implementasi BCH, UI, dan repositori ini baru, " +
+    "dibuat untuk BCH BLAZE di dalam jendela 14 sampai 22 Nov 2026.",
   copyAddress: "Salin alamat",
   openWalletApp: "Buka aplikasi wallet",
   copyConnectionLink: "Salin tautan koneksi",

@@ -76,10 +76,11 @@ export type HomePanel = "send" | "receive" | "history";
  * The mandatory BCH BLAZE banner, styled per the user's orders
  * (2026-11-14): a compact fine-print strip at the very top of
  * the page, black with a scarlet glow. Exactly the four required
- * elements: the EMBER2026 CashTokens address and the
- * pre-existing-work disclosure flow first as one paragraph of
- * prose, and the Widget Factory presentation link and the GitHub
- * repo link close the band on their own row underneath.
+ * elements, stacked as three blocks (R80): the EMBER2026
+ * CashTokens address on its own line, the pre-existing-work
+ * disclosure as its own paragraph under it, and the Widget
+ * Factory presentation link and the GitHub repo link closing
+ * the band on their own row underneath.
  * The EMBER2026 slot shows the connected wallet's token-aware
  * address (a copy button, since a tipping address is only useful
  * if it can be copied exactly) and the pack's placeholder sentence
@@ -109,7 +110,7 @@ export function TopBanner({
   };
   return (
     <div className="top-banner">
-      <p className="banner-text">
+      <p className="banner-line">
         {tokenAddress !== null ? (
           <button
             type="button"
@@ -129,8 +130,10 @@ export function TopBanner({
             {" "}
             {t.copyFailed}
           </span>
-        )}{" "}
-        <span className="banner-disclosure">{t.preExistingDisclosure}</span>
+        )}
+      </p>
+      <p className="banner-text banner-disclosure">
+        {t.preExistingDisclosure}
       </p>
       <div className="banner-links">
         <a href={PRESENTATION_URL} target="_blank" rel="noreferrer">

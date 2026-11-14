@@ -4428,3 +4428,277 @@ h1,
     top: 1.6rem;
   }
 }
+
+/* ============================================================
+   R80 — banner/type polish (see POLISH-BANNER-TYPE-2026-11-14.md).
+   Three user orders and the Impeccable outside POV, all in
+   the style/text layer:
+
+   1. The banner is tidied (order 13:38): the EMBER line, the
+      disclosure and the links row are three separate blocks
+      now (TopBanner markup), the strip's inline padding
+      follows the content column's at every width, and its
+      text stops at the shared measure instead of running
+      the full width of the shell. The disclosure's rewording
+      (order 13:39) lives in the i18n packs.
+   2. Gradient text is removed entirely (order 13:36). The
+      display set (wordmark, H1, token titles, panel titles,
+      register heads) renders solid scarlet, the locked
+      accent itself; every ghost label the gradient touched
+      returns to its pre-R74 solid colour. Match check,
+      measured before this shipped: #e63329 computes to
+      4.56:1 on the page ground, 4.53:1 on the banner
+      ground, 4.26:1 on the card surface and 3.94:1 on
+      surface-2, clear of the 3:1 AA floor for large display
+      text at every ground a title can sit on, and the
+      colour is the accent the halo and the banner already
+      carry, so the titles join the existing light instead
+      of adding a new one. The pairing title was already
+      solid scarlet (R75) and stays exactly that; the
+      receive title keeps its pre-R74 solid text colour
+      (R75), a window's working title rather than a page
+      heading. Verdict stamps keep their functional hues.
+   3. The detector's real findings: the input placeholder
+      (the UA default #757575, 4.2:1) takes a colour that
+      clears AA on the field ground; the filled primary's
+      hot core cools until white clears AA at the lightest
+      point the detector samples (was #e0372d, 4.4:1); and
+      the small-text surfaces the detector named (banner
+      text, stat labels and subs, bottom-nav labels) step
+      up one size, 0.72rem to 0.78rem.
+   4. One text system (steer 13:47): every prose block sits
+      on the shared measure token and the column inset its
+      neighbouring cards use, and the phone bottom clearance
+      tracks the bottom bar's own height terms, safe-area
+      inset included, so no text can come to rest half
+      under the bar.
+   ============================================================ */
+
+:root {
+  /* The one measure: prose stops here, in every room. */
+  --measure: 70ch;
+  /* The filled primary's hot core, cooled one step (finding
+     3b above): the white label's lightest sampled point on
+     the core's edge was 4.4:1; less pooled light at the top
+     edge brings that point into AA while the key stays the
+     same scarlet family, hot centre and all. */
+  --accent-grad-hot:
+    radial-gradient(130% 150% at 50% -40%, rgb(255 236 230 / 0.4), transparent 55%),
+    linear-gradient(180deg, var(--accent), #d92c21 58%, #c2241c);
+}
+
+/* The banner, tidied: more air around the band, the column's
+   own inline padding at each width, three separated blocks,
+   and the shared measure on both text blocks. The strip also
+   steps up with the other named small-text surfaces (0.78rem
+   clears the detector's 12px floor while staying the finest
+   print in the app). */
+.top-banner {
+  padding: 0.65rem 1.25rem;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 560px) {
+  .top-banner {
+    padding-inline: 0.9rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .top-banner {
+    padding-inline: clamp(1.25rem, 3vw, 2.75rem);
+  }
+}
+
+.banner-line {
+  margin: 0;
+  max-width: var(--measure);
+}
+
+.banner-text {
+  margin: 0.45rem 0 0;
+  max-width: var(--measure);
+  /* Pretty wrapping: at the measure the disclosure's last
+     line was a single orphan word (the detector's one new
+     flag on this round); the lines redistribute instead. */
+  text-wrap: pretty;
+}
+
+.banner-links {
+  margin-top: 0.65rem;
+  gap: 1.25rem;
+}
+
+/* The bottom bar's clearance tracks the bar itself: its item
+   height plus its vertical padding, plus the safe-area inset
+   the bar also grows by, plus air. The old flat 6.5rem shrank
+   to almost nothing of air on a phone whose inset is large,
+   which is how report text came to rest half under the bar. */
+@media (max-width: 1023px) {
+  main {
+    padding-bottom: calc(5.9rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Solid scarlet titles: the colour half of the gradient
+   removal, set plainly so engines without text clipping get
+   the same titles. */
+.wordmark,
+h1,
+.report-head h2,
+.scan-head h2,
+.not-found h2,
+.panel h2,
+.scan-group-head h3,
+.anchor h2,
+.pool-shares-title,
+.about-head h2,
+.about-sub {
+  color: var(--accent);
+}
+
+/* The clip half: every rule from R74, R75, R77 and R78 that
+   clipped a gradient to text is stood down here, selector by
+   selector, LTR and RTL. Headings keep the scarlet set above
+   (the window titles are included so their gradients die too;
+   their colours stay with the R75 block, which outranks this
+   one where it speaks). Ghost labels return to the solid
+   text colour their base rules carried before R74; their
+   hover rules only drop the image, so the base hover fills
+   (surface-2 / surface-3) show again, as they did pre-R74. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .wordmark,
+  h1,
+  .report-head h2,
+  .scan-head h2,
+  .not-found h2,
+  .panel h2,
+  .pairing-card h2,
+  .receive-card h2,
+  .scan-group-head h3,
+  .anchor h2,
+  .pool-shares-title,
+  .about-head h2,
+  .about-sub,
+  [dir="rtl"] .wordmark,
+  [dir="rtl"] h1,
+  [dir="rtl"] .topbar h1,
+  [dir="rtl"] .panel h2,
+  [dir="rtl"] .scan-heading h2,
+  [dir="rtl"] .report-head h2,
+  [dir="rtl"] .scan-head h2,
+  [dir="rtl"] .not-found h2,
+  [dir="rtl"] .scan-group-head h3,
+  [dir="rtl"] .scan-group h3,
+  [dir="rtl"] .anchor h2,
+  [dir="rtl"] .anchor h3,
+  [dir="rtl"] .pool-shares-title,
+  [dir="rtl"] .about-head h2,
+  [dir="rtl"] .about-sub {
+    background-image: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+  }
+
+  .wallet button,
+  .switcher button:not([aria-pressed="true"]),
+  .shortcut-row button,
+  .pairing-wallets a,
+  .panel-actions button:not(.primary-action),
+  .panel-actions a,
+  .pairing-actions button,
+  .pairing-actions a,
+  .copy-inline,
+  .copy-inline button,
+  .switcher.view-switch button:not([aria-pressed="true"]),
+  [dir="rtl"] .wallet button,
+  [dir="rtl"] .switcher button:not([aria-pressed="true"]),
+  [dir="rtl"] .shortcut-row button,
+  [dir="rtl"] .pairing-wallets a,
+  [dir="rtl"] .panel-actions button:not(.primary-action),
+  [dir="rtl"] .panel-actions a,
+  [dir="rtl"] .pairing-actions button,
+  [dir="rtl"] .pairing-actions a,
+  [dir="rtl"] .copy-inline,
+  [dir="rtl"] .copy-inline button,
+  [dir="rtl"] .switcher.view-switch button:not([aria-pressed="true"]),
+  [dir="rtl"] .banner-ember-address {
+    background-image: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    color: var(--text);
+  }
+
+  .wallet button:hover:not(:disabled),
+  .switcher button:not([aria-pressed="true"]):hover,
+  .shortcut-row button:hover,
+  .pairing-wallets a:hover,
+  .panel-actions button:not(.primary-action):hover:not(:disabled),
+  .panel-actions a:hover,
+  .pairing-actions button:hover,
+  .pairing-actions a:hover,
+  .copy-inline:hover,
+  .copy-inline button:hover,
+  .switcher.view-switch button:not([aria-pressed="true"]):hover,
+  [dir="rtl"] .wallet button:hover:not(:disabled),
+  [dir="rtl"] .switcher button:not([aria-pressed="true"]):hover,
+  [dir="rtl"] .shortcut-row button:hover,
+  [dir="rtl"] .pairing-wallets a:hover,
+  [dir="rtl"] .panel-actions button:not(.primary-action):hover:not(:disabled),
+  [dir="rtl"] .panel-actions a:hover,
+  [dir="rtl"] .pairing-actions button:hover,
+  [dir="rtl"] .pairing-actions a:hover,
+  [dir="rtl"] .copy-inline:hover,
+  [dir="rtl"] .copy-inline button:hover,
+  [dir="rtl"] .switcher.view-switch button:not([aria-pressed="true"]):hover,
+  [dir="rtl"] .banner-ember-address:hover:not(:disabled) {
+    background-image: none;
+  }
+}
+
+/* The placeholder was the UA default grey on the field
+   ground (4.2:1). #82828a computes to 5.02:1 on #0f0f12,
+   clear of AA by either sampling method, since a solid
+   colour on a solid ground samples the same at the glyph
+   band and at any single point. Opacity is pinned because
+   some engines dim placeholders on top of the colour. */
+::placeholder {
+  color: #82828a;
+  opacity: 1;
+}
+
+/* The named small-text surfaces step up one size. Left at
+   0.72rem, with reasons: .gauge-caption and the phone-only
+   .anchor dd are instrument-register captions and mono data
+   values, not body text, and the detector did not name
+   them; their rows have no spare height. */
+.stat-label,
+.stat-sub {
+  font-size: 0.78rem;
+}
+
+.room-nav-bottom .room-nav-item {
+  font-size: 0.78rem;
+}
+
+/* One text system: every page prose block stops at the
+   shared measure. Each block already sits on the column
+   inset its neighbouring cards use (the banner takes the
+   column's padding above); what changes is that none of
+   them runs the full column width on a wide screen any
+   more. Window prose (pairing hints, sheet copy) is bound
+   by its card and stays out, as do data rows and the short
+   status lines inside the wallet and history cards. */
+.lede,
+.report .summary,
+.scanner .summary,
+.report .caveat,
+.scanner .caveat,
+.fiat-note,
+.provenance,
+.live-hint,
+.not-found-body,
+.about-paper p,
+.about-glossary dd {
+  max-width: var(--measure);
+}

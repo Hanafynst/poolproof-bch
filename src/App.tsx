@@ -425,7 +425,17 @@ function VerdictRing({
 // state in App, and only one is ever displayed (the CSS hides
 // the other per form factor), so the menu a judge sees is
 // always the one for the screen in front of them.
-const ROOM_ORDER: RoomKind[] = ["check", "wallet", "about"];
+const ROOM_ORDER: RoomKind[] = ["wallet", "check", "about"];
+
+// The app opens on the Wallet room (user order 2026-11-14,
+// R80 steer): a plain load lands on the wallet. A shared
+// audit link still lands on its report, so the presence of
+// either audit parameter (?cat= for a live audit, ?snap= for
+// a snapshot) opens the Check room instead.
+function initialRoom(): RoomKind {
+  const params = new URLSearchParams(window.location.search);
+  return params.has("cat") || params.has("snap") ? "check" : "wallet";
+}
 
 function RoomNav({
   room,
@@ -1862,11 +1872,10 @@ export default function App() {
     const wanted = new URLSearchParams(window.location.search).get("snap");
     return SNAPSHOTS.some((s) => s.id === wanted) ? wanted! : SNAPSHOTS[0].id;
   });
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    url.searchParams.set("snap", selectedId);
-    window.history.replaceState(null, "", url);
-  }, [selectedId]);
+  // The ?snap= URL writer lives further down, beside the room
+  // state: since R80 the app opens on the Wallet room, and the
+  // parameter is only written while the Check room is showing,
+  // so a plain reload never turns into a report link by itself.
   // Basic feature the user ordered (2026-11-13): language choice
   // with English as the default, persisted per visitor. Currency
   // was a choice until 2026-11-14, when the user locked it to USD
@@ -2333,9 +2342,9 @@ export default function App() {
   // returning to a visited room plays only the room crossfade
   // (the .room-fade class restarted by hand below), never a
   // replay of the landing sequences inside it.
-  const [room, setRoom] = useState<RoomKind>("check");
+  const [room, setRoom] = useState<RoomKind>(initialRoom);
   const [visitedRooms, setVisitedRooms] = useState<ReadonlySet<RoomKind>>(
-    () => new Set<RoomKind>(["check"]),
+    () => new Set<RoomKind>([initialRoom()]),
   );
   const roomSections = useRef<Partial<Record<RoomKind, HTMLElement | null>>>(
     {},
@@ -2373,6 +2382,20 @@ export default function App() {
     goToRoom("check");
     window.setTimeout(focusAudit, 60);
   }, [goToRoom, focusAudit]);
+
+  // The shareable snapshot parameter (?snap=) names the report
+  // while the Check room is showing; in the other rooms it is
+  // removed again, so the URL a visitor reloads from the wallet
+  // stays a plain load and keeps opening on the wallet (R80).
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (room === "check") {
+      url.searchParams.set("snap", selectedId);
+    } else {
+      url.searchParams.delete("snap");
+    }
+    window.history.replaceState(null, "", url);
+  }, [room, selectedId]);
 
   // The report reveal (P6): the reveal class rides on the
   // report section only while a fresh report's stagger runs.

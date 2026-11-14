@@ -7,10 +7,10 @@ const strings: UiStrings = {
   ember: "Propinas EMBER2026: la dirección aparece aquí cuando se conecta una billetera.",
   preExistingDisclosure:
     "Trabajo previo: la semántica de los veredictos se prototipó primero " +
-    "en un proyecto personal anterior, un detector de pools muertos de " +
-    "BSC. La implementación en BCH, la interfaz y este repositorio son " +
-    "nuevos, creados para BCH BLAZE dentro del periodo del 14 al 22 de " +
-    "noviembre de 2026.",
+    "en un proyecto personal anterior, un detector de pools muertos " +
+    "que nunca se publicó. La implementación en BCH, la interfaz y " +
+    "este repositorio son nuevos, creados para BCH BLAZE dentro del " +
+    "periodo del 14 al 22 de noviembre de 2026.",
   copyAddress: "Copiar dirección",
   openWalletApp: "Abrir la app de la billetera",
   copyConnectionLink: "Copiar enlace de conexión",
