@@ -1871,9 +1871,10 @@ main:focus {
    the sequence is done: the identity upgrade in place, the
    History refresh, and language or currency re-renders never
    re-run it. Each group rises with a delay from its inline
-   --i index; R76 retimed the cadence in the section at the
-   end of this file (70ms steps, the gauge growing across
-   600ms, the stamp settling last at 740ms). */
+   --i index; R78 retimed the cadence in the section at the
+   end of this file (125ms steps, entrances across 1100ms,
+   the gauge growing across 1450ms, the stamp settling
+   last at 1850ms). */
 .reveal .report-head,
 .reveal .scan-head {
   animation: panel-in var(--dur-reveal) var(--ease-out) both;
@@ -3668,5 +3669,398 @@ h1,
   [dir="rtl"] .about-head h2,
   [dir="rtl"] .about-sub {
     background-image: linear-gradient(266deg, #ffffff 0%, #ffffff 70%, #ff6b5e 100%);
+  }
+}
+
+/* ============================================================
+   R78 — motion retune (see MOTION-RETUNE-2026-11-14.md).
+   The user's verdict on R76 (2026-11-14 13:06 WIB): the
+   motion is too stiff; stretch it into the 1-3s band and
+   give it curves so it is not monotonous. This section
+   RETUNES the existing system (P6/R50/R76): same triggers,
+   same gates, same keyframe names — new durations, a wider
+   stagger, and a named curve family, one bezier per role:
+
+     --ease-arrive  cubic-bezier(0.22, 1, 0.36, 1)
+       cards and groups (expo-out family): presence arrives
+       fast, the travel settles on a long soft tail.
+     --ease-glide   cubic-bezier(0.16, 1, 0.3, 1)
+       the gauge fill, growing and gliding alike: a sweep
+       that eases into the exact figure and rests there.
+     --ease-settle  cubic-bezier(0.34, 1.3, 0.64, 1)
+       the verdict stamp: a restrained overshoot — the
+       descent presses a hair past rest (scale dips ~0.4%
+       under 1) before sitting at exactly 1.
+     --ease-cross   cubic-bezier(0.65, 0, 0.35, 1)
+       view crossfades and fold reveals: a gentle in-out,
+       softer than the file's quart --ease-in-out.
+
+   Readability guardrail: an entrance is READABLE fast and
+   settles long. The group-in / panel-in keyframes restated
+   below carry opacity to 0.9 by 30% of the run while the
+   transform rides the full duration on its curve, so no
+   card sits unreadable waiting for its travel.
+
+   The landing, retimed (125ms steps, entrances 1100ms):
+   head 0-1100; exit group 0-1100 with its gauge growing
+   0-1450; strip and identity group 125-1225; anchor
+   250-1350; the stamp settles last, 1150-1850, as the
+   gauge completes. Scanner view: its exit group starts at
+   250ms (i=2), so its gauge completes at 1700 and the same
+   stamp still lands last. Total ~1850ms in both views,
+   and App's reveal timer is retimed to 2000ms with it. */
+
+:root {
+  --ease-arrive: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-settle: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --ease-cross: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-arrive: 1100ms;
+  --dur-gauge: 1450ms;
+  --dur-stamp: 700ms;
+  --dur-crossfade: 700ms;
+  --dur-fold: 750ms;
+  --stagger-step: 125ms;
+  --stagger-fold: 40ms;
+  --stamp-delay: 1150ms;
+}
+
+/* Entrance keyframes, restated: opacity is front-loaded
+   (0.9 by 30% of the run) while the transform keeps the
+   full duration. The endpoints are unchanged (group-in
+   rises 10px, panel-in 8px at 0.99), so no layout or
+   dialog geometry moves; only the fade's shape changes. */
+@keyframes group-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  30% {
+    opacity: 0.9;
+  }
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+
+  30% {
+    opacity: 0.9;
+  }
+}
+
+/* The stamp's keyframes, restated with the same locked
+   silhouette (V14: oversized, rotated, invisible) and its
+   fade completed by halfway; the settle curve supplies
+   the press past rest at the tail. */
+@keyframes stamp-in {
+  from {
+    opacity: 0;
+    transform: scale(1.14) rotate(-2.5deg);
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* The reveal landing on the ARRIVE curve. */
+.reveal .report-head,
+.reveal .scan-head {
+  animation: panel-in var(--dur-arrive) var(--ease-arrive) both;
+}
+
+.reveal .scan-group,
+.reveal .anchor {
+  animation: group-in var(--dur-arrive) var(--ease-arrive) both;
+  animation-delay: calc(var(--i, 0) * var(--stagger-step));
+}
+
+.reveal .stat-strip {
+  animation: group-in var(--dur-arrive) var(--ease-arrive) both;
+  animation-delay: calc(var(--stagger-step) * 1);
+}
+
+/* The stamp settles last, on its own curve and delay: the
+   full shorthand restates P6's 260ms line, delay included,
+   so none of the old cadence survives beneath it. */
+.reveal .stamp {
+  animation: stamp-in var(--dur-stamp) var(--ease-settle) both;
+  animation-delay: var(--stamp-delay);
+}
+
+/* The gauge: the landing grow and the in-place glide share
+   the GLIDE curve and the retimed duration, so a refinement
+   moves the fill exactly the way the landing grew it. The
+   pool-share fills are the same instrument family and take
+   the same curve. */
+.reveal .gauge-fill {
+  animation: gauge-grow var(--dur-gauge) var(--ease-glide) both;
+}
+
+.gauge-fill {
+  transition: transform var(--dur-gauge) var(--ease-glide);
+}
+
+.pool-share-fill {
+  transition: transform var(--dur-gauge) var(--ease-glide);
+}
+
+/* View switches crossfade on the gentle in-out. */
+.report:not(.reveal),
+.scanner:not(.reveal) {
+  animation: group-in var(--dur-crossfade) var(--ease-cross) both;
+}
+
+/* Fold reveals answer on the same gentle curve. */
+.fold-in {
+  animation: group-in var(--dur-fold) var(--ease-cross) both;
+  animation-delay: calc(var(--fold-i, 0) * var(--stagger-fold));
+}
+
+/* The wallet home entrance joins the same system: the card,
+   the balance value, the tiles and the layout head and
+   controls arrive on ARRIVE across the retimed stagger.
+   The nth-tile and layout delays already read
+   --stagger-step, so the wider step flows through them;
+   the layout pair restates its delay beside the shorthand
+   because the shorthand alone would reset it. */
+.wallet-card {
+  animation: group-in var(--dur-arrive) var(--ease-arrive) both;
+}
+
+.balance-value {
+  animation: panel-in var(--dur-arrive) var(--ease-arrive) both;
+}
+
+.tile {
+  animation: group-in var(--dur-arrive) var(--ease-arrive) both;
+}
+
+.layout-head {
+  animation: group-in var(--dur-arrive) var(--ease-arrive) both;
+  animation-delay: calc(var(--stagger-step) * 2);
+}
+
+.layout-controls {
+  animation: group-in var(--dur-arrive) var(--ease-arrive) both;
+  animation-delay: calc(var(--stagger-step) * 3);
+}
+
+/* Reduced motion: R76 zeroed the landing's delays; the
+   retimed step is wider, so the home cascade's delays join
+   the list (the nth-tile selectors are restated at their
+   own specificity, or tile four would sit invisible at
+   its from-state for 375ms under the global duration
+   collapse). With durations crushed by the global block
+   and every delay zeroed here, the whole system is simply
+   present, instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal .stamp,
+  .reveal .scan-group,
+  .reveal .anchor,
+  .reveal .stat-strip,
+  .fold-in,
+  .tiles .tile:nth-child(2),
+  .tiles .tile:nth-child(3),
+  .tiles .tile:nth-child(4),
+  .layout-head,
+  .layout-controls {
+    animation-delay: 0ms;
+  }
+}
+
+/* ============================================================
+   R78 steers — two corrections from the user's phone review
+   of the R77 build (2026-11-14 13:15 WIB), appended after
+   the retune section above.
+
+   STEER 1 — the page gradient goes to 55:45 (overrides
+   R75's 70:30): white holds the first 55% of the run, the
+   blend crosses the same mid tints, and scarlet completes
+   at 100%. The end stops do not move, so the contrast
+   minima (which live at the ember tips) hold with them.
+   Windows stay gradient-free and the pairing title stays
+   solid scarlet: nothing below touches a window selector.
+   Cascade: LTR flows through the two tokens; RTL hardcodes
+   its stops group by group, so the union of the R74 and
+   R75 RTL lists is restated — the union also closes a
+   latent R75 miss, the RTL report titles, which still ran
+   on R74's 34/68 stops because R75 never restated them.
+
+   STEER 2 — halo coverage: "glow nya itu ga ada di setiap
+   kartu" — the ember halo (R74: scarlet shadow + drifting
+   radial layer) covered only the evidence papers, and the
+   user read the uncovered cards as left behind. Every
+   major page card now carries it: the wallet home card,
+   the verdict head card, the stat strip and the About
+   paper join .scan-group and .anchor. The exit paper
+   keeps the strongest treatment; the hierarchy stands,
+   but no major card stays glow-less. Modal windows are
+   tools, not papers, and stay out. The strip's own box
+   clips its children (overflow: hidden, for the hairline
+   grid's corners), so its drift layer rides on a wrapper
+   (App.tsx StatStrip) while the strip itself takes the
+   scarlet shadow and a warmed border. */
+
+:root {
+  --grad-title: linear-gradient(
+    94deg,
+    #ffffff 0%,
+    #ffffff 55%,
+    #ffb3ab 78%,
+    #e63329 100%
+  );
+  --grad-label: linear-gradient(
+    94deg,
+    #ffffff 0%,
+    #ffffff 55%,
+    #ff6b5e 100%
+  );
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  [dir="rtl"] h1,
+  [dir="rtl"] .topbar h1,
+  [dir="rtl"] .panel h2,
+  [dir="rtl"] .scan-heading h2,
+  [dir="rtl"] .report-head h2,
+  [dir="rtl"] .scan-head h2,
+  [dir="rtl"] .not-found h2 {
+    background-image: linear-gradient(
+      266deg,
+      #ffffff 0%,
+      #ffffff 55%,
+      #ffb3ab 78%,
+      #e63329 100%
+    );
+  }
+
+  [dir="rtl"] .wordmark,
+  [dir="rtl"] .scan-group-head h3,
+  [dir="rtl"] .scan-group h3,
+  [dir="rtl"] .anchor h2,
+  [dir="rtl"] .anchor h3,
+  [dir="rtl"] .pool-shares-title {
+    background-image: linear-gradient(266deg, #ffffff 0%, #ffffff 55%, #ff6b5e 100%);
+  }
+
+  [dir="rtl"] .wallet button,
+  [dir="rtl"] .banner-ember-address,
+  [dir="rtl"] .switcher button:not([aria-pressed="true"]),
+  [dir="rtl"] .shortcut-row button {
+    background-image:
+      linear-gradient(266deg, #ffffff 0%, #ffffff 55%, #ff6b5e 100%),
+      linear-gradient(var(--surface-2), var(--surface-2));
+  }
+
+  [dir="rtl"] .wallet button:hover:not(:disabled),
+  [dir="rtl"] .banner-ember-address:hover:not(:disabled),
+  [dir="rtl"] .switcher button:not([aria-pressed="true"]):hover,
+  [dir="rtl"] .shortcut-row button:hover {
+    background-image:
+      linear-gradient(266deg, #ffffff 0%, #ffffff 55%, #ff6b5e 100%),
+      linear-gradient(var(--surface-3), var(--surface-3));
+  }
+
+  [dir="rtl"] .panel-actions button:not(.primary-action),
+  [dir="rtl"] .panel-actions a,
+  [dir="rtl"] .copy-inline,
+  [dir="rtl"] .copy-inline button,
+  [dir="rtl"] .switcher.view-switch button:not([aria-pressed="true"]) {
+    background-image:
+      linear-gradient(266deg, #ffffff 0%, #ffffff 55%, #ff6b5e 100%),
+      linear-gradient(transparent, transparent);
+  }
+
+  [dir="rtl"] .panel-actions button:not(.primary-action):hover:not(:disabled),
+  [dir="rtl"] .panel-actions a:hover,
+  [dir="rtl"] .copy-inline button:hover {
+    background-image:
+      linear-gradient(266deg, #ffffff 0%, #ffffff 55%, #ff6b5e 100%),
+      linear-gradient(var(--surface-3), var(--surface-3));
+  }
+
+  [dir="rtl"] .copy-inline:hover,
+  [dir="rtl"] .switcher.view-switch button:not([aria-pressed="true"]):hover {
+    background-image:
+      linear-gradient(266deg, #ffffff 0%, #ffffff 55%, #ff6b5e 100%),
+      linear-gradient(var(--surface-2), var(--surface-2));
+  }
+
+  [dir="rtl"] .about-head h2,
+  [dir="rtl"] .about-sub {
+    background-image: linear-gradient(266deg, #ffffff 0%, #ffffff 55%, #ff6b5e 100%);
+  }
+}
+
+/* Halo coverage (steer 2): the newly covered cards take
+   the papers' standard treatment — the drifting radial
+   layer behind the card on the shared ember-drift cycle,
+   the static scarlet shadow hugging it, and (for the
+   matte trio that shares the papers' border-box material)
+   the ember border gradient, so card and light read as
+   one object everywhere on the page. */
+.wallet-card,
+.report-head,
+.scan-head,
+.about-paper,
+.stat-strip-wrap {
+  position: relative;
+}
+
+.wallet-card::before,
+.report-head::before,
+.scan-head::before,
+.about-paper::before,
+.stat-strip-wrap::before {
+  content: "";
+  position: absolute;
+  inset: -16px -12px;
+  z-index: -1;
+  border-radius: 26px;
+  background: radial-gradient(58% 52% at 32% 16%, rgb(230 51 41 / 0.42), transparent 70%);
+  filter: blur(14px);
+  animation: ember-drift var(--dur-glow) var(--ease-in-out) infinite alternate;
+  pointer-events: none;
+}
+
+.wallet-card {
+  box-shadow:
+    var(--shadow-card),
+    0 24px 48px -24px rgb(230 51 41 / 0.16),
+    0 0 36px -8px rgb(230 51 41 / 0.35);
+}
+
+.report-head,
+.scan-head,
+.about-paper {
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(180deg, rgb(230 51 41 / 0.4), rgb(230 51 41 / 0.1) 58%, rgb(255 255 255 / 0.05)) border-box;
+  box-shadow:
+    var(--shadow-card),
+    0 0 36px -8px rgb(230 51 41 / 0.35);
+}
+
+.stat-strip {
+  border-color: rgb(230 51 41 / 0.35);
+  box-shadow: 0 0 36px -8px rgb(230 51 41 / 0.35);
+}
+
+/* Reduced motion for the newly covered halos: present,
+   but still, on the same terms as the papers' (R74). */
+@media (prefers-reduced-motion: reduce) {
+  .wallet-card::before,
+  .report-head::before,
+  .scan-head::before,
+  .about-paper::before,
+  .stat-strip-wrap::before {
+    animation: none;
+    opacity: 0.85;
+    transform: none;
   }
 }

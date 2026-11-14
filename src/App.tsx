@@ -390,13 +390,15 @@ function StatStrip({
     exitCell,
   ];
   return (
-    <div className="stat-strip">
-      {cells.map(([label, value]) => (
-        <div className="stat-cell" key={label}>
-          <span className="stat-label">{label}</span>
-          <span className="stat-value">{value}</span>
-        </div>
-      ))}
+    <div className="stat-strip-wrap">
+      <div className="stat-strip">
+        {cells.map(([label, value]) => (
+          <div className="stat-cell" key={label}>
+            <span className="stat-label">{label}</span>
+            <span className="stat-value">{value}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -2188,9 +2190,11 @@ export default function App() {
   // snapshot select, and a live audit landing (the call sites
   // in runLiveAudit distinguish a landing from the identity
   // upgrade of an already visible report). A timer clears it
-  // once the sequence is done (R76 cadence: the last group
-  // starts at 280ms and lands by 520ms; the gauge grow and
-  // the stamp settle both complete at 740ms), so re-renders
+  // once the sequence is done (R78 cadence: 125ms steps and
+  // 1100ms entrances put the last group down by 1600ms; the
+  // gauge grow completes at 1450ms in Report view and at
+  // 1700ms in Scanner view, and the stamp settles last, at
+  // 1850ms), so re-renders
   // of the same report (the identity upgrade in place, a
   // language switch) never carry the class and never re-run
   // the stagger. In-place refinements (a Router quote
@@ -2204,7 +2208,7 @@ export default function App() {
     if (revealTimer.current !== null) {
       window.clearTimeout(revealTimer.current);
     }
-    revealTimer.current = window.setTimeout(() => setRevealing(false), 850);
+    revealTimer.current = window.setTimeout(() => setRevealing(false), 2000);
   }, []);
   useEffect(() => {
     triggerReveal();
