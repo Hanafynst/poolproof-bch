@@ -1366,6 +1366,7 @@ function ScannerReport({
   flagTemplates,
   wiring,
   reveal,
+  fade,
 }: {
   snapshot: TokenSnapshot;
   judgement: PoolJudgement;
@@ -1377,6 +1378,9 @@ function ScannerReport({
   /** True only while a fresh report's reveal sequence runs
    *  (P6); re-renders of the same report pass false. */
   reveal: boolean;
+  /** True only while the view-switch crossfade runs (R85);
+   *  the reveal takes precedence, the two never stack. */
+  fade: boolean;
 }) {
   const { facts } = snapshot;
   const exitStatus = exitStatusOf(judgement);
@@ -1384,7 +1388,9 @@ function ScannerReport({
   const concStatus = concentrationStatus(concReport);
   return (
     <section
-      className={reveal ? "scanner reveal" : "scanner"}
+      className={
+        reveal ? "scanner reveal" : fade ? "scanner view-fade" : "scanner"
+      }
       aria-label={t.reportLabel}
     >
       <div className="scan-head">
@@ -2525,6 +2531,43 @@ export default function App() {
     };
   }, [triggerReveal]);
 
+  // The view crossfade (R76/R78) as an explicit trigger, the
+  // reveal pattern's sibling: the .view-fade class rides the
+  // incoming section for the fade's own duration after the
+  // view actually changes. It began life as a CSS rule on a
+  // section NOT carrying .reveal, which also matched the
+  // moment the reveal timer removed that class at 2000ms:
+  // every landing replayed the whole section once more
+  // (R85; rig-counted: a group-in start on the section at
+  // click +2024ms, its opacity sampled at 0.06). A switch
+  // made while a fresh report is revealing keeps the staged
+  // entrance instead: the fade stands down there, as it
+  // always has.
+  const [viewFading, setViewFading] = useState(false);
+  const viewFadeTimer = useRef<number | null>(null);
+  const lastView = useRef(view);
+  useEffect(() => {
+    if (lastView.current === view) return;
+    lastView.current = view;
+    if (revealing) return;
+    setViewFading(true);
+    if (viewFadeTimer.current !== null) {
+      window.clearTimeout(viewFadeTimer.current);
+    }
+    viewFadeTimer.current = window.setTimeout(
+      () => setViewFading(false),
+      750,
+    );
+  }, [view, revealing]);
+  useEffect(
+    () => () => {
+      if (viewFadeTimer.current !== null) {
+        window.clearTimeout(viewFadeTimer.current);
+      }
+    },
+    [],
+  );
+
   const [liveInput, setLiveInput] = useState("");
   const [liveInvalid, setLiveInvalid] = useState(false);
   const [liveState, setLiveState] = useState<LiveState>({ phase: "idle" });
@@ -2995,10 +3038,17 @@ export default function App() {
             flagTemplates={flagTemplates}
             wiring={anchorWiring}
             reveal={revealing}
+            fade={viewFading}
           />
         ) : (
         <section
-          className={revealing ? "report reveal" : "report"}
+          className={
+            revealing
+              ? "report reveal"
+              : viewFading
+                ? "report view-fade"
+                : "report"
+          }
           aria-label={t.reportLabel}
         >
           <div className="report-head">

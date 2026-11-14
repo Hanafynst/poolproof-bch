@@ -3521,9 +3521,16 @@ h1,
    one report fades the incoming section in instead of
    snapping. A fresh report carries .reveal and plays its
    staged entrance instead, so the fade stands down there
-   and the two never stack. */
-.report:not(.reveal),
-.scanner:not(.reveal) {
+   and the two never stack. R85: the fade rides an explicit
+   .view-fade class the view switch itself adds for the
+   fade's duration. It began as a rule on a section NOT
+   carrying .reveal, which also matched the moment the
+   reveal timer removed that class at 2000ms, so every
+   landing replayed the whole section a second time
+   (rig-counted: a group-in start on the section at
+   click +2024ms, section opacity 0.06). */
+.report.view-fade,
+.scanner.view-fade {
   animation: group-in var(--dur-reveal) var(--ease-out) both;
 }
 
@@ -3679,9 +3686,10 @@ h1,
   transition: transform var(--dur-gauge) var(--ease-glide);
 }
 
-/* View switches crossfade on the gentle in-out. */
-.report:not(.reveal),
-.scanner:not(.reveal) {
+/* View switches crossfade on the gentle in-out (R85:
+   class-triggered, see the R76 note above). */
+.report.view-fade,
+.scanner.view-fade {
   animation: group-in var(--dur-crossfade) var(--ease-cross) both;
 }
 
