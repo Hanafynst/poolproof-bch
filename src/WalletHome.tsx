@@ -11,7 +11,7 @@ import {
   shortenMiddle,
 } from "./format";
 import type { WalletSession } from "./wallet-session";
-import { TileIcon } from "./icons";
+import { DismissIcon, TileIcon } from "./icons";
 import type { ElectrumSession } from "./core/electrum-wss";
 import { DUST_SATS } from "./core/anchor-tx";
 import type { TokenIdentity } from "./core/identity";
@@ -290,12 +290,12 @@ function CopyAddressButton({
  * read as a choice, and the wrong pick loses a token deposit.
  * The QR encodes the token address, never a shortened form.
  *
- * Close paths mirror the pairing dialog: the Close button, a
- * backdrop click, and Escape (this window listens for its own
- * Escape; App's panel state has no key handling) all play the
- * short exit before unmounting. Tab cycles inside via the
- * core's trapTabIndex, focus starts on the Close button, and
- * closing returns focus to the Receive tile.
+ * Close paths mirror the pairing dialog: the small × at the
+ * card's top right, a backdrop click, and Escape (this window
+ * listens for its own Escape; App's panel state has no key
+ * handling) all play the short exit before unmounting. Tab
+ * cycles inside via the core's trapTabIndex, focus starts on
+ * the ×, and closing returns focus to the Receive tile.
  */
 export function ReceivePanel({
   t,
@@ -329,10 +329,10 @@ export function ReceivePanel({
       }
     };
   }, []);
-  // Focus starts on the Close button: it is inside the trap
-  // set, and preventScroll keeps the overlay from jumping to
-  // the card's bottom edge on short viewports, where the card
-  // is taller than the overlay's visible band.
+  // Focus starts on the × button: it is inside the trap set,
+  // and preventScroll keeps the overlay from jumping on short
+  // viewports, where the card can be taller than the overlay's
+  // visible band.
   useEffect(() => {
     closeButtonRef.current?.focus({ preventScroll: true });
   }, []);
@@ -382,6 +382,15 @@ export function ReceivePanel({
         ref={cardRef}
         onKeyDown={trapTab}
       >
+        <button
+          type="button"
+          className="receive-close"
+          ref={closeButtonRef}
+          onClick={requestClose}
+          aria-label={t.dialogClose}
+        >
+          <DismissIcon />
+        </button>
         {!session.connected ? (
           <p>{t.walletDisconnectedHint}</p>
         ) : tokenAddress === null ? (
@@ -401,11 +410,6 @@ export function ReceivePanel({
             </div>
           </>
         )}
-        <div className="panel-actions receive-close-row">
-          <button type="button" ref={closeButtonRef} onClick={requestClose}>
-            {t.dialogClose}
-          </button>
-        </div>
       </div>
     </div>,
     document.body,

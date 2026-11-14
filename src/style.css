@@ -2172,24 +2172,64 @@ main:focus {
   margin: 0 0 0.75rem;
 }
 
-/* Receive window: the shared card, left-aligned like the panel
-   it replaced and compacted so the single address block
-   (heading, note, QR, address, copy, close) fits a phone
-   viewport whole: the QR drops toward 190px and the close row
-   is set off by a hairline. On shorter viewports the shared
-   overlay scroll keeps every control reachable. */
+/* Receive window: the shared card, content centred like the
+   pairing card's (user order 2026-11-14, overruling the left
+   alignment the panel era carried in) and compacted so the
+   single address block (heading, note, QR, address, copy)
+   fits a phone viewport whole: the QR drops toward 190px and
+   closing is a small × at the card's top right instead of a
+   bottom row. On shorter viewports the shared overlay scroll
+   keeps every control reachable. */
 .receive-card {
-  text-align: left;
+  position: relative;
+}
+
+/* The × occupies the top-right corner; the heading and the
+   state notes keep symmetric side insets so a centred first
+   line never runs underneath it. */
+.receive-card > h2,
+.receive-card > p {
+  padding-inline: 1.75rem;
 }
 
 .receive-card .qr {
   width: min(190px, 62vw);
-  margin: 0.6rem 0;
+  margin: 0.6rem auto;
 }
 
-.receive-close-row {
-  border-top: 1px solid var(--line);
-  padding-top: 0.9rem;
+.receive-card .panel-actions {
+  justify-content: center;
+}
+
+/* The ×: the toast dismiss button's ghost pattern stretched
+   to a 36px tap target, glyph 18px. */
+.receive-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  color: var(--soft);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.receive-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.receive-close:hover {
+  color: var(--text);
+  background: var(--surface-3);
 }
 
 .pairing-copy {
