@@ -184,6 +184,7 @@ export interface UiStrings {
   concUnavailable: string;
   liveCategoryLabel: string;
   liveCategoryPlaceholder: string;
+  liveCategoryHint: string;
   liveAuditAction: string;
   liveCategoryInvalid: string;
   liveFetching: string;

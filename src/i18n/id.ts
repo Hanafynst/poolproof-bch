@@ -240,6 +240,10 @@ const strings: UiStrings = {
   concUnavailable: "Tidak tersedia",
   liveCategoryLabel: "ID kategori",
   liveCategoryPlaceholder: "Tempel ID kategori 64 karakter",
+  liveCategoryHint:
+    "ID kategori adalah identitas sebuah CashToken. Salin dari halaman " +
+    "tokennya di TokenStork atau block explorer. Snapshot demo di bawah " +
+    "tidak butuh ID; salah satunya adalah PUSD.",
   liveAuditAction: "Audit langsung",
   liveCategoryInvalid:
     "ID kategori itu tidak valid. ID kategori tepat 64 karakter heksadesimal.",

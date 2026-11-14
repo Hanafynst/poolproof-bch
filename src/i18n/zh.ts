@@ -204,6 +204,7 @@ const strings: UiStrings = {
   concUnavailable: "不可用",
   liveCategoryLabel: "类别 ID",
   liveCategoryPlaceholder: "粘贴 64 个字符的类别 ID",
+  liveCategoryHint: "类别 ID 是 CashToken 的身份标识。可以从 TokenStork 或区块浏览器上的代币页面复制它。下面的演示快照不需要 ID；其中一个是 PUSD。",
   liveAuditAction: "实时审计",
   liveCategoryInvalid: "该类别 ID 无效。类别 ID 恰好是 64 个十六进制字符。",
   liveFetching: "正在获取实时池数据...",

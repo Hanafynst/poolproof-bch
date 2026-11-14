@@ -2423,7 +2423,9 @@ export default function App() {
               onChange={(e) => setLiveInput(e.target.value)}
               aria-invalid={liveInvalid}
               aria-describedby={
-                liveInvalid ? "live-category-error" : undefined
+                liveInvalid
+                  ? "live-category-hint live-category-error"
+                  : "live-category-hint"
               }
               autoComplete="off"
               spellCheck={false}
@@ -2435,6 +2437,9 @@ export default function App() {
               {t.liveAuditAction}
             </button>
           </div>
+          <p className="live-hint" id="live-category-hint">
+            {t.liveCategoryHint}
+          </p>
           {liveInvalid && (
             <p className="live-error" id="live-category-error" role="alert">
               {t.liveCategoryInvalid}

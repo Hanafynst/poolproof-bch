@@ -245,6 +245,11 @@ const strings: UiStrings = {
   concUnavailable: "No disponible",
   liveCategoryLabel: "ID de categoría",
   liveCategoryPlaceholder: "Pega un ID de categoría de 64 caracteres",
+  liveCategoryHint:
+    "Un ID de categoría identifica un CashToken. Cópialo desde la página " +
+    "del token en TokenStork o en un explorador de bloques. Las " +
+    "instantáneas de demostración de abajo no necesitan ID; una de " +
+    "ellas es PUSD.",
   liveAuditAction: "Auditar en vivo",
   liveCategoryInvalid:
     "Ese ID de categoría no es válido. Una categoría tiene exactamente " +

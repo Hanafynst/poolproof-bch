@@ -235,6 +235,10 @@ const strings: UiStrings = {
   concUnavailable: "Not available",
   liveCategoryLabel: "Category ID",
   liveCategoryPlaceholder: "Paste a 64-character category ID",
+  liveCategoryHint:
+    "A category ID identifies a CashToken. Copy it from the token's " +
+    "page on TokenStork or a block explorer. The demo snapshots below " +
+    "need no ID; one of them is PUSD.",
   liveAuditAction: "Audit live",
   liveCategoryInvalid:
     "That is not a valid category ID. A category ID is exactly 64 " +

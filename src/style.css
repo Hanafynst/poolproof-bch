@@ -1101,6 +1101,12 @@ h1 {
   font-size: 0.88rem;
 }
 
+.live-hint {
+  color: var(--soft);
+  font-size: 0.8rem;
+  margin: 0.45rem 0 0;
+}
+
 .live-status {
   font-size: 0.9rem;
 }
