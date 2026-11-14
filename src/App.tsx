@@ -384,6 +384,75 @@ function CopyGlyphs({
   );
 }
 
+/** The report record as ONE canonical text. The download writes
+ *  exactly this string and the proof anchor hashes exactly this
+ *  string, so the file a user downloads is the artifact the
+ *  anchored hash commits to: re-hash the downloaded file and the
+ *  digest must equal the report hash on screen and in the
+ *  OP_RETURN output. Two serializations of "the report" (this
+ *  one for the file, a shorter summary for the anchor) would
+ *  make the anchored hash unverifiable from the file, which is
+ *  the one thing a proof anchor must never be. */
+function buildReportJson(
+  snapshot: TokenSnapshot,
+  judgement: PoolJudgement,
+): string {
+  const conc = snapshotConcentrationReport(snapshot);
+  const report = {
+    token: snapshot.name,
+    symbol: snapshot.symbol,
+    category: snapshot.category,
+    decimals: snapshot.decimals,
+    verdict: judgement.verdict,
+    exitRatio: judgement.exitRatio,
+    // The simulation record (R48): which model produced the
+    // headline figure, and every figure that was computed,
+    // so the JSON names its own provenance like the screen
+    // does. routeQuoteSats is the Router's answer when one
+    // landed; null means no quote is behind this report.
+    simulationModel: judgement.simulationModel,
+    simulatedOutSats:
+      judgement.simulatedOutSats === null
+        ? null
+        : judgement.simulatedOutSats.toString(),
+    routedSimulatedOutSats:
+      judgement.routedSimulatedOutSats === null
+        ? null
+        : judgement.routedSimulatedOutSats.toString(),
+    aggregateSimulatedOutSats:
+      judgement.aggregateSimulatedOutSats === null
+        ? null
+        : judgement.aggregateSimulatedOutSats.toString(),
+    routeQuoteSats:
+      snapshot.facts.routeQuoteSats === undefined ||
+      snapshot.facts.routeQuoteSats === null
+        ? null
+        : snapshot.facts.routeQuoteSats.toString(),
+    reserveQuoteSats: snapshot.facts.reserveQuoteSats.toString(),
+    reserveTokenRaw: snapshot.facts.reserveTokenRaw.toString(),
+    totalSupplyRaw: snapshot.facts.totalSupplyRaw.toString(),
+    supplyIsStandIn: snapshot.supplyIsStandIn ?? false,
+    flags: judgement.flags,
+    // Full precision, locale-neutral: the JSON is the record,
+    // the on-screen figures are its rounded rendering.
+    concentration:
+      conc === null
+        ? null
+        : {
+            basis: conc.basis,
+            listedCount: conc.listedCount,
+            totalHolderCount: conc.totalHolderCount,
+            gini: conc.gini,
+            tier: conc.tier,
+            top1ShareOfListed: conc.top1ShareOfListed,
+            top10ShareOfListed: conc.top10ShareOfListed,
+            hhi: conc.hhi,
+            top1ShareOfSupply: conc.top1ShareOfSupply,
+          },
+  };
+  return JSON.stringify(report, null, 2);
+}
+
 // DETAIL TERKUNCI (9b) actions: copy the category, copy a shareable
 // link (the snapshot travels in the URL), download the report as
 // JSON. Present in both views: a feature that exists in only one
@@ -439,60 +508,9 @@ function ReportActions({
   };
   const download = () => {
     try {
-      const conc = snapshotConcentrationReport(snapshot);
-      const report = {
-        token: snapshot.name,
-        symbol: snapshot.symbol,
-        category: snapshot.category,
-        decimals: snapshot.decimals,
-        verdict: judgement.verdict,
-        exitRatio: judgement.exitRatio,
-        // The simulation record (R48): which model produced the
-        // headline figure, and every figure that was computed,
-        // so the JSON names its own provenance like the screen
-        // does. routeQuoteSats is the Router's answer when one
-        // landed; null means no quote is behind this report.
-        simulationModel: judgement.simulationModel,
-        simulatedOutSats:
-          judgement.simulatedOutSats === null
-            ? null
-            : judgement.simulatedOutSats.toString(),
-        routedSimulatedOutSats:
-          judgement.routedSimulatedOutSats === null
-            ? null
-            : judgement.routedSimulatedOutSats.toString(),
-        aggregateSimulatedOutSats:
-          judgement.aggregateSimulatedOutSats === null
-            ? null
-            : judgement.aggregateSimulatedOutSats.toString(),
-        routeQuoteSats:
-          snapshot.facts.routeQuoteSats === undefined ||
-          snapshot.facts.routeQuoteSats === null
-            ? null
-            : snapshot.facts.routeQuoteSats.toString(),
-        reserveQuoteSats: snapshot.facts.reserveQuoteSats.toString(),
-        reserveTokenRaw: snapshot.facts.reserveTokenRaw.toString(),
-        totalSupplyRaw: snapshot.facts.totalSupplyRaw.toString(),
-        supplyIsStandIn: snapshot.supplyIsStandIn ?? false,
-        flags: judgement.flags,
-        // Full precision, locale-neutral: the JSON is the record,
-        // the on-screen figures are its rounded rendering.
-        concentration:
-          conc === null
-            ? null
-            : {
-                basis: conc.basis,
-                listedCount: conc.listedCount,
-                totalHolderCount: conc.totalHolderCount,
-                gini: conc.gini,
-                tier: conc.tier,
-                top1ShareOfListed: conc.top1ShareOfListed,
-                top10ShareOfListed: conc.top10ShareOfListed,
-                hhi: conc.hhi,
-                top1ShareOfSupply: conc.top1ShareOfSupply,
-              },
-      };
-      const blob = new Blob([JSON.stringify(report, null, 2)], {
+      // The canonical report text (see buildReportJson): the
+      // file IS the artifact the proof anchor hashes.
+      const blob = new Blob([buildReportJson(snapshot, judgement)], {
         type: "application/json",
       });
       const link = document.createElement("a");
@@ -1399,12 +1417,11 @@ function AnchorBlock({
     setAnchoredReceipt(null);
     setAnchorError(null);
     setAnchorPhase("idle");
-    const reportText = JSON.stringify({
-      token: snapshot.symbol,
-      category: snapshot.category,
-      verdict: judgement.verdict,
-      exitRatio: judgement.exitRatio,
-    });
+    // The anchored text is the downloadable report itself, byte
+    // for byte (see buildReportJson): anyone holding the file
+    // can re-hash it and check the digest against this block
+    // and against the OP_RETURN output on chain.
+    const reportText = buildReportJson(snapshot, judgement);
     // libauth is heavy (WASM) and only this block needs it: load it
     // lazily so the verdict report renders without waiting for it.
     (async () => {
