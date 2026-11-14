@@ -31,6 +31,8 @@ const strings: UiStrings = {
     "أعادت المحفظة ردًا تعذّر التحقق منه. لم يتم بث أي شيء.",
   historyUnavailable:
     "تعذّرت قراءة السجل المحفوظ. تبدأ هذه القائمة فارغة.",
+  historySaveFailed:
+    "تعذّر حفظ السجل في هذا المتصفح. تبقى الإدخالات ظاهرة حتى إعادة تحميل الصفحة.",
   receivePlainLabel: "عنوان عادي",
   headline: "هل مجمع CashToken هذا حي فعلًا؟",
   lede:

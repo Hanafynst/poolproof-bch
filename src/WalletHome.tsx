@@ -376,11 +376,13 @@ export function HistoryPanel({
   lang,
   entries,
   loadFailed,
+  saveFailed,
 }: {
   t: UiStrings;
   lang: Lang;
   entries: HistoryEntry[];
   loadFailed: boolean;
+  saveFailed: boolean;
 }) {
   const [copiedTxid, setCopiedTxid] = useState<string | null>(null);
   const [failedTxid, setFailedTxid] = useState<string | null>(null);
@@ -406,6 +408,11 @@ export function HistoryPanel({
       {loadFailed && (
         <p className="panel-note" role="note">
           {t.historyUnavailable}
+        </p>
+      )}
+      {saveFailed && (
+        <p className="panel-note" role="note">
+          {t.historySaveFailed}
         </p>
       )}
       {entries.length === 0 ? (

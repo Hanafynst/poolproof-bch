@@ -151,12 +151,13 @@ const historyStorageAdapter = {
     }
   },
   write(serialized: string): void {
-    try {
-      window.localStorage.setItem(HISTORY_STORAGE_KEY, serialized);
-    } catch {
-      // Private mode or a full quota: the receipt still shows in
-      // the running list; it just does not survive a reload.
-    }
+    // No swallow here: a failed write (private mode, a full
+    // quota) must reach the caller. HistoryStore.save()
+    // propagates it, and App's persistHistory turns it into
+    // the save-failed note in the History panel. A receipt
+    // that will not survive a reload is never silently
+    // presented as saved.
+    window.localStorage.setItem(HISTORY_STORAGE_KEY, serialized);
   },
 };
 
@@ -175,7 +176,14 @@ function loadHistoryStore(): { store: HistoryStore; loadFailed: boolean } {
         loadFailed: true,
       };
     } catch {
-      return { store: new HistoryStore(), loadFailed: true };
+      // The fallback store stays bound to the adapter: an
+      // adapter-less store refuses every save(), so an
+      // unbound fallback would make the NEXT successful send
+      // throw inside its own bookkeeping.
+      return {
+        store: new HistoryStore(historyStorageAdapter),
+        loadFailed: true,
+      };
     }
   }
 }
@@ -1722,6 +1730,20 @@ export default function App() {
   const [entries, setEntries] = useState<HistoryEntry[]>(() =>
     history.store.list(),
   );
+  const [historySaveFailed, setHistorySaveFailed] = useState(false);
+  // Every history save goes through here. HistoryStore.save()
+  // propagates a failed write (private mode, a full quota),
+  // and a bookkeeping failure must never break the send that
+  // already succeeded: it surfaces as the History panel's
+  // save-failed note instead, while the receipt stays in the
+  // running list for this session.
+  const persistHistory = () => {
+    try {
+      history.store.save();
+    } catch {
+      setHistorySaveFailed(true);
+    }
+  };
   const walletAddress = walletSession.address;
   useEffect(() => {
     if (walletAddress === null) {
@@ -1786,7 +1808,7 @@ export default function App() {
   const handleSent = useCallback(
     (receipt: Receipt) => {
       history.store.append(receipt);
-      history.store.save();
+      persistHistory();
       setEntries(history.store.list());
       setOpenPanel("history");
       // The SENT toast fires here, inside the same success
@@ -1812,7 +1834,7 @@ export default function App() {
   const handleAnchored = useCallback(
     (receipt: Receipt) => {
       history.store.append(receipt);
-      history.store.save();
+      persistHistory();
       setEntries(history.store.list());
       // Same rule as a send: the toast rides the receipt sink,
       // so it exists only because the anchor broadcast resolved.
@@ -1896,7 +1918,7 @@ export default function App() {
           }
         }
         if (applied) {
-          history.store.save();
+          persistHistory();
           setEntries(history.store.list());
         }
         if (!cancelled) {
@@ -2367,6 +2389,7 @@ export default function App() {
                 lang={packLang}
                 entries={entries}
                 loadFailed={history.loadFailed}
+                saveFailed={historySaveFailed}
               />
             )}
           </div>

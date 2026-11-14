@@ -33,6 +33,8 @@ const strings: UiStrings = {
     "Tidak ada yang disiarkan.",
   historyUnavailable:
     "Riwayat tersimpan tidak bisa dibaca. Daftar ini mulai dari kosong.",
+  historySaveFailed:
+    "Riwayat tidak bisa disimpan di browser ini. Entri tetap terlihat sampai halaman dimuat ulang.",
   receivePlainLabel: "Alamat biasa",
   headline: "Apakah pool CashToken ini benar-benar hidup?",
   lede:

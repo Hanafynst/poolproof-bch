@@ -50,6 +50,17 @@ import type { ConfirmationStatus } from "./history-status.js";
  *  migrated by that app, never guessed at by this one. */
 export const HISTORY_FORMAT_VERSION = 2;
 
+/** The most receipts the store holds. A stored receipt costs
+ *  roughly 700 bytes of JSON, so 500 entries stay near 350 KB —
+ *  comfortably inside the ~5 MB per-origin localStorage quota
+ *  the history shares with the app's preference keys — while
+ *  still covering far more sends and anchors than a wallet
+ *  realistically makes. Past the cap the oldest entries drop,
+ *  on append and on load alike: a history written before the
+ *  cap existed (or by hand) trims to its newest 500 on the way
+ *  in, instead of growing the stored blob without bound. */
+export const HISTORY_MAX_ENTRIES = 500;
+
 /** One text blob in, one text blob out. read() returns null when
  *  nothing was ever written — a fresh install, NOT corruption. */
 export interface HistoryStorageAdapter {
@@ -478,7 +489,10 @@ export class HistoryStore {
    * have happened once, so re-appending the same txid (a flow
    * retried after an ambiguous failure, a receipt loaded twice) is
    * reported as "duplicate" and the FIRST record stands — the
-   * store never rewrites history.
+   * store never rewrites history. Past HISTORY_MAX_ENTRIES the
+   * oldest records drop to make room (see trimToCap): bounded
+   * storage, disclosed here, not a silent rewrite of a record
+   * the store still holds.
    */
   append(receipt: Receipt): AppendResult {
     const canonical = canonicalReceipt(receipt);
@@ -486,7 +500,21 @@ export class HistoryStore {
     this.byTxid.set(canonical.txid, canonical);
     this.insertionOrder.push(canonical);
     this.statuses.set(canonical.txid, initialStatusFor(canonical));
+    this.trimToCap();
     return "appended";
+  }
+
+  /** Enforce HISTORY_MAX_ENTRIES, oldest first out. The
+   *  evicted receipt's status goes with it — an entry the
+   *  store no longer holds takes no confirmation updates and
+   *  is never serialised. Runs after append and after load;
+   *  a store at or under the cap is untouched. */
+  private trimToCap(): void {
+    while (this.insertionOrder.length > HISTORY_MAX_ENTRIES) {
+      const oldest = this.insertionOrder.shift() as Receipt;
+      this.byTxid.delete(oldest.txid);
+      this.statuses.delete(oldest.txid);
+    }
   }
 
   /**
@@ -653,6 +681,7 @@ export class HistoryStore {
         parsedHistory.statuses.get(receipt.txid) as TxStatus,
       );
     }
+    store.trimToCap();
     return store;
   }
 }

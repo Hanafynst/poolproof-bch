@@ -35,6 +35,8 @@ const strings: UiStrings = {
     "Nada foi transmitido.",
   historyUnavailable:
     "O histórico salvo não pôde ser lido. Esta lista começa vazia.",
+  historySaveFailed:
+    "O histórico não pôde ser salvo neste navegador. As entradas continuam visíveis até você recarregar a página.",
   receivePlainLabel: "Endereço simples",
   headline: "Este pool de CashToken está realmente ativo?",
   lede:

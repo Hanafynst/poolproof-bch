@@ -34,6 +34,8 @@ const strings: UiStrings = {
     "प्रसारित नहीं हुआ।",
   historyUnavailable:
     "सहेजा गया इतिहास पढ़ा नहीं जा सका। यह सूची खाली से शुरू होती है।",
+  historySaveFailed:
+    "इतिहास इस ब्राउज़र में सहेजा नहीं जा सका। पेज फिर से लोड करने तक प्रविष्टियाँ दिखती रहेंगी।",
   receivePlainLabel: "साधारण पता",
   headline: "क्या यह CashToken पूल वास्तव में सक्रिय है?",
   lede:

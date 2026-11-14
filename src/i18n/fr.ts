@@ -35,6 +35,8 @@ const strings: UiStrings = {
     "vérifiée. Rien n'a été diffusé.",
   historyUnavailable:
     "L'historique enregistré n'a pas pu être lu. Cette liste commence vide.",
+  historySaveFailed:
+    "L'historique n'a pas pu être enregistré dans ce navigateur. Les entrées restent visibles jusqu'au rechargement de la page.",
   receivePlainLabel: "Adresse simple",
   headline: "Ce pool CashToken est-il vraiment actif ?",
   lede:

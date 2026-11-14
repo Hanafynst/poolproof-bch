@@ -26,6 +26,7 @@ export interface UiStrings {
   sendBroadcastFailed: string;
   sendMalformed: string;
   historyUnavailable: string;
+  historySaveFailed: string;
   receivePlainLabel: string;
   headline: string;
   lede: string;

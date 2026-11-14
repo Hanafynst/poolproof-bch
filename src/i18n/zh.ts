@@ -26,6 +26,7 @@ const strings: UiStrings = {
     "广播失败。已签名的交易可以再次广播，不需要重新签名。",
   sendMalformed: "钱包返回的响应无法验证。没有广播任何内容。",
   historyUnavailable: "无法读取已保存的历史记录。此列表从空开始。",
+  historySaveFailed: "无法在此浏览器中保存历史记录。重新加载页面前，条目仍会显示。",
   receivePlainLabel: "普通地址",
   headline: "这个 CashToken 池真的还活跃吗？",
   lede:

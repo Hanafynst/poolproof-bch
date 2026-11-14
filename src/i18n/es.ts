@@ -35,6 +35,8 @@ const strings: UiStrings = {
     "No se transmitió nada.",
   historyUnavailable:
     "El historial guardado no se pudo leer. Esta lista empieza vacía.",
+  historySaveFailed:
+    "El historial no se pudo guardar en este navegador. Las entradas siguen visibles hasta que recargues la página.",
   receivePlainLabel: "Dirección simple",
   headline: "¿Este pool de CashToken está realmente vivo?",
   lede:

@@ -33,6 +33,8 @@ const strings: UiStrings = {
     "Nothing was broadcast.",
   historyUnavailable:
     "Saved history could not be read. This list starts empty.",
+  historySaveFailed:
+    "History could not be saved in this browser. Entries stay visible until you reload.",
   receivePlainLabel: "Plain address",
   headline: "Is this CashToken pool actually alive?",
   lede:
