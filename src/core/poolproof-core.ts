@@ -97,6 +97,14 @@ export interface PoolJudgement {
    *  when a Router quote or a routed figure exists. Null when the
    *  judgement returned before the simulation step. */
   aggregateSimulatedOutSats: bigint | null;
+  /** The routed CPMM figure for the same sell (the R39 model),
+   *  computed whenever the per-pool split exists — including when
+   *  a Router quote decides the verdict, where it rides along as
+   *  the cross-check the quote is measured against, so a report
+   *  never shows a quote without the figure it was checked
+   *  against. Null when the judgement returned before the
+   *  simulation step or the facts carry no per-pool split. */
+  routedSimulatedOutSats: bigint | null;
   simulationModel: SimulationModel;
   spotOutSats: number | null;
   referenceSellRaw: bigint;
@@ -246,6 +254,7 @@ function judgePoolInner(facts: PoolFacts): PoolJudgement {
     exitRatio: null,
     simulatedOutSats: null,
     aggregateSimulatedOutSats: null,
+    routedSimulatedOutSats: null,
     simulationModel: "none",
     spotOutSats: null,
     referenceSellRaw: 0n,
@@ -297,6 +306,17 @@ function judgePoolInner(facts: PoolFacts): PoolJudgement {
     feeBps,
   );
 
+  // The routed figure: the same sell walked across the real
+  // pools, each repricing as the sell moves through it, each
+  // charging its fee. Computed whenever the per-pool split
+  // exists, whichever model decides the verdict, so a judgement
+  // whose headline is a Router quote still carries the figure
+  // the quote is cross-checked against (R48).
+  const routedOutSats =
+    facts.pools !== undefined && facts.pools.length > 0
+      ? routedCpmmOutSats(sellRaw, facts.pools, feeBps)
+      : null;
+
   let simOutSats: bigint | null;
   let simulationModel: SimulationModel;
   if (facts.routeQuoteSats === null) {
@@ -307,8 +327,8 @@ function judgePoolInner(facts: PoolFacts): PoolJudgement {
     // own routed pricing for this exact sell.
     simOutSats = facts.routeQuoteSats;
     simulationModel = "router-quote";
-  } else if (facts.pools !== undefined && facts.pools.length > 0) {
-    simOutSats = routedCpmmOutSats(sellRaw, facts.pools, feeBps);
+  } else if (routedOutSats !== null) {
+    simOutSats = routedOutSats;
     simulationModel = "routed-cpmm";
   } else {
     simOutSats = aggregateOutSats;
@@ -321,6 +341,7 @@ function judgePoolInner(facts: PoolFacts): PoolJudgement {
     referenceSellRaw: sellRaw,
     simulatedOutSats: simOutSats,
     aggregateSimulatedOutSats: aggregateOutSats,
+    routedSimulatedOutSats: routedOutSats,
     simulationModel,
     spotOutSats,
     exitRatio,

@@ -28,9 +28,21 @@
  * header, never the audit. Both reads are injected (production:
  * cauldron-live + identity; tests: delayed fakes), so the
  * ordering is provable without a clock or a network.
+ *
+ * A third read joins in R48: the Cauldron Router's own quote for
+ * the audit's reference sell (router-quote.ts). It can only start
+ * once the pool facts have landed — the sell amount is a pure
+ * function of them — and only for an audit with pools to route
+ * across. Its failure discipline is the identity's: a null, never
+ * a rejection, costing the report only its cross-check. Upgrades
+ * compose in either order because every one rebuilds the report
+ * input from the audit's latest state (facts + identity below):
+ * a late identity keeps a landed quote, a late quote keeps a
+ * landed identity.
  */
 import type { LiveFacts } from "./cauldron-live.js";
 import type { TokenIdentity } from "./identity.js";
+import { referenceSellRaw } from "./poolproof-core.js";
 import { liveReportInput, type LiveReportInput } from "./live-report.js";
 
 export interface LiveAuditReads {
@@ -38,6 +50,13 @@ export interface LiveAuditReads {
     category: string,
   ) => Promise<LiveFacts & { category: string; checkedAt: Date }>;
   resolveIdentity: (category: string) => Promise<TokenIdentity | null>;
+  /** Optional (R48): the Router quote for this audit's reference
+   *  sell, in sats. Resolves null on any failure — the quote is a
+   *  cross-check, never a dependency. */
+  fetchRouteQuote?: (
+    category: string,
+    amountRaw: bigint,
+  ) => Promise<bigint | null>;
 }
 
 export interface LiveAuditHooks {
@@ -51,6 +70,13 @@ export interface LiveAuditHooks {
    *  report, resolves non-null, and the attempt is still
    *  current at that moment. */
   onIdentityUpgrade: (input: LiveReportInput) => void;
+  /** At most once (R48): the same report input with the Router
+   *  quote now carried in its facts. Fires only when a quote
+   *  lands after the report, resolves non-null, and the attempt
+   *  is still current at that moment. The input is rebuilt from
+   *  the audit's latest state, so it preserves whichever upgrade
+   *  landed before it. */
+  onQuoteUpgrade?: (input: LiveReportInput) => void;
 }
 
 export async function runLiveAuditReads(
@@ -81,13 +107,63 @@ export async function runLiveAuditReads(
   // callback, and without waiting on the identity read above.
   const live = await reads.fetchPoolFacts(category);
   if (!isCurrent()) return; // superseded mid-read: land nothing
-  if (identityLanded) {
-    hooks.onReport(liveReportInput(live, identity));
-    return;
-  }
-  hooks.onReport(liveReportInput(live, null));
-  const late = await identityPromise;
-  if (late !== null && isCurrent()) {
-    hooks.onIdentityUpgrade(liveReportInput(live, late));
-  }
+
+  // The audit's latest state. Every landing and upgrade below is
+  // built from these two, so the upgrades compose in either
+  // order: an identity upgrade emitted after the quote landed
+  // still carries the quote in its facts, and the quote upgrade
+  // still carries the identity.
+  let facts = live.facts;
+  const emit = (): LiveReportInput =>
+    liveReportInput({ ...live, facts }, identity);
+
+  // The Router quote read starts now, with the pool facts in
+  // hand: the reference sell is a pure function of them. Only a
+  // routable audit asks — pools to route across and a positive
+  // sell. The tracked promise never rejects, and the read itself
+  // is optional: older wirings (and most tests) never ask, and
+  // their flow below is unchanged.
+  const sellRaw = referenceSellRaw(
+    facts.totalSupplyRaw,
+    facts.reserveTokenRaw,
+  );
+  const quotePromise =
+    reads.fetchRouteQuote !== undefined &&
+    facts.pools !== undefined &&
+    facts.pools.length > 0 &&
+    sellRaw > 0n
+      ? reads.fetchRouteQuote(category, sellRaw).then(
+          (landed) => landed,
+          () => null,
+        )
+      : null;
+
+  hooks.onReport(emit());
+  // Each upgrade fires as its own read lands, built from the
+  // latest state at that moment — the two continuations below
+  // are independent, so whichever lands second carries the
+  // first one's result. The function itself resolves only after
+  // both have settled: the caller's end-of-audit decision (the
+  // R44 classification) reads the final landing record, and for
+  // a pool-bearing audit the report has long since landed, so
+  // waiting on the cross-check costs the reader nothing.
+  const identityUpgrade = (async () => {
+    if (identityLanded) return;
+    const late = await identityPromise;
+    if (late !== null && isCurrent()) {
+      hooks.onIdentityUpgrade(emit());
+    }
+  })();
+  const quoteUpgrade =
+    quotePromise === null
+      ? null
+      : (async () => {
+          const quote = await quotePromise;
+          if (quote !== null && isCurrent()) {
+            facts = { ...facts, routeQuoteSats: quote };
+            hooks.onQuoteUpgrade?.(emit());
+          }
+        })();
+  await identityUpgrade;
+  if (quoteUpgrade !== null) await quoteUpgrade;
 }
