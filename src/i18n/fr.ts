@@ -339,8 +339,8 @@ const strings: UiStrings = {
     "pools détiennent réellement, cette cotation recoupe " +
     "la simulation. Le verdict suit le ratio de sortie, " +
     "la part de la valeur au comptant que la vente " +
-    "conserve : sous 0,010, la sortie est morte ; à " +
-    "0,800 ou au-dessus, elle tient. S'il existe " +
+    "conserve : sous 0.010, la sortie est morte ; à " +
+    "0.800 ou au-dessus, elle tient. S'il existe " +
     "plusieurs chiffres, la cotation du Router décide " +
     "d'abord, puis la simulation routée, puis la " +
     "simulation à courbe unique.",
@@ -390,7 +390,7 @@ const strings: UiStrings = {
     "Le prix du portefeuille vient du pool Cauldron du " +
     "jeton. Quand un jeton n'a aucun pool contre BCH, " +
     "ou que le côté BCH du pool détient moins que le " +
-    "seuil de poussière de 100 000 satoshis, il n'existe " +
+    "seuil de poussière de 100,000 satoshis, il n'existe " +
     "aucun prix que PoolProof puisse garantir. Le jeton " +
     "apparaît toujours avec sa quantité et sans valeur, " +
     "jamais avec un chiffre deviné.",

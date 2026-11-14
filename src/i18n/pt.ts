@@ -322,12 +322,12 @@ const strings: UiStrings = {
     "da Cauldron são lidas ao vivo, e uma venda de " +
     "referência (a menor entre 1% da oferta e 10% da " +
     "reserva do pool) é simulada passando por cada pool " +
-    "do token. Se o Router do próprio local devolver uma " +
-    "cotação não maior do que as reservas que esses " +
+    "do token. Se o Router da própria plataforma devolver " +
+    "uma cotação não maior do que as reservas que esses " +
     "pools realmente mantêm, essa cotação confere a " +
     "simulação. O veredito segue a razão de saída, a " +
     "parte do valor à vista que a venda preserva: abaixo " +
-    "de 0,010 a saída está morta; em 0,800 ou acima, ela " +
+    "de 0.010 a saída está morta; em 0.800 ou acima, ela " +
     "se sustenta. Se houver mais de um número, decide " +
     "primeiro a cotação do Router, depois a simulação " +
     "roteada e depois a simulação de curva única.",
@@ -375,7 +375,7 @@ const strings: UiStrings = {
     "O preço da carteira vem do pool de Cauldron do " +
     "token. Quando um token não tem pool contra BCH, ou " +
     "o lado em BCH do pool guarda menos que a linha de " +
-    "poeira de 100.000 satoshis, não existe um preço que " +
+    "poeira de 100,000 satoshis, não existe um preço que " +
     "o PoolProof possa garantir. O token continua " +
     "aparecendo com a quantidade dele e sem valor, nunca " +
     "com um número chutado.",

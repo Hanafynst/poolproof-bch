@@ -241,7 +241,7 @@ const strings: UiStrings = {
   portfolioTitle: "Portofolio",
   portfolioTotalLabel: "Total nilai",
   portfolioOther: "Lainnya",
-  portfolioUnpricedNote: "Pangsa dan total hanya mencakup aset yang berharga. Aset tanpa harga dicantumkan tanpa nilai.",
+  portfolioUnpricedNote: "Pangsa dan total hanya mencakup aset yang memiliki harga. Aset tanpa harga dicantumkan tanpa nilai.",
   portfolioPricesUnavailable: "Harga token tidak dapat dimuat. Jumlah ditampilkan tanpa nilai.",
   portfolioRateNote: "Nilai memakai harga spot pool Cauldron. BCH dinilai pada kurs live {rate} dari {source}.",
   portfolioRateUnavailable: "Kurs live BCH/USD tidak bisa dimuat. Jumlah ditampilkan tanpa nilai dolar.",
@@ -323,7 +323,7 @@ const strings: UiStrings = {
     "yang benar-benar dipegang pool-pool itu, kutipan tersebut " +
     "memeriksa silang hasil simulasi. Vonis mengikuti rasio " +
     "keluar, yaitu porsi nilai spot yang dipertahankan " +
-    "penjualan: di bawah 0,010 jalan keluarnya mati, di 0,800 " +
+    "penjualan: di bawah 0.010 jalan keluarnya mati, di 0.800 " +
     "atau di atasnya jalan keluar itu bertahan. Jika ada lebih " +
     "dari satu angka, kutipan Router yang memutuskan lebih " +
     "dulu, lalu simulasi ter-routing, lalu simulasi kurva " +
@@ -369,7 +369,7 @@ const strings: UiStrings = {
   faqNoPriceA:
     "Harga portofolio berasal dari pool Cauldron token itu. " +
     "Kalau sebuah token tidak punya pool terhadap BCH, atau " +
-    "sisi BCH pool-nya berisi kurang dari garis debu 100.000 " +
+    "sisi BCH pool-nya berisi kurang dari garis debu 100,000 " +
     "satoshi, tidak ada harga yang bisa PoolProof " +
     "pertanggungjawabkan. Token itu tetap tampil dengan " +
     "jumlahnya dan tanpa nilai, tidak pernah dengan angka " +

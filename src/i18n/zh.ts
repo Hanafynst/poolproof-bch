@@ -271,7 +271,7 @@ const strings: UiStrings = {
   aboutAnchor:
     "报告可以封存在链上。PoolProof 按你下载的原样对" +
     "报告文件做哈希，你连接的钱包把该哈希以 OP_RETURN " +
-    "输出写入比特币现金主网。任何持有该文件的人都可以" +
+    "输出写入 Bitcoin Cash 主网。任何持有该文件的人都可以" +
     "对它做哈希，并与交易中的哈希比对，因此被改动的" +
     "报告无法冒充原件。",
   aboutSourcesTitle: "数据来源",
@@ -316,12 +316,12 @@ const strings: UiStrings = {
     "里批准之前，任何资产都不会移动。",
   faqAnchorQ: "锚定报告有什么作用？",
   faqAnchorA:
-    "锚定把报告文件的哈希写入一笔比特币现金主网交" +
+    "锚定把报告文件的哈希写入一笔 Bitcoin Cash 主网交" +
     "易，放在由你的钱包签名并广播的 OP_RETURN 输出" +
     "中。日后任何持有该文件的人都可以对它做哈希，并" +
     "与链上记录的哈希比对。文件改动哪怕一个字符，哈" +
     "希也会对不上。",
-  aboutValuesLine: "以美元计价 · 比特币现金主网",
+  aboutValuesLine: "以美元计价 · Bitcoin Cash 主网",
   navCheck: "检查",
   navWallet: "钱包",
   navAbout: "关于",

@@ -329,7 +329,7 @@ const strings: UiStrings = {
     "tienen de verdad, esa cotización contrasta la " +
     "simulación. El veredicto sigue la proporción de salida, " +
     "la parte del valor al contado que la venta conserva: " +
-    "por debajo de 0,010 la salida está muerta; en 0,800 o " +
+    "por debajo de 0.010 la salida está muerta; en 0.800 o " +
     "más, se sostiene. Si hay más de una cifra, decide " +
     "primero la cotización del Router, luego la simulación " +
     "enrutada y luego la simulación de curva única.",
@@ -376,7 +376,7 @@ const strings: UiStrings = {
     "El precio de cartera sale del pool de Cauldron del " +
     "token. Cuando un token no tiene pool contra BCH, o el " +
     "lado en BCH del pool guarda menos que la línea de " +
-    "polvo de 100.000 satoshis, no existe un precio que " +
+    "polvo de 100,000 satoshis, no existe un precio que " +
     "PoolProof pueda respaldar. El token sigue apareciendo " +
     "con su cantidad y sin valor, nunca con una cifra " +
     "inventada.",
