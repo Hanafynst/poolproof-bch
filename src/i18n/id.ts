@@ -294,6 +294,9 @@ export const flags: Record<FlagCode, string> = {
     "simulasi jual hanya mempertahankan {ratio} dari nilai spot " +
     "(biaya dan/atau dampak harga)",
   ROUTE_UNSIMULATED: "cadangan ada, tapi rute jual tidak bisa disimulasikan",
+  ROUTE_QUOTE_IMPLAUSIBLE:
+    "kutipan router dari venue sebesar {quoteSats} sats mustahil untuk pool " +
+    "yang total cadangannya {reserveSats} sats, jadi vonis memakai simulasi exit",
 };
 
 export default strings;

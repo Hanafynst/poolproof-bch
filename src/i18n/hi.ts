@@ -281,6 +281,9 @@ export const flags: Record<FlagCode, string> = {
   EXIT_LEAKS_VALUE:
     "बिक्री अनुकरण स्पॉट मूल्य का केवल {ratio} बनाए रखता है (शुल्क और/या मूल्य प्रभाव)",
   ROUTE_UNSIMULATED: "भंडार मौजूद हैं, लेकिन बिक्री रूट का अनुकरण नहीं किया जा सका",
+  ROUTE_QUOTE_IMPLAUSIBLE:
+    "वेन्यू के राउटर का {quoteSats} sats का कोट उन पूलों के लिए असंभव है जिनमें कुल " +
+    "{reserveSats} sats हैं, इसलिए निर्णय सिमुलेटेड एग्ज़िट पर आधारित है",
 };
 
 export default strings;

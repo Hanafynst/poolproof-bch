@@ -275,6 +275,9 @@ export const flags: Record<FlagCode, string> = {
   EXIT_LEAKS_VALUE:
     "يحتفظ بيع المحاكاة بـ{ratio} فقط من القيمة الفورية (الرسوم و/أو أثر السعر)",
   ROUTE_UNSIMULATED: "توجد احتياطيات، لكن تعذر محاكاة مسار البيع",
+  ROUTE_QUOTE_IMPLAUSIBLE:
+    "عرض سعر موجّه المكان البالغ {quoteSats} ساتوشي مستحيل لمجمعات تحتوي على " +
+    "{reserveSats} ساتوشي إجمالاً، لذا يعتمد الحكم على محاكاة الخروج",
 };
 
 export default strings;

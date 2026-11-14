@@ -298,6 +298,9 @@ export const flags: Record<FlagCode, string> = {
     "a simulação de venda mantém apenas {ratio} do valor spot " +
     "(taxas e/ou impacto no preço)",
   ROUTE_UNSIMULATED: "há reservas, mas a rota de venda não pôde ser simulada",
+  ROUTE_QUOTE_IMPLAUSIBLE:
+    "a cotação do roteador do venue de {quoteSats} sats é impossível para pools " +
+    "que somam {reserveSats} sats no total, então o veredito usa a saída simulada",
 };
 
 export default strings;

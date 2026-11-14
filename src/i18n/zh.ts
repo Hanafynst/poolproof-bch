@@ -244,6 +244,9 @@ export const flags: Record<FlagCode, string> = {
   EXIT_WORTHLESS: "卖出模拟仅返回现货价值的 {ratio}：退出毫无价值",
   EXIT_LEAKS_VALUE: "卖出模拟仅保留现货价值的 {ratio}（费用和/或价格冲击）",
   ROUTE_UNSIMULATED: "储备存在，但无法模拟卖出路线",
+  ROUTE_QUOTE_IMPLAUSIBLE:
+    "场馆路由器给出的 {quoteSats} 聪报价，对于总储备仅 {reserveSats} 聪的池子不可能兑付，" +
+    "因此结论采用模拟退出结果",
 };
 
 export default strings;

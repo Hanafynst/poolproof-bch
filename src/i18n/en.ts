@@ -287,6 +287,9 @@ export const flags: Record<FlagCode, string> = {
   EXIT_LEAKS_VALUE:
     "sell simulation keeps only {ratio} of spot value (fees and/or price impact)",
   ROUTE_UNSIMULATED: "reserves exist, but the sell route could not be simulated",
+  ROUTE_QUOTE_IMPLAUSIBLE:
+    "the venue's router quote of {quoteSats} sats is impossible for pools " +
+    "holding {reserveSats} sats in total, so the verdict uses the simulated exit",
 };
 
 export default strings;
