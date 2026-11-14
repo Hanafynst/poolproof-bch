@@ -3538,139 +3538,9 @@ h1,
   animation-delay: calc(var(--fold-i, 0) * var(--stagger-fold));
 }
 
-/* ============================================================
-   R77 — the About paper (see ABOUT-SECTION-2026-11-14.md).
-   One appended section owns the round, in the R74-R76
-   manner. The About is the page's colophon: it explains the
-   instrument after the instrument has been used, so it
-   takes the matte material of the verdict head card and the
-   stat strip (surface, gradient hairline, contact shadow),
-   never the ember halo: the glow budget stays with the
-   evidence papers. Heads follow the registrar's line from
-   R74 (display type, authored case, the short ember dash),
-   and the title carries the page's label gradient like
-   every other register head outside a window. */
-
-.about-paper {
-  background:
-    linear-gradient(var(--surface), var(--surface)) padding-box,
-    linear-gradient(180deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.02)) border-box;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  padding: 0.875rem;
-  margin-top: 0.85rem;
-  box-shadow: var(--shadow-card);
-}
-
-.about-head h2,
-.about-sub {
-  font-family: var(--font-display);
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  margin: 0;
-}
-
-.about-head h2::before,
-.about-sub::before {
-  content: "";
-  display: inline-block;
-  width: 0.55rem;
-  height: 2px;
-  margin-inline-end: 0.5rem;
-  vertical-align: middle;
-  border-radius: 1px;
-  background: var(--accent);
-}
-
-.about-sub {
-  margin-top: 1.15rem;
-}
-
-.about-paper p {
-  font-size: 1rem;
-  letter-spacing: -0.011em;
-  margin: 0.5rem 0 0;
-}
-
-/* The verdict glossary: term and definition on one row,
-   hairline-divided like the stat strip. The term carries
-   the stamp's own colour mapping, so the glossary teaches
-   the exact colours the report stamps with. */
-.about-glossary {
-  margin: 0.55rem 0 0;
-}
-
-.about-glossary-row {
-  display: grid;
-  grid-template-columns: minmax(6.5rem, auto) 1fr;
-  gap: 0.85rem;
-  align-items: baseline;
-  padding: 0.45rem 0;
-  border-top: 1px solid var(--line);
-}
-
-.about-glossary-row:first-child {
-  border-top: none;
-  padding-top: 0.2rem;
-}
-
-.about-verdict {
-  font-family: var(--font-display);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
-.about-verdict[data-verdict="ALIVE"] {
-  color: var(--alive);
-}
-
-.about-verdict[data-verdict="RISKY"] {
-  color: var(--risky);
-}
-
-.about-verdict[data-verdict="DEAD"],
-.about-verdict[data-verdict="NO_MARKET"] {
-  color: var(--dead);
-}
-
-.about-verdict[data-verdict="LYING_DISPLAY"] {
-  color: var(--lying);
-}
-
-.about-glossary dd {
-  margin: 0;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.about-paper .about-built {
-  color: var(--soft);
-  font-size: 0.8rem;
-  margin-top: 1.15rem;
-}
-
-/* The About heads are page content, not a window: like the
-   other register heads they take the label gradient where
-   the engine supports clipping it to the text, and the RTL
-   flip restates the 70/30 run in reading direction. */
-@supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .about-head h2,
-  .about-sub {
-    background-image: var(--grad-label);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
-  [dir="rtl"] .about-head h2,
-  [dir="rtl"] .about-sub {
-    background-image: linear-gradient(266deg, #ffffff 0%, #ffffff 70%, #ff6b5e 100%);
-  }
-}
+/* R77 — the About paper: RETIRED in R82. The About is a
+   stack of section cards now; its rules live in the R82
+   section at the end of this file. */
 
 /* ============================================================
    R78 — motion retune (see MOTION-RETUNE-2026-11-14.md).
@@ -4475,8 +4345,13 @@ h1,
    ============================================================ */
 
 :root {
-  /* The one measure: prose stops here, in every room. */
-  --measure: 70ch;
+  /* The one measure: prose stops here, in every room.
+     R82: stated in rem, not ch — the ch unit scales with each
+     element's own font size, so the 70ch cap landed at a
+     different pixel width for every text size (537px at 16px,
+     499px in the banner, 430px in the small print). 33.56rem
+     reproduces the settled 537px at every size. */
+  --measure: 33.56rem;
   /* The filled primary's hot core, cooled one step (finding
      3b above): the white label's lightest sampled point on
      the core's edge was 4.4:1; less pooled light at the top
@@ -4698,7 +4573,7 @@ h1,
 .provenance,
 .live-hint,
 .not-found-body,
-.about-paper p,
+.about-card p,
 .about-glossary dd {
   max-width: var(--measure);
 }
@@ -4860,4 +4735,179 @@ h1,
     opacity: 0.85;
     transform: none;
   }
+}
+
+/* ============================================================
+   R82 — the paragraph system (see ABOUT-TIDY-2026-11-14.md).
+   The user's verdict on R80 (2026-11-14 14:02 WIB): the
+   paragraphs are still untidy, the About scrambled. Measured
+   cause, two parts. (1) The shared measure was stated in ch,
+   a font-relative unit, so it landed at a different pixel
+   width for every text size in the app: 537px at 16px, 499px
+   in the banner, 483px in the glossary, 430px in the small
+   print. The token is restated in rem in the R80 root block
+   above (33.56rem, the settled 537px at every size); every
+   block in the R80 measure group now stops at the same width.
+   (2) The About was one paper spanning the whole room column
+   (955px on desktop) with six sections separated only by a
+   margin above each sub-head. It is now a stack of section
+   cards: one boundary per topic, one gap token between them,
+   one paragraph rhythm inside them. The lede joins the prose
+   line-height (1.55) the rest of the app already uses. */
+
+:root {
+  /* Section separation: the stack gap below, and the app's
+     existing card rhythm (scan groups sit 0.85rem apart),
+     named once here. */
+  --gap-section: 0.85rem;
+  /* Paragraph separation inside a composed block: the 8px
+     the About paragraphs already used, named once here. */
+  --gap-para: 0.5rem;
+}
+
+.lede {
+  line-height: 1.55;
+}
+
+/* The About stack takes the Check report column's width
+   (37.2rem, measured at the 1280 shell) so its cards align
+   with the report's cards and the prose inside stops at the
+   same measure; below that width it spans its room column
+   like every other card in the app. */
+.about-stack {
+  display: grid;
+  gap: var(--gap-section);
+  max-width: 37.2rem;
+}
+
+/* One card per About section. The material is the retired
+   paper's own matte ember treatment, restated for the card:
+   the border-box ember gradient and contact shadow of the
+   verdict head card, the drifting radial halo layer behind
+   it on the shared ember-drift cycle. Padding is the panel
+   family's 1.25rem. */
+.about-card {
+  position: relative;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(180deg, rgb(230 51 41 / 0.4), rgb(230 51 41 / 0.1) 58%, rgb(255 255 255 / 0.05)) border-box;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow:
+    var(--shadow-card),
+    0 0 36px -8px rgb(230 51 41 / 0.35);
+}
+
+.about-card::before {
+  content: "";
+  position: absolute;
+  inset: -16px -12px;
+  z-index: -1;
+  border-radius: 26px;
+  background: radial-gradient(58% 52% at 32% 16%, rgb(230 51 41 / 0.42), transparent 70%);
+  filter: blur(14px);
+  animation: ember-drift var(--dur-glow) var(--ease-in-out) infinite alternate;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-card::before {
+    animation: none;
+    opacity: 0.85;
+    transform: none;
+  }
+}
+
+/* The heads open their cards, so the sub-head's old in-paper
+   top margin goes; the stack gap carries the separation.
+   Type and the ember dash are the R77 registrar's line,
+   restated for the card structure. */
+.about-head h2,
+.about-sub {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  margin: 0;
+}
+
+.about-head h2::before,
+.about-sub::before {
+  content: "";
+  display: inline-block;
+  width: 0.55rem;
+  height: 2px;
+  margin-inline-end: 0.5rem;
+  vertical-align: middle;
+  border-radius: 1px;
+  background: var(--accent);
+}
+
+.about-card p {
+  font-size: 1rem;
+  letter-spacing: -0.011em;
+  margin: var(--gap-para) 0 0;
+}
+
+/* The verdict glossary: term and definition on one row,
+   hairline-divided like the stat strip. The term carries
+   the stamp's own colour mapping, so the glossary teaches
+   the exact colours the report stamps with. */
+.about-glossary {
+  margin: 0.55rem 0 0;
+}
+
+.about-glossary-row {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, auto) 1fr;
+  gap: 0.85rem;
+  align-items: baseline;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.about-glossary-row:first-child {
+  border-top: none;
+  padding-top: 0.2rem;
+}
+
+.about-verdict {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.about-verdict[data-verdict="ALIVE"] {
+  color: var(--alive);
+}
+
+.about-verdict[data-verdict="RISKY"] {
+  color: var(--risky);
+}
+
+.about-verdict[data-verdict="DEAD"],
+.about-verdict[data-verdict="NO_MARKET"] {
+  color: var(--dead);
+}
+
+.about-verdict[data-verdict="LYING_DISPLAY"] {
+  color: var(--lying);
+}
+
+.about-glossary dd {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* The solo-build line signs off the limits card: quieter
+   than its prose, one section gap below it. */
+.about-card .about-built {
+  color: var(--soft);
+  font-size: 0.8rem;
+  margin-top: var(--gap-section);
 }
