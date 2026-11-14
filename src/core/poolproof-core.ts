@@ -141,7 +141,39 @@ function validateFeeBps(feeBps: number): void {
   }
 }
 
-/** Constant-product out for selling `amountInRaw` into the pool. */
+/** The floored two-step pricing: the fee comes off the input in
+ *  integers before the curve sees it. This is the pair the routed
+ *  simulation's chunk loop must use for BOTH its chunk evaluations
+ *  and its reserve mutations — pricing a chunk any other way than
+ *  the mutation settles it would let a chunk drain sats without
+ *  adding the tokens it bought. */
+function cpmmOutFlooredSats(
+  amountInRaw: bigint,
+  reserveTokenRaw: bigint,
+  reserveQuoteSats: bigint,
+  feeBps: number,
+): bigint {
+  const afterFee = (amountInRaw * BigInt(10_000 - feeBps)) / 10_000n;
+  return (reserveQuoteSats * afterFee) / (reserveTokenRaw + afterFee);
+}
+
+/** Constant-product out for selling `amountInRaw` into the pool —
+ *  the price of ONE swap of the whole amount.
+ *
+ *  Fee-granularity escape (R55, from a captured live case): when
+ *  the floored after-fee input is 0 for a positive sell — at
+ *  30 bps, a 1-unit sell — the floored form prices the swap at
+ *  exactly 0 even into a deep pool, and a token whose reference
+ *  sell is that small (reserve measured in tens of units) grades
+ *  DEAD on a flooring artifact. The captured BLAZE2025 sell
+ *  (1 unit into 9,146,616 sats of reserves) floored to 0 while
+ *  the venue's own Router quoted 457,487 sats for it. So when —
+ *  and only when — the floor would zero the input, the fee is
+ *  priced proportionally on the gross output with a single final
+ *  floor instead (457,490 for that pool — the venue's figure to
+ *  within 3 sats). A positive sell into a positive pool never
+ *  prices to zero from fee flooring alone; a full fee (10000 bps)
+ *  still yields exactly 0. */
 export function cpmmOutSats(
   amountInRaw: bigint,
   reserveTokenRaw: bigint,
@@ -150,6 +182,11 @@ export function cpmmOutSats(
 ): bigint {
   validateFeeBps(feeBps);
   const afterFee = (amountInRaw * BigInt(10_000 - feeBps)) / 10_000n;
+  if (afterFee === 0n && amountInRaw > 0n) {
+    const grossOut =
+      (reserveQuoteSats * amountInRaw) / (reserveTokenRaw + amountInRaw);
+    return (grossOut * BigInt(10_000 - feeBps)) / 10_000n;
+  }
   return (reserveQuoteSats * afterFee) / (reserveTokenRaw + afterFee);
 }
 
@@ -211,6 +248,15 @@ export function routedCpmmOutSats(
   if (routable.length === 1) {
     return cpmmOutSats(amountInRaw, routable[0].tokenReserve, routable[0].satsReserve, feeBps);
   }
+  // The best single-pool price of the same sell, from the pools
+  // as they stand BEFORE the walk — the routing invariant's
+  // floor (see the return). Computed here because the walk below
+  // mutates these copies.
+  let bestSingleOut = 0n;
+  for (const pool of routable) {
+    const out = cpmmOutSats(amountInRaw, pool.tokenReserve, pool.satsReserve, feeBps);
+    if (out > bestSingleOut) bestSingleOut = out;
+  }
   let baseChunk = amountInRaw / BigInt(chunks);
   if (baseChunk === 0n) baseChunk = 1n;
   let remaining = amountInRaw;
@@ -221,7 +267,11 @@ export function routedCpmmOutSats(
     let bestIndex = 0;
     let bestOut = -1n;
     for (let i = 0; i < routable.length; i++) {
-      const out = cpmmOutSats(chunk, routable[i].tokenReserve, routable[i].satsReserve, feeBps);
+      // Floored pricing here, deliberately NOT the public
+      // cpmmOutSats: the chunk's evaluation and the reserve
+      // mutation below are one settled swap and must use the
+      // same math (see cpmmOutFlooredSats).
+      const out = cpmmOutFlooredSats(chunk, routable[i].tokenReserve, routable[i].satsReserve, feeBps);
       if (out > bestOut) {
         bestOut = out;
         bestIndex = i;
@@ -232,7 +282,17 @@ export function routedCpmmOutSats(
     totalOut += bestOut;
     remaining -= chunk;
   }
-  return totalOut;
+  // Routing invariant (R55): the best single-pool route is always
+  // a feasible route, so a chunked figure below it is a chunking
+  // artifact, never a price. It binds exactly where the chunk
+  // grid is coarser than the sell — a sell smaller than the chunk
+  // count walks in 1-unit chunks whose floored after-fee input is
+  // 0, so every chunk pays 0 while the same sell priced as one
+  // swap pays in full (captured live: BCA, 17 units across 9
+  // pools, chunked 0 vs 3,841,342 as one swap into the deepest
+  // pool). Healthy books are untouched: their chunked figure
+  // already beats any single pool.
+  return totalOut > bestSingleOut ? totalOut : bestSingleOut;
 }
 
 /** 1% of supply, capped at 10% of the pool's token reserve (source rule). */
