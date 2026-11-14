@@ -46,6 +46,11 @@ export interface UiStrings {
   exitNotSimulated: string;
   exitRouteFailed: string;
   exitRatio: string;
+  exitModel: string;
+  exitModelRouterQuote: string;
+  exitModelRoutedCpmm: string;
+  exitModelAggregateCpmm: string;
+  routedCrossCheck: string;
   identity: string;
   identityVerified: string;
   identityNone: string;

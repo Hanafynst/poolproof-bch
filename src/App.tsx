@@ -24,6 +24,7 @@ import {
   resolveIdentity,
 } from "./core/identity";
 import { runLiveAuditReads } from "./core/live-audit";
+import { fetchRouteQuote } from "./core/router-quote";
 import { type LiveReportInput } from "./core/live-report";
 import { classifyLookup } from "./core/lookup";
 import { judgePool, type FlagCode, type PoolJudgement } from "./core/poolproof-core";
@@ -229,6 +230,16 @@ function EvidenceRows({
           const fiat = fiatText(simOut, snapshot, currency);
           return fiat === null ? out : `${out} (≈ ${fiat})`;
         });
+  const spotText =
+    judgement.spotOutSats === null
+      ? "n/a"
+      : formatBchShort(BigInt(Math.round(judgement.spotOutSats)));
+  const modelName =
+    judgement.simulationModel === "router-quote"
+      ? t.exitModelRouterQuote
+      : judgement.simulationModel === "routed-cpmm"
+        ? t.exitModelRoutedCpmm
+        : t.exitModelAggregateCpmm;
   const rows: Array<[string, string]> = [
     [
       t.pools,
@@ -255,6 +266,24 @@ function EvidenceRows({
         `${snapshot.symbol} ${t.referenceSellCap}`,
     ],
     [t.simulatedExit, exitValue],
+    // The cross-check (R48): when the headline figure is the
+    // Router's own quote, our routed simulation stays on screen
+    // beside it: a quote is never presented without the figure
+    // it was checked against.
+    ...(judgement.simulationModel === "router-quote" &&
+    judgement.routedSimulatedOutSats !== null
+      ? [
+          [
+            t.routedCrossCheck,
+            t.exitOfSpot
+              .replace(
+                "{out}",
+                formatBchShort(judgement.routedSimulatedOutSats),
+              )
+              .replace("{spot}", spotText),
+          ] as [string, string],
+        ]
+      : []),
     [
       t.exitRatio,
       judgement.exitRatio === null
@@ -264,6 +293,13 @@ function EvidenceRows({
             maximumFractionDigits: 3,
           }).format(judgement.exitRatio),
     ],
+    // The model behind the headline figure, named in words
+    // (R48): a figure without its model is a displayed number
+    // dressed as a measurement. Model "none" adds no row: the
+    // exit row already says in words that nothing was simulated.
+    ...(judgement.simulationModel !== "none"
+      ? [[t.exitModel, modelName] as [string, string]]
+      : []),
   ];
   return (
     <table className="evidence">
@@ -462,6 +498,29 @@ function ReportActions({
         decimals: snapshot.decimals,
         verdict: judgement.verdict,
         exitRatio: judgement.exitRatio,
+        // The simulation record (R48): which model produced the
+        // headline figure, and every figure that was computed,
+        // so the JSON names its own provenance like the screen
+        // does. routeQuoteSats is the Router's answer when one
+        // landed; null means no quote is behind this report.
+        simulationModel: judgement.simulationModel,
+        simulatedOutSats:
+          judgement.simulatedOutSats === null
+            ? null
+            : judgement.simulatedOutSats.toString(),
+        routedSimulatedOutSats:
+          judgement.routedSimulatedOutSats === null
+            ? null
+            : judgement.routedSimulatedOutSats.toString(),
+        aggregateSimulatedOutSats:
+          judgement.aggregateSimulatedOutSats === null
+            ? null
+            : judgement.aggregateSimulatedOutSats.toString(),
+        routeQuoteSats:
+          snapshot.facts.routeQuoteSats === undefined ||
+          snapshot.facts.routeQuoteSats === null
+            ? null
+            : snapshot.facts.routeQuoteSats.toString(),
         reserveQuoteSats: snapshot.facts.reserveQuoteSats.toString(),
         reserveTokenRaw: snapshot.facts.reserveTokenRaw.toString(),
         totalSupplyRaw: snapshot.facts.totalSupplyRaw.toString(),
@@ -1654,6 +1713,12 @@ export default function App() {
           fetchPoolFacts: fetchLivePoolFacts,
           resolveIdentity: (c) =>
             resolveIdentity(c, fetchTokenStorkCandidates),
+          // The Router cross-check (R48): the venue's own quote
+          // for the reference sell, asked once the pool facts
+          // land. fetchRouteQuote resolves null on every failure,
+          // so a dead router silently costs the report only its
+          // cross-check row; the routed CPMM figure stands.
+          fetchRouteQuote: (c, amountRaw) => fetchRouteQuote(c, amountRaw),
         },
         () => liveAttempt.current === attempt,
         {
@@ -1675,6 +1740,19 @@ export default function App() {
             landing.landed = true;
             setLiveState({ phase: "done", input });
             if (firstAppearance) triggerReveal();
+          },
+          onQuoteUpgrade: (input) => {
+            // The Router quote upgrades the visible report in
+            // place, the identity pattern: the headline figure
+            // becomes the venue's own quote and the routed
+            // figure stays on screen as its cross-check. A
+            // quote only exists for a pool-bearing audit, whose
+            // report has always landed already, so this never
+            // reveals; the landing bookkeeping still updates so
+            // the end-of-audit classification reads final facts.
+            landing.input = input;
+            landing.landed = true;
+            setLiveState({ phase: "done", input });
           },
         },
       );
