@@ -359,8 +359,8 @@ const strings: UiStrings = {
   aboutSources:
     "Les données des pools viennent de l'indexeur " +
     "Cauldron exploité par Riften. L'identité du jeton " +
-    "vient des métadonnées BCMR, recoupées avec " +
-    "TokenStork. Les soldes du portefeuille sont lus " +
+    "vient de TokenStork, épinglée à l'ID de catégorie " +
+    "exact. Les soldes du portefeuille sont lus " +
     "depuis des serveurs Electrum publics. Chaque " +
     "chiffre d'un rapport est lu au moment où l'audit " +
     "tourne, et non repris d'une visite précédente.",

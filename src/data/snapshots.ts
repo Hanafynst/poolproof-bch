@@ -123,7 +123,7 @@ export const SNAPSHOTS: TokenSnapshot[] = [
           "Fiat figures are for orientation only. Every verdict is computed in BCH.",
         id:
           "Angka fiat memakai kurs referensi yang ditangkap bersama snapshot ini: " +
-          "BCH $221,85 (halaman pasar Selene, 13 Nov 2026) dan USD/IDR 18.220,5 " +
+          "BCH $221.85 (halaman pasar Selene, 13 Nov 2026) dan USD/IDR 18,220.5 " +
           "(Finnhub, 13 Nov 2026). Angka fiat hanya untuk orientasi. Setiap vonis dihitung dalam BCH.",
         zh:
           "法定货币数字使用与此快照一同捕获的参考汇率：BCH $221.85（Selene 市场页面，" +
@@ -131,8 +131,8 @@ export const SNAPSHOTS: TokenSnapshot[] = [
           "法币数字仅供参考。每个结论都以 BCH 计算。",
         es:
           "Las cifras en fiat usan tipos de referencia capturados con esta " +
-          "instantánea: BCH $221,85 (página de mercado de Selene, 13 de nov. de " +
-          "2026) y USD/IDR 18.220,5 (Finnhub, 13 de nov. de 2026). Las cifras " +
+          "instantánea: BCH $221.85 (página de mercado de Selene, 13 de nov. de " +
+          "2026) y USD/IDR 18,220.5 (Finnhub, 13 de nov. de 2026). Las cifras " +
           "en fiat son solo orientativas. Cada veredicto se calcula en BCH.",
         hi:
           "फ़िएट आंकड़े इस स्नैपशॉट के साथ लिए गए संदर्भ दरों का उपयोग करते हैं: " +
@@ -145,13 +145,13 @@ export const SNAPSHOTS: TokenSnapshot[] = [
           "18,220.5 (Finnhub، 13 نوفمبر 2026). أرقام العملات الورقية للإرشاد فقط. كل حكم يُحسب بـBCH.",
         pt:
           "Os valores em fiat usam taxas de referência capturadas com este " +
-          "instantâneo: BCH $221,85 (página de mercado da Selene, 13 de nov. de " +
-          "2026) e USD/IDR 18.220,5 (Finnhub, 13 de nov. de 2026). Os valores " +
+          "instantâneo: BCH $221.85 (página de mercado da Selene, 13 de nov. de " +
+          "2026) e USD/IDR 18,220.5 (Finnhub, 13 de nov. de 2026). Os valores " +
           "em fiat servem apenas como orientação. Cada veredito é calculado em BCH.",
         fr:
           "Les montants en fiat utilisent les taux de référence capturés avec " +
-          "cet instantané : BCH $221,85 (page de marché Selene, 13 nov. 2026) " +
-          "et USD/IDR 18 220,5 (Finnhub, 13 nov. 2026). Les montants en fiat " +
+          "cet instantané : BCH $221.85 (page de marché Selene, 13 nov. 2026) " +
+          "et USD/IDR 18,220.5 (Finnhub, 13 nov. 2026). Les montants en fiat " +
           "sont donnés à titre indicatif. Chaque verdict est calculé en BCH.",
       },
     },

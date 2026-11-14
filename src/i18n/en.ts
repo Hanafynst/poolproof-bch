@@ -329,8 +329,8 @@ const strings: UiStrings = {
   aboutSourcesTitle: "Where the data comes from",
   aboutSources:
     "Pool data comes from the Cauldron indexer run by Riften. " +
-    "Token identity comes from BCMR metadata, checked against " +
-    "TokenStork. Wallet balances come from public Electrum " +
+    "Token identity comes from TokenStork, pinned to the exact " +
+    "category ID. Wallet balances come from public Electrum " +
     "servers. Every figure in a report is read when the audit " +
     "runs, not carried over from an earlier visit.",
   aboutLimitsTitle: "The limits",

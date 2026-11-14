@@ -277,7 +277,7 @@ const strings: UiStrings = {
   aboutSourcesTitle: "数据来源",
   aboutSources:
     "池数据来自 Riften 运行的 Cauldron 索引器。代币" +
-    "身份来自 BCMR 元数据，并与 TokenStork 交叉核对。" +
+    "身份来自 TokenStork，按确切的类别 ID 固定。" +
     "钱包余额从公共 Electrum 服务器读取。报告中的每个" +
     "数字都在审计运行时读取，不会沿用之前访问的数据。",
   aboutLimitsTitle: "局限",

@@ -340,8 +340,8 @@ const strings: UiStrings = {
   aboutSourcesTitle: "Dari mana datanya berasal",
   aboutSources:
     "Data pool berasal dari indexer Cauldron yang dijalankan " +
-    "Riften. Identitas token berasal dari metadata BCMR, " +
-    "diperiksa silang dengan TokenStork. Saldo wallet dibaca " +
+    "Riften. Identitas token berasal dari TokenStork, " +
+    "dipatok ke ID kategori yang tepat. Saldo wallet dibaca " +
     "dari server Electrum publik. Setiap angka dalam laporan " +
     "dibaca saat audit berjalan, tidak dibawa dari kunjungan " +
     "sebelumnya.",

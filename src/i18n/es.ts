@@ -346,8 +346,8 @@ const strings: UiStrings = {
   aboutSourcesTitle: "De dónde vienen los datos",
   aboutSources:
     "Los datos de los pools vienen del indexador de Cauldron " +
-    "que opera Riften. La identidad del token viene de los " +
-    "metadatos BCMR, contrastados con TokenStork. Los " +
+    "que opera Riften. La identidad del token viene de " +
+    "TokenStork, fijada al ID de categoría exacto. Los " +
     "saldos de la cartera se leen de servidores Electrum " +
     "públicos. Cada cifra de un informe se lee cuando la " +
     "auditoría se ejecuta, no se arrastra de una visita " +
