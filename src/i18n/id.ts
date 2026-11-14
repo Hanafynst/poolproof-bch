@@ -13,11 +13,16 @@ const strings: UiStrings = {
   copyAddress: "Salin alamat",
   openWalletApp: "Buka aplikasi wallet",
   copyConnectionLink: "Salin tautan koneksi",
-  pairingScanHint: "Atau pindai kode ini dengan wallet di perangkat lain.",
+  pairingScanHint: "Wallet di perangkat lain: pindai kode ini dengan wallet itu.",
+  pairingPasteHint:
+    "Wallet di HP ini: salin tautannya, lalu tempel di halaman " +
+    "koneksi atau pindai wallet.",
   noWalletHeading: "Tidak ada aplikasi wallet yang merespons",
   noWalletBody:
-    "Pasang wallet yang didukung, lalu kembali dan ketuk Buka aplikasi " +
-    "wallet lagi. Cashonize berjalan di browser dan tidak perlu dipasang.",
+    "Salin tautan koneksi dan tempel di dalam wallet, atau pindai " +
+    "kode dari perangkat lain. Kalau belum punya wallet, pasang " +
+    "salah satu di bawah ini. Cashonize berjalan di browser dan " +
+    "tidak perlu dipasang.",
   walletBalanceLoading: "Memuat saldo...",
   walletBalanceUnavailable:
     "Saldo tidak tersedia. Indexer UTXO tidak bisa dihubungi.",

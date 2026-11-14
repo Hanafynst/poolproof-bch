@@ -14,11 +14,15 @@ const strings: UiStrings = {
   copyAddress: "Copiar dirección",
   openWalletApp: "Abrir la app de la billetera",
   copyConnectionLink: "Copiar enlace de conexión",
-  pairingScanHint: "O escanea este código con una billetera en otro dispositivo.",
+  pairingScanHint: "Billetera en otro dispositivo: escanea este código con ella.",
+  pairingPasteHint:
+    "Billetera en este teléfono: copia el enlace y pégalo en la " +
+    "página de conexión o escaneo de la billetera.",
   noWalletHeading: "Ninguna aplicación de billetera respondió",
   noWalletBody:
-    "Instala una billetera compatible, luego vuelve y toca Abrir " +
-    "aplicación de billetera otra vez. Cashonize funciona en el " +
+    "Copia el enlace de conexión y pégalo dentro de la billetera, " +
+    "o escanea el código desde otro dispositivo. Si aún no tienes " +
+    "una billetera, instala una abajo. Cashonize funciona en el " +
     "navegador y no necesita instalación.",
   walletBalanceLoading: "Cargando saldo...",
   walletBalanceUnavailable:

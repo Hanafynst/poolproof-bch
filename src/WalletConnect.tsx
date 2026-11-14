@@ -15,12 +15,15 @@ import { trapTabIndex } from "./core/focus-nav";
  * The connect flow is the protocol's own, not a mock: connect()
  * opens the Riften relay (wss, relay.riften.net), generates the key
  * exchange URI, and the pairing dialog is the window the wallet
- * sees. Paytaca, Selene, Cashonize and OPTN can approve two ways:
- * by opening the wiz:// URI directly (the dialog's primary button,
- * which is the only route that works when the wallet and this page
- * share one phone), or by scanning the QR code from another device.
- * There is no server-side sign-in and no window.alert anywhere in
- * this flow: the hook's error state renders inline below the button.
+ * sees. A wallet pairs by taking the connection URI: scanning the
+ * QR code from another device, or pasting a copied link into its
+ * own connect or scan page when it shares this phone. The dialog's
+ * wiz:// deep link is a secondary action only: the field test on
+ * the user's phone (2026-11-14) showed Paytaca does not take it,
+ * and the protocol's own docs describe pairing as the wallet
+ * scanning the URI. There is no server-side sign-in and no
+ * window.alert anywhere in this flow: the hook's error state
+ * renders inline below the button.
  *
  * On "connected" the dapp derives its addresses from the wallet's
  * first receive pubkey (manager.getPubkey(0, 0)): the plain
@@ -49,12 +52,16 @@ function asSignManager(manager: unknown): SignFlowManager | null {
 }
 
 /**
- * Our own pairing dialog. The stock WizardConnectQRDialog cannot
- * grow the one control a phone-only user needs (it renders a QR
- * code and nothing else, and a QR on the same phone that would
- * scan it is a dead end), so the dialog is rebuilt around the
- * hook: the connection URI as a tappable deep link first, the QR
- * and a copyable URI as the cross-device fallback.
+ * Our own pairing dialog. The stock WizardConnectQRDialog renders
+ * a QR code and nothing else, and a QR on the same phone that
+ * would scan it is a dead end, so the dialog is rebuilt around the
+ * hook with the two routes that actually pair: the QR for a wallet
+ * on another device, and the copyable connection URI as the
+ * primary action for a wallet on this phone (copy the link, paste
+ * it in the wallet's connect or scan page). The wiz:// deep link
+ * sits in the secondary row for wallets that do take it; on the
+ * user's phone Paytaca ignored it (2026-11-14), so it is an
+ * option here, not the promise.
  *
  * The QR is drawn exactly the way the stock dialog draws it: the
  * hook's qrUri is a payload string (the connection URI uppercased
@@ -64,11 +71,12 @@ function asSignManager(manager: unknown): SignFlowManager | null {
  * src, which renders as an empty white box: the bug the user
  * reported from his phone on 2026-11-14.
  *
- * A phone with no supported wallet installed answers the deep
- * link with silence, so a tap on the pairing button also arms a
- * 2-second watch (watchForWallet below): if the page never hid,
- * no wallet app took over, and the dialog offers install links
- * instead of sitting at a dead end.
+ * A phone whose wallets pair by scan or paste answers the deep
+ * link with silence, so a tap on it also arms a 2-second watch
+ * (watchForWallet below): if the page never hid, no wallet took
+ * the link, and the dialog shows the fallback (the paste and scan
+ * routes restated, plus install links) instead of sitting at a
+ * dead end.
  */
 function PairingDialog({
   t,
@@ -81,7 +89,7 @@ function PairingDialog({
   qrUri: string;
   onClose: () => void;
 }) {
-  const openWalletRef = useRef<HTMLAnchorElement>(null);
+  const copyButtonRef = useRef<HTMLButtonElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [uriCopied, setUriCopied] = useState(false);
   const [uriCopyFailed, setUriCopyFailed] = useState(false);
@@ -111,26 +119,27 @@ function PairingDialog({
   // so the unmount effect below can run it too.
   const watchCleanup = useRef<(() => void) | null>(null);
 
-  // Focus starts on the primary action: on a phone that is the
-  // button the user came for, and keyboard users land inside the
-  // dialog instead of behind it.
+  // Focus starts on the primary action: the copy button is the
+  // route that pairs a wallet on this phone, and keyboard users
+  // land inside the dialog instead of behind it.
   useEffect(() => {
-    openWalletRef.current?.focus();
+    copyButtonRef.current?.focus();
   }, []);
 
   useEffect(() => {
     return () => watchCleanup.current?.();
   }, []);
 
-  // A tap on the pairing button either hands over to a wallet app
+  // A tap on the deep link either hands over to a wallet app
   // (the page hides or the window blurs on the way out, which
-  // disarms the watch) or nothing answers at all, because no
-  // supported wallet is installed. The second case used to sit
-  // silent forever; now, if the page is still visible after 2 s,
-  // the install fallback appears under the buttons. The dialog
-  // unmounts when it closes and when a connection lands, so the
-  // fallback state resets with it; a fresh tap also hides it and
-  // re-arms the watch.
+  // disarms the watch) or nothing answers at all, because the
+  // installed wallets pair by scan or paste instead. The second
+  // case used to sit silent forever; now, if the page is still
+  // visible after 2 s, the fallback appears under the buttons and
+  // points at the routes that work. The dialog unmounts when it
+  // closes and when a connection lands, so the fallback state
+  // resets with it; a fresh tap also hides it and re-arms the
+  // watch.
   const watchForWallet = () => {
     setNoWallet(false);
     watchCleanup.current?.();
@@ -219,22 +228,23 @@ function PairingDialog({
         onKeyDown={trapTab}
       >
         <h2>{t.connectWallet}</h2>
-        <a
-          ref={openWalletRef}
-          className="pairing-open"
-          href={uri}
-          onClick={watchForWallet}
-        >
-          {t.openWalletApp}
-        </a>
         <p className="pairing-hint">{t.pairingScanHint}</p>
+        <p className="pairing-hint">{t.pairingPasteHint}</p>
         <div className="pairing-qr" role="img" aria-label={t.pairingScanHint}>
           <AlphanumericQRCode value={qrUri} size={210} />
         </div>
+        <button
+          type="button"
+          ref={copyButtonRef}
+          className="pairing-copy"
+          onClick={() => void copyUri()}
+        >
+          {uriCopied ? t.copied : t.copyConnectionLink}
+        </button>
         <div className="pairing-actions">
-          <button type="button" onClick={() => void copyUri()}>
-            {uriCopied ? t.copied : t.copyConnectionLink}
-          </button>
+          <a className="pairing-open" href={uri} onClick={watchForWallet}>
+            {t.openWalletApp}
+          </a>
           <button type="button" onClick={requestClose}>
             {t.sendCancel}
           </button>

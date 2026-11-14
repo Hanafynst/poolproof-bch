@@ -14,12 +14,17 @@ const strings: UiStrings = {
   copyAddress: "Copier l'adresse",
   openWalletApp: "Ouvrir l'application du portefeuille",
   copyConnectionLink: "Copier le lien de connexion",
-  pairingScanHint: "Ou scannez ce code avec un portefeuille sur un autre appareil.",
+  pairingScanHint: "Portefeuille sur un autre appareil : scannez ce code avec lui.",
+  pairingPasteHint:
+    "Portefeuille sur ce téléphone : copiez le lien, puis collez-le " +
+    "dans la page de connexion ou de scan du portefeuille.",
   noWalletHeading: "Aucune application de portefeuille n'a répondu",
   noWalletBody:
-    "Installez un portefeuille compatible, puis revenez et touchez à " +
-    "nouveau Ouvrir l'application de portefeuille. Cashonize " +
-    "fonctionne dans le navigateur et ne demande aucune installation.",
+    "Copiez le lien de connexion et collez-le dans le portefeuille, " +
+    "ou scannez le code depuis un autre appareil. Si vous n'avez " +
+    "pas encore de portefeuille, installez-en un ci-dessous. " +
+    "Cashonize fonctionne dans le navigateur et ne nécessite aucune " +
+    "installation.",
   walletBalanceLoading: "Chargement du solde...",
   walletBalanceUnavailable:
     "Solde indisponible. L'indexeur UTXO n'a pas pu être joint.",

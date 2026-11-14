@@ -17,6 +17,7 @@ export interface UiStrings {
   openWalletApp: string;
   copyConnectionLink: string;
   pairingScanHint: string;
+  pairingPasteHint: string;
   noWalletHeading: string;
   noWalletBody: string;
   walletBalanceLoading: string;

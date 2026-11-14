@@ -2107,8 +2107,10 @@ main:focus {
 }
 
 /* Same-device pairing dialog (WalletConnect.tsx). The primary
-   action is the deep link into the wallet app; the QR below it is
-   the cross-device fallback. */
+   action copies the connection link (the route that pairs a
+   wallet on this phone); the QR above it serves a wallet on
+   another device, and the deep link into a wallet app sits in
+   the secondary row. */
 .pairing-overlay {
   position: fixed;
   inset: 0;
@@ -2162,27 +2164,31 @@ main:focus {
   margin: 0 0 0.75rem;
 }
 
-.pairing-open {
+.pairing-copy {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   min-height: 48px;
+  margin-top: 1rem;
   padding: 0.7rem 1rem;
+  font: inherit;
   background: var(--accent-grad);
+  border: 1px solid var(--accent);
   box-shadow:
     inset 0 1px 0 0 rgb(255 255 255 / 0.22),
     0 2px 8px -2px rgb(0 0 0 / 0.45);
   color: #fff;
   font-weight: 600;
   border-radius: 10px;
-  text-decoration: none;
+  cursor: pointer;
   transition: box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .pairing-hint {
   color: var(--soft);
   font-size: 0.85rem;
-  margin: 0.9rem 0 0.5rem;
+  margin: 0 0 0.4rem;
 }
 
 /* The white QR box, mirroring the stock WizardConnect dialog:
@@ -2194,7 +2200,7 @@ main:focus {
   padding: 0.75rem;
   width: fit-content;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0.55rem auto 0;
 }
 
 .pairing-qr canvas {
@@ -2208,10 +2214,17 @@ main:focus {
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.5rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
-.pairing-actions button {
+/* The secondary row: Cancel and the deep link share one ghost
+   treatment, so the link reads as the option it is, not as the
+   primary action it was before R69. */
+.pairing-actions button,
+.pairing-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font: inherit;
   font-size: 0.9rem;
   min-height: 44px;
@@ -2220,6 +2233,7 @@ main:focus {
   color: var(--text);
   border: 1px solid var(--line);
   border-radius: 10px;
+  text-decoration: none;
   cursor: pointer;
   transition:
     transform var(--dur-press) var(--ease-out),
@@ -2228,15 +2242,17 @@ main:focus {
     box-shadow var(--dur-fast) var(--ease-out);
 }
 
-.pairing-actions button:hover {
+.pairing-actions button:hover,
+.pairing-actions a:hover {
   background: var(--surface-2);
   border-color: var(--line-strong);
 }
 
-/* No-wallet fallback: appears when the pairing button got no
-   answer from any wallet app (the watch in WalletConnect.tsx).
-   Routes a wallet-less visitor to a supported wallet instead of
-   leaving the dialog at a silent dead end. */
+/* No-wallet fallback: appears when the deep link got no answer
+   from any wallet (the watch in WalletConnect.tsx). Restates the
+   paste and scan routes and routes a wallet-less visitor to a
+   supported wallet instead of leaving the dialog at a silent
+   dead end. */
 .pairing-nowallet {
   margin-top: 1.1rem;
   padding-top: 1rem;
@@ -2303,6 +2319,8 @@ main:focus {
 .panel-actions a:active,
 .wallet button:active:not(:disabled),
 .pairing-actions button:active,
+.pairing-actions a:active,
+.pairing-copy:active,
 .pairing-wallets a:active,
 .copy-inline:active,
 .icon-btn:active,
@@ -2330,14 +2348,14 @@ main:focus {
    focus ring instead of the glow. */
 .primary-action:hover:not(:disabled):not(:focus-visible),
 .live-audit button:hover:not(:disabled):not(:focus-visible),
-.pairing-open:hover:not(:focus-visible),
+.pairing-copy:hover:not(:focus-visible),
 .not-found-action:hover:not(:focus-visible) {
   box-shadow: var(--glow-accent);
 }
 
 .primary-action:active:not(:disabled),
 .live-audit button:active:not(:disabled),
-.pairing-open:active,
+.pairing-copy:active,
 .not-found-action:active {
   box-shadow: none;
 }
@@ -2368,7 +2386,7 @@ a:focus-visible {
 .primary-action:focus-visible,
 .live-audit button:focus-visible,
 .not-found-action:focus-visible,
-.pairing-open:focus-visible {
+.pairing-copy:focus-visible {
   box-shadow:
     0 0 0 2px var(--bg),
     0 0 0 4px var(--accent-soft);

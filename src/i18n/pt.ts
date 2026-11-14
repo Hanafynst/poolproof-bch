@@ -14,11 +14,15 @@ const strings: UiStrings = {
   copyAddress: "Copiar endereço",
   openWalletApp: "Abrir o app da carteira",
   copyConnectionLink: "Copiar link de conexão",
-  pairingScanHint: "Ou escaneie este código com uma carteira em outro dispositivo.",
+  pairingScanHint: "Carteira em outro dispositivo: escaneie este código com ela.",
+  pairingPasteHint:
+    "Carteira neste telefone: copie o link e cole na página de " +
+    "conexão ou leitura da carteira.",
   noWalletHeading: "Nenhum aplicativo de carteira respondeu",
   noWalletBody:
-    "Instale uma carteira compatível, depois volte e toque em Abrir " +
-    "aplicativo de carteira novamente. O Cashonize funciona no " +
+    "Copie o link de conexão e cole dentro da carteira, ou " +
+    "escaneie o código de outro dispositivo. Se você ainda não tem " +
+    "uma carteira, instale uma abaixo. O Cashonize funciona no " +
     "navegador e não precisa de instalação.",
   walletBalanceLoading: "Carregando saldo...",
   walletBalanceUnavailable:
