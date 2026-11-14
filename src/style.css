@@ -56,6 +56,12 @@
      chip settle tint). */
   --dur-shimmer: 1.8s;
   --dur-settle: 600ms;
+  /* A third named exception (R50): the exit gauge's fill. The
+     gauge is the report's verdict made visible, and its grow
+     is read, not waited on, so it takes the settle tier's
+     duration; the resting width is always the exact figure,
+     and reduced motion rests it there instantly. */
+  --dur-gauge: 600ms;
 
   /* Depth tokens (DESIGN-REFERENCE §3): one job per layer.
      Layer 1 is light (an inset top hairline), layer 2 is
@@ -154,6 +160,28 @@
 
   to {
     background-color: rgb(52 211 153 / 0);
+  }
+}
+
+/* A panel's exit (R50): the closing counterpart of panel-in,
+   played by the slot wrapper while the panel stays mounted
+   for one exit duration. The resting state (no class) is the
+   panel's own, so removing the class mid-close is harmless. */
+@keyframes panel-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+}
+
+/* The exit gauge's one-shot grow (R50): from zero to the fill's
+   resting transform, which IS the exact fraction. It rides the
+   report section's .reveal gate, so it fires only when a
+   report genuinely lands; an in-place upgrade afterwards
+   moves the fill by its transition, never by this keyframe. */
+@keyframes gauge-grow {
+  from {
+    transform: scaleX(0);
   }
 }
 
@@ -362,6 +390,10 @@ h1 {
   box-shadow:
     var(--shadow-card),
     0 24px 48px -24px rgb(230 51 41 / 0.16);
+  /* First-mount entrance (R50): the card mounts once per page
+     load and rises once; polls and re-renders reuse the node,
+     so this never replays. */
+  animation: group-in var(--dur-reveal) var(--ease-out) both;
 }
 
 .balance-hint {
@@ -399,6 +431,45 @@ h1 {
   grid-template-columns: repeat(4, 1fr);
   gap: 0.6rem;
   margin-top: 1rem;
+}
+
+/* Home entrance stagger (R50): the tiles cascade on the same
+   stagger step the report groups use, then the headline block
+   and the controls follow. Mount animations all: each element
+   animates on its first mount and never again, so a balance
+   poll or a language switch cannot replay the entrance. */
+.tile {
+  animation: group-in var(--dur-reveal) var(--ease-out) both;
+}
+
+.tiles .tile:nth-child(2) {
+  animation-delay: calc(var(--stagger-step) * 1);
+}
+
+.tiles .tile:nth-child(3) {
+  animation-delay: calc(var(--stagger-step) * 2);
+}
+
+.tiles .tile:nth-child(4) {
+  animation-delay: calc(var(--stagger-step) * 3);
+}
+
+.layout-head {
+  animation: group-in var(--dur-reveal) var(--ease-out) both;
+  animation-delay: calc(var(--stagger-step) * 2);
+}
+
+.layout-controls {
+  animation: group-in var(--dur-reveal) var(--ease-out) both;
+  animation-delay: calc(var(--stagger-step) * 3);
+}
+
+/* The panel slot's closing state (R50): the wrapper plays the
+   exit while the panel stays mounted for one exit duration;
+   input is dead the moment the close starts. */
+.panel-exit {
+  animation: panel-out var(--dur-dialog-exit) var(--ease-in-out) both;
+  pointer-events: none;
 }
 
 .tile {
@@ -1043,6 +1114,269 @@ h1 {
   );
   background-size: 220% 100%;
   animation: shimmer var(--dur-shimmer) var(--ease-in-out) infinite;
+}
+
+/* The audit progress checklist (R50): the live audit's real
+   stages, one row each, in a group card like the report it
+   precedes. The dot carries the state: shimmering while its
+   read is in flight (the app's one looping treatment, reused),
+   a verdict-green disc with a check once the stage has truly
+   landed, a hollow ring while waiting, and a muted disc for
+   the honest endings (skipped, missing, unavailable), whose
+   word stands at the row's end. No row ever animates a claim:
+   a state change is the data landing, nothing else. */
+.audit-steps .steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+}
+
+.step + .step {
+  border-top: 1px solid var(--line-faint);
+}
+
+.step-dot {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  color: #fff;
+}
+
+.step-dot svg {
+  width: 11px;
+  height: 11px;
+}
+
+.step[data-state="active"] .step-dot {
+  border-color: transparent;
+  background: var(--surface-2);
+  background-image: linear-gradient(
+    100deg,
+    transparent 22%,
+    rgb(255 255 255 / 0.14) 50%,
+    transparent 78%
+  );
+  background-size: 220% 100%;
+  animation: shimmer var(--dur-shimmer) var(--ease-in-out) infinite;
+}
+
+.step[data-state="done"] .step-dot {
+  border-color: transparent;
+  background: var(--alive);
+}
+
+.step[data-state="skipped"] .step-dot,
+.step[data-state="missing"] .step-dot,
+.step[data-state="unavailable"] .step-dot {
+  border-color: transparent;
+  background: var(--surface-3);
+}
+
+.step-label {
+  font-size: 0.88rem;
+}
+
+.step[data-state="waiting"] .step-label {
+  color: var(--soft);
+}
+
+.step-word {
+  margin-inline-start: auto;
+  font-size: 0.8rem;
+  color: var(--soft);
+}
+
+/* The exit gauge (R50): the report's signature visual, at the
+   head of the exit group in both views. Two bars on one 0..1
+   scale: the real exit (verdict-coloured, full height) and,
+   under it, the spot-price promise the display makes (thin,
+   neutral). In the reserve mode the real bar is the reserve
+   against the dust threshold instead. The fill is a block
+   scaled on X: its resting transform is the exact fraction,
+   so what you measure is what the rows say. Ticks mark the
+   verdict's own lines (0.01, 0.8) on the real bar only. */
+.exit-gauge {
+  margin-bottom: 0.9rem;
+}
+
+.gauge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.gauge-row + .gauge-row {
+  margin-top: 0.45rem;
+}
+
+.gauge-label {
+  flex: none;
+  width: 9.5rem;
+  font-size: 0.8rem;
+  color: var(--soft);
+}
+
+.gauge-track {
+  position: relative;
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.45);
+}
+
+.gauge-track-thin {
+  height: 5px;
+}
+
+.gauge-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform: scaleX(var(--fill, 0));
+  transform-origin: left center;
+  transition: transform var(--dur-gauge) var(--ease-out);
+}
+
+[dir="rtl"] .gauge-fill {
+  transform-origin: right center;
+}
+
+.exit-gauge[data-verdict="ALIVE"] .gauge-fill:not(.gauge-fill-displayed) {
+  background: var(--alive);
+}
+
+.exit-gauge[data-verdict="RISKY"] .gauge-fill:not(.gauge-fill-displayed) {
+  background: var(--risky);
+}
+
+.exit-gauge[data-verdict="DEAD"] .gauge-fill:not(.gauge-fill-displayed),
+.exit-gauge[data-verdict="NO_MARKET"] .gauge-fill:not(.gauge-fill-displayed) {
+  background: var(--dead);
+}
+
+.exit-gauge[data-verdict="LYING_DISPLAY"] .gauge-fill:not(.gauge-fill-displayed) {
+  background: var(--lying);
+}
+
+/* The displayed bar is the promise, not a verdict: neutral
+   light grey on both modes, deliberately colourless next to
+   the verdict-coloured truth above it. */
+.gauge-fill-displayed {
+  background: rgb(255 255 255 / 0.3);
+}
+
+.gauge-tick {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-inline-start: -1px;
+  background: rgb(255 255 255 / 0.65);
+  border-radius: 1px;
+}
+
+.gauge-value {
+  flex: none;
+  min-width: 3.2rem;
+  text-align: end;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.gauge-caption {
+  margin: 0.5rem 0 0;
+  font-size: 0.72rem;
+  color: var(--soft);
+}
+
+/* The landing grow: only inside a revealing report section
+   (the same gate as the group stagger), one-shot, to the
+   fill's exact resting transform. */
+.reveal .gauge-fill {
+  animation: gauge-grow var(--dur-gauge) var(--ease-out) both;
+}
+
+/* Pool share bars (R50, scanner exit group): the reserve's
+   distribution across pools, deepest first, in slim neutral
+   bars; the share number is in the row's value, the bar is
+   its picture. Fills rest at their exact share from the
+   first frame (the bars render inside a report that has
+   already landed; upgrades glide by the transition). */
+.pool-shares {
+  margin-bottom: 0.9rem;
+}
+
+.pool-shares-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--soft);
+}
+
+.pool-share-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0;
+}
+
+.pool-share-label {
+  flex: none;
+  width: 9.5rem;
+  font-size: 0.8rem;
+  color: var(--soft);
+}
+
+.pool-share-track {
+  position: relative;
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.45);
+}
+
+.pool-share-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgb(255 255 255 / 0.45);
+  transform: scaleX(var(--fill, 0));
+  transform-origin: left center;
+  transition: transform var(--dur-gauge) var(--ease-out);
+}
+
+[dir="rtl"] .pool-share-fill {
+  transform-origin: right center;
+}
+
+.pool-share-value {
+  flex: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.pool-share-more {
+  margin: 0.45rem 0 0;
+  font-size: 0.8rem;
+  color: var(--soft);
 }
 
 .visually-hidden {
@@ -1985,6 +2319,14 @@ a:focus-visible {
 @media (max-width: 560px) {
   main {
     padding: 0.75rem 0.9rem 2.5rem;
+  }
+
+  /* The gauge keeps its three-column row at phone width; the
+     label column narrows so the track stays the widest thing
+     on the row. */
+  .gauge-label,
+  .pool-share-label {
+    width: 6.75rem;
   }
 
   h1 {
