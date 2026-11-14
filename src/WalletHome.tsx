@@ -29,6 +29,7 @@ import {
   formatBaseUnits,
   parseAmountInput,
   shortcutAmount,
+  type FiatRate,
   type GateReason,
   type Receipt,
   type ShortcutKind,
@@ -237,29 +238,40 @@ export function WalletCard({
 }
 
 /**
- * The portfolio ring (R81): the priced composition as a donut,
- * drawn from the same model the rows render, so ring and rows
- * can never disagree. Segments sweep in once on mount (the
- * progress state starts at 0 and the effect raises it; refresh
+ * The portfolio ring (R81, deepened in R83): the priced
+ * composition as a donut, drawn from the same model the rows
+ * render, so ring and rows can never disagree. R83 makes it
+ * the card's hero: a thicker band with rounded caps and a soft
+ * glow in each segment's own colour, and a three-line centre —
+ * the total's label, the total itself, the same total in BCH
+ * under it. Segments sweep in once on mount (the progress
+ * state starts at 0 and the effect raises it; refresh
  * re-renders reuse the node and the raised state, so a balance
- * poll never replays the sweep). Segment lengths carry a small
- * gap so neighbours read as neighbours; a single full-circle
- * segment closes without one.
+ * poll never replays the sweep). With more than one segment
+ * the dash gap is sized against the round caps: a cap extends
+ * half the stroke width past each dash end, so a gap of 11 on
+ * this circumference lands the painted arcs within a unit of
+ * their true shares. A single full-circle segment keeps butt
+ * caps, so its seam closes cleanly.
  */
 function PortfolioRing({
   model,
+  centreLabel,
   centreText,
+  centreSub,
   label,
 }: {
   model: PortfolioModel;
+  centreLabel: string;
   centreText: string;
+  centreSub: string;
   label: string;
 }) {
   const [progress, setProgress] = useState(0);
   useEffect(() => {
     setProgress(1);
   }, []);
-  const radius = 34;
+  const radius = 50;
   const circumference = 2 * Math.PI * radius;
   const segments: Array<{
     key: string;
@@ -278,53 +290,73 @@ function PortfolioRing({
     });
     acc += row.share;
   }
-  const gap = segments.length > 1 ? 2 : 0;
+  const multi = segments.length > 1;
+  const gap = multi ? 11 : 0;
   return (
     <div className="portfolio-ring" role="img" aria-label={label}>
-      <svg viewBox="0 0 84 84" aria-hidden="true" focusable="false">
-        <circle className="portfolio-track" cx="42" cy="42" r={radius} />
+      <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+        <circle className="portfolio-track" cx="60" cy="60" r={radius} />
         {segments.map((segment) => (
           <circle
             key={segment.key}
             className="portfolio-seg"
-            cx="42"
-            cy="42"
+            cx="60"
+            cy="60"
             r={radius}
             stroke={segment.color}
-            strokeDasharray={`${Math.max(segment.share * circumference * progress - gap, 0)} ${circumference}`}
+            strokeLinecap={multi ? "round" : "butt"}
+            style={{ filter: `drop-shadow(0 0 5px ${segment.color}59)` }}
+            strokeDasharray={`${Math.max(segment.share * circumference * progress - gap, 0.5)} ${circumference}`}
             strokeDashoffset={-segment.start * circumference * progress}
           />
         ))}
       </svg>
-      <span className="portfolio-ring-value">{centreText}</span>
+      <div className="portfolio-ring-centre">
+        <span className="portfolio-ring-label">{centreLabel}</span>
+        <span className="portfolio-ring-value">{centreText}</span>
+        <span className="portfolio-ring-sub">{centreSub}</span>
+      </div>
     </div>
   );
 }
 
 /**
- * The portfolio card (R81): the connected wallet's composition,
- * modelled on the verdict hero — a donut of the priced rows, the
+ * The portfolio card (R81, redesigned in R83): the connected
+ * wallet's composition — a donut of the priced rows with the
  * priced total in USD at its centre, one row per asset below.
  * All pricing lives in the pure core (core/portfolio.ts); this
  * component only fetches and renders. Identities come through
  * the caller's resolver (the audit path's TokenStork pinning),
  * pool reserves through the audit path's own Cauldron adapter,
- * and the BCH/USD rate is the labelled reference rate the caller
- * passes (the one the bundled snapshots carry). A category whose
- * pool read failed is unpriced like one with no pool, and the
- * card says prices could not be loaded; unpriced holdings keep
- * their amounts and carry no value. NFTs render as a count.
+ * and the BCH/USD rate is the caller's LIVE quote (core/fx-rate
+ * via App): its source is named in the card's footnote, and
+ * when every source failed the card shows amounts and shares
+ * without dollar values and says so. While pool prices or the
+ * rate are still loading the card shows a skeleton, never
+ * placeholder figures. A category whose pool read failed is
+ * unpriced like one with no pool, and the card says prices
+ * could not be loaded; unpriced holdings keep their amounts
+ * and carry no value. NFTs render as a count.
  */
 export function PortfolioCard({
   t,
   holdings,
   resolveIdentity,
   bchUsd,
+  rateSource,
+  rateSettled,
 }: {
   t: UiStrings;
   holdings: WalletHoldings;
   resolveIdentity: (category: string) => Promise<TokenIdentity | null>;
+  /** The live BCH/USD quote, or null when every source failed. */
   bchUsd: number | null;
+  /** The source that served the quote, for the footnote. */
+  rateSource: string | null;
+  /** False while the first rate read is still in flight: the
+   *  card stays on its skeleton rather than guessing whether
+   *  dollar figures exist. */
+  rateSettled: boolean;
 }) {
   const [identities, setIdentities] = useState<
     Record<string, TokenIdentity | null>
@@ -430,19 +462,38 @@ export function PortfolioCard({
       <h2>{t.portfolioTitle}</h2>
       {isEmpty ? (
         <p className="balance-hint">{t.holdingsEmpty}</p>
-      ) : model === null ? (
-        <p className="balance-hint" aria-busy="true">
-          {t.liveFetching}
-        </p>
+      ) : model === null || !rateSettled ? (
+        <div
+          className="portfolio-skeleton"
+          role="status"
+          aria-busy="true"
+          aria-label={t.liveFetching}
+        >
+          <div className="portfolio-skeleton-ring" aria-hidden="true" />
+          <div aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <div className="portfolio-skeleton-row" key={i}>
+                <span className="portfolio-skeleton-chip" />
+                <span className="portfolio-skeleton-lines">
+                  <span className="portfolio-skeleton-line" />
+                  <span className="portfolio-skeleton-line portfolio-skeleton-line-short" />
+                </span>
+                <span className="portfolio-skeleton-side" />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : (
         <>
           <PortfolioRing
             model={model}
+            centreLabel={t.portfolioTotalLabel}
             centreText={
               model.totalUsd === null
                 ? "n/a"
                 : usdFormat.format(model.totalUsd)
             }
+            centreSub={`${formatBch(model.totalValueSats)} BCH`}
             label={`${t.portfolioTitle}: ${
               model.totalUsd === null
                 ? "n/a"
@@ -450,52 +501,87 @@ export function PortfolioCard({
             }`}
           />
           <ul className="portfolio-rows">
-            {model.rows.map((row) => (
-              <li
-                className="portfolio-row"
-                key={`${row.kind}:${row.category ?? ""}`}
-              >
-                <span
-                  className="portfolio-dot"
-                  style={{ background: row.color }}
-                  aria-hidden="true"
-                />
-                <span className="portfolio-row-main">
-                  <span className="portfolio-row-top">
-                    <span className="portfolio-name">
-                      {row.kind === "other" ? t.portfolioOther : row.label}
-                    </span>
-                    <span className="portfolio-share">
+            {model.rows.map((row) => {
+              const name =
+                row.kind === "other" ? t.portfolioOther : row.label;
+              const initial = (
+                row.kind === "bch" ? "B" : symbolOf(row.category) || name
+              )
+                .charAt(0)
+                .toUpperCase();
+              const amount =
+                row.kind === "bch"
+                  ? `${formatBch(row.amountBase ?? 0n)} BCH`
+                  : row.kind === "token"
+                    ? `${formatTokenAmount(row.amountBase ?? 0n, row.decimals)} ${symbolOf(row.category)}`.trim()
+                    : row.groupedCategories
+                        .map((category) => symbolOf(category))
+                        .filter((symbol) => symbol !== "")
+                        .join(", ");
+              return (
+                <li
+                  className="portfolio-row"
+                  key={`${row.kind}:${row.category ?? ""}`}
+                >
+                  <span
+                    className="portfolio-chip"
+                    style={{
+                      background: `${row.color}24`,
+                      color: row.color,
+                    }}
+                    aria-hidden="true"
+                  >
+                    {initial}
+                  </span>
+                  <span className="portfolio-row-main">
+                    <span className="portfolio-name">{name}</span>
+                    {amount !== "" && (
+                      <span className="portfolio-row-sub">{amount}</span>
+                    )}
+                  </span>
+                  <span className="portfolio-row-side">
+                    {row.usdValue !== null && (
+                      <span className="portfolio-value">
+                        {usdFormat.format(row.usdValue)}
+                      </span>
+                    )}
+                    <span
+                      className="portfolio-pill"
+                      style={{
+                        background: `${row.color}24`,
+                        color: row.color,
+                      }}
+                    >
                       {row.share === null
                         ? "n/a"
                         : `${percentFormat.format(row.share * 100)}%`}
                     </span>
                   </span>
-                  <span className="portfolio-row-sub">
-                    {row.kind === "bch"
-                      ? `${formatBch(row.amountBase ?? 0n)} BCH`
-                      : row.kind === "token"
-                        ? `${formatTokenAmount(row.amountBase ?? 0n, row.decimals)} ${symbolOf(row.category)}`.trim()
-                        : ""}
-                    {row.usdValue !== null &&
-                      `${row.kind === "other" ? "" : " · "}${usdFormat.format(row.usdValue)}`}
-                  </span>
-                </span>
-              </li>
-            ))}
+                </li>
+              );
+            })}
             {model.unpriced.map((holding) => (
-              <li className="portfolio-row" key={`unpriced:${holding.category}`}>
+              <li
+                className="portfolio-row"
+                key={`unpriced:${holding.category}`}
+              >
                 <span
-                  className="portfolio-dot portfolio-dot-hollow"
+                  className="portfolio-chip portfolio-chip-hollow"
                   aria-hidden="true"
-                />
+                >
+                  {(symbolOf(holding.category) || holding.label)
+                    .charAt(0)
+                    .toUpperCase()}
+                </span>
                 <span className="portfolio-row-main">
-                  <span className="portfolio-row-top">
-                    <span className="portfolio-name">{holding.label}</span>
-                    <span className="portfolio-share">n/a</span>
-                  </span>
+                  <span className="portfolio-name">{holding.label}</span>
                   <span className="portfolio-row-sub">
                     {`${formatTokenAmount(holding.amountBase, holding.decimals)} ${symbolOf(holding.category)}`.trim()}
+                  </span>
+                </span>
+                <span className="portfolio-row-side">
+                  <span className="portfolio-pill portfolio-pill-none">
+                    n/a
                   </span>
                 </span>
               </li>
@@ -503,15 +589,17 @@ export function PortfolioCard({
             {model.nftCount > 0 && (
               <li className="portfolio-row" key="nfts">
                 <span
-                  className="portfolio-dot portfolio-dot-hollow"
+                  className="portfolio-chip portfolio-chip-hollow"
                   aria-hidden="true"
-                />
+                >
+                  <span className="portfolio-chip-gem" />
+                </span>
                 <span className="portfolio-row-main">
-                  <span className="portfolio-row-top">
-                    <span className="portfolio-name">{t.holdingsNfts}</span>
-                    <span className="portfolio-share">
-                      {latinNumberFormat().format(model.nftCount)}
-                    </span>
+                  <span className="portfolio-name">{t.holdingsNfts}</span>
+                </span>
+                <span className="portfolio-row-side">
+                  <span className="portfolio-value">
+                    {latinNumberFormat().format(model.nftCount)}
                   </span>
                 </span>
               </li>
@@ -523,8 +611,14 @@ export function PortfolioCard({
           {model.unpriced.length > 0 && (
             <p className="panel-note">{t.portfolioUnpricedNote}</p>
           )}
-          {bchUsd !== null && (
-            <p className="panel-note">{t.portfolioRateNote}</p>
+          {bchUsd !== null && rateSource !== null ? (
+            <p className="panel-note">
+              {t.portfolioRateNote
+                .replace("{rate}", usdFormat.format(bchUsd))
+                .replace("{source}", rateSource)}
+            </p>
+          ) : (
+            <p className="panel-note">{t.portfolioRateUnavailable}</p>
           )}
         </>
       )}
@@ -956,6 +1050,7 @@ export function SendPanel({
   utxos,
   holdings,
   resolveIdentity,
+  fiatRate,
   onSent,
   onSendFailed,
 }: {
@@ -967,6 +1062,10 @@ export function SendPanel({
   utxos: SpendableUtxo[];
   holdings: WalletHoldings | null;
   resolveIdentity: (category: string) => Promise<TokenIdentity | null>;
+  /** The caller's live BCH/USD quote in send-flow's labelled
+   *  shape (R83), or null when every rate source failed: the
+   *  confirmation sheet then shows the fee in BCH alone. */
+  fiatRate: FiatRate | null;
   onSent: (receipt: Receipt) => void;
   /** The toast layer's failure feed (R51): called with the
    *  exact string the confirm sheet is about to show, so the
@@ -1267,6 +1366,22 @@ export function SendPanel({
       style: "percent",
       maximumFractionDigits: 0,
     }).format(kind / 100);
+  // The fee's fiat rendering (R83): feePreview prices the fee
+  // only when a rate is passed, so with no live quote the sheet
+  // shows the BCH figure alone — the suffix is empty, never a
+  // stale or invented dollar figure.
+  const feeFiatSuffix = (feeSats: bigint): string => {
+    if (fiatRate === null) return "";
+    const fiat = feePreview(feeSats, fiatRate).feeFiat;
+    if (fiat === undefined) return "";
+    const usd = latinNumberFormat({
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Number(fiat.amountText));
+    return ` ≈ ${usd}`;
+  };
   const walletEmpty =
     holdings.bchSats === 0n &&
     holdings.fungibles.length === 0 &&
@@ -1544,7 +1659,7 @@ export function SendPanel({
               <dt>{t.confirmFee}</dt>
               <dd>
                 {template !== null
-                  ? `${formatBch(feePreview(template.feeSats).feeSats)} BCH`
+                  ? `${formatBch(feePreview(template.feeSats).feeSats)} BCH${feeFiatSuffix(template.feeSats)}`
                   : ""}
               </dd>
             </div>

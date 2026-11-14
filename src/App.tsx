@@ -25,6 +25,7 @@ import {
 } from "./core/identity";
 import { runLiveAuditReads } from "./core/live-audit";
 import { fetchRouteQuote } from "./core/router-quote";
+import { fetchBchUsdRate, type FxRate } from "./core/fx-rate";
 import { type LiveReportInput } from "./core/live-report";
 import { classifyLookup } from "./core/lookup";
 import {
@@ -53,7 +54,7 @@ import {
 import { HistoryStore, HistoryStoreError } from "./core/history-store";
 import type { HistoryEntry } from "./core/history-store";
 import { fetchConfirmationUpdates } from "./core/history-status";
-import type { Receipt } from "./core/send-flow";
+import type { FiatRate, Receipt } from "./core/send-flow";
 import type { SpendableUtxo } from "./core/transfer-tx";
 import {
   fetchAddressUtxos,
@@ -2018,14 +2019,46 @@ export default function App() {
     }
   };
   const walletAddress = walletSession.address;
-  // The portfolio card's BCH/USD rate (R81): the labelled
-  // reference rate the bundled snapshots carry (Selene market
-  // page, 13 Nov 2026) — the product's only BCH/USD rate, the
-  // same labelled-rate shape send-flow's FiatRate describes.
-  // No snapshot carrying a rate would mean no USD figures at
-  // all, never an invented one.
-  const referenceBchUsd =
-    SNAPSHOTS.find((snapshot) => snapshot.fiat)?.fiat?.bchUsd ?? null;
+  // The live BCH/USD rate (R83): read on load from the public
+  // sources core/fx-rate.ts names, re-read on the app's one
+  // poll cadence (30 seconds, the History refresh's). The
+  // portfolio card's USD figures and the Send sheet's fee fiat
+  // both hang off this one quote. fxSettled separates "still
+  // reading" from "every source failed": a failed read leaves
+  // fxRate null with fxSettled true, and the surfaces show
+  // their prices-unavailable state — never a stale quote kept
+  // past its read, never an invented number. (The bundled
+  // snapshots keep their own captured rates; those are the
+  // historical record of a past read, rendered as such.)
+  const [fxRate, setFxRate] = useState<FxRate | null>(null);
+  const [fxSettled, setFxSettled] = useState(false);
+  useEffect(() => {
+    let live = true;
+    const read = async () => {
+      const rate = await fetchBchUsdRate();
+      if (!live) return;
+      setFxRate(rate);
+      setFxSettled(true);
+    };
+    void read();
+    const timer = window.setInterval(() => void read(), 30_000);
+    return () => {
+      live = false;
+      window.clearInterval(timer);
+    };
+  }, []);
+  // The same live quote in send-flow's labelled-rate shape, for
+  // the Send confirmation sheet's fee fiat: the source is the
+  // exchange that just answered, the date is the read's own day.
+  const sendFiatRate: FiatRate | null =
+    fxRate === null
+      ? null
+      : {
+          currency: "USD",
+          perBch: String(fxRate.rateUsd),
+          source: fxRate.source,
+          date: new Date(fxRate.fetchedAt).toISOString().slice(0, 10),
+        };
   useEffect(() => {
     if (walletAddress === null) {
       setUtxoPhase("idle");
@@ -3028,7 +3061,9 @@ export default function App() {
               t={t}
               holdings={walletHoldings}
               resolveIdentity={resolveTokenIdentity}
-              bchUsd={referenceBchUsd}
+              bchUsd={fxRate?.rateUsd ?? null}
+              rateSource={fxRate?.source ?? null}
+              rateSettled={fxSettled}
             />
           )}
         {renderedPanel !== null && (
@@ -3046,6 +3081,7 @@ export default function App() {
                 utxos={walletUtxos}
                 holdings={walletHoldings}
                 resolveIdentity={resolveTokenIdentity}
+                fiatRate={sendFiatRate}
                 onSent={handleSent}
                 onSendFailed={handleTxFailed}
               />

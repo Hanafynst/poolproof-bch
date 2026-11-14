@@ -1,8 +1,8 @@
 /**
  * Portfolio composition — the connected wallet's total card, as
  * a pure model. Holdings in (the wallet-utxos index, resolved
- * identities, aggregate Cauldron reserves per category, and one
- * labelled BCH/USD reference rate), composition out: priced rows
+ * identities, aggregate Cauldron reserves per category, and the
+ * caller's BCH/USD rate), composition out: priced rows
  * with values and shares, the unpriced list, and the NFT count.
  *
  * Pricing discipline (the reconciliation rules, applied):
@@ -29,11 +29,10 @@
  *  - Shares are of the PRICED total only, and the UI says so
  *    whenever the unpriced list is non-empty. NFTs are a count:
  *    no floor source exists in this app, so no value is invented.
- *  - The USD figures all hang off the one labelled reference
- *    rate the caller passes (the rate the bundled snapshots
- *    carry, captured from the Selene market page on
- *    2026-11-13 — the product's only BCH/USD rate; send-flow's
- *    FiatRate is the same labelled-rate shape). With no rate,
+ *  - The USD figures all hang off the one BCH/USD rate the
+ *    caller passes (since R83 a live quote read by
+ *    core/fx-rate.ts from a named public source; the caller
+ *    passes null when every source failed). With no rate,
  *    USD values are null and shares still compute from sats.
  *
  * The fold: a priced token under BOTH 1% of the priced total
@@ -139,7 +138,8 @@ export interface PortfolioInput {
   /** Aggregate reserves per category, or null where the read
    *  found no usable pool. A missing entry is also unpriced. */
   prices: ReadonlyMap<string, PortfolioPrice | null>;
-  /** The labelled BCH/USD reference rate, or null. */
+  /** The caller's BCH/USD rate (a live quote), or null when
+   *  no source answered. */
   bchUsd: number | null;
 }
 

@@ -178,10 +178,12 @@ export interface UiStrings {
   holdingsCommitment: string;
   holdingsEmpty: string;
   portfolioTitle: string;
+  portfolioTotalLabel: string;
   portfolioOther: string;
   portfolioUnpricedNote: string;
   portfolioPricesUnavailable: string;
   portfolioRateNote: string;
+  portfolioRateUnavailable: string;
   assetShowAll: string;
   concGini: string;
   concTierWellDistributed: string;
