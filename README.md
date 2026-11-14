@@ -67,9 +67,10 @@ npm run build
 
 ## Testing
 
-The verdict and wallet logic was built in a practice lab first, then ported into this repository file by file, with the lab copy and the shipped copy kept byte-identical. The lab suite currently runs **487 checks, all passing**, covering:
+The verdict and wallet logic was built in a practice lab first, then ported into this repository file by file, with the lab copy and the shipped copy kept byte-identical. The lab suite currently runs **538 checks, all passing**, covering:
 
 - verdict thresholds and the routed exit simulation, tested against real captured fixtures (PUSD alive, 0LANDO dead);
+- the exit gauge's model (ratio and dust-reserve modes, with the tick positions taken from the verdict's own constants), the per-pool reserve split, and the audit's stage signals, which fire only when their real read resolves;
 - concentration math, including Gini tiers, HHI and the sentinel-supply guard;
 - the anchor transaction: fee model, and funding selection that never spends a token or NFT UTXO to pay a fee;
 - the send flow's confirmation gate, address-type blocking and amount keypad;

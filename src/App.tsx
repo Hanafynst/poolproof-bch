@@ -28,6 +28,7 @@ import { fetchRouteQuote } from "./core/router-quote";
 import { type LiveReportInput } from "./core/live-report";
 import { classifyLookup } from "./core/lookup";
 import { judgePool, type FlagCode, type PoolJudgement } from "./core/poolproof-core";
+import { exitGaugeModel, poolShareModel, scalePercent } from "./core/gauge";
 import {
   buildAnchorTxTemplateForWallet,
   estimateAnchorFeeSats,
@@ -66,6 +67,7 @@ import {
   type UtxoPhase,
 } from "./WalletHome";
 import { DISCONNECTED_SESSION, type WalletSession } from "./WalletConnect";
+import { CheckIcon, CopyIcon, DownloadIcon, LinkIcon } from "./icons";
 import { SNAPSHOTS, type TokenSnapshot } from "./data/snapshots";
 import {
   ENGLISH_PACK,
@@ -333,76 +335,11 @@ function FlagsList({
 }
 
 // Icon-only report actions: white glyphs on solid scarlet.
-// The words live on as each button's aria-label and title; a
+// The glyphs themselves live in src/icons.tsx, the app's one
+// icon system (R50): one stroke spec, path-only geometry. The
+// words live on as each button's aria-label and title; a
 // successful copy swaps the glyph for a check, the feedback the
 // old "Copied" text swap used to give.
-function CopyIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="9" y="9" width="12" height="12" rx="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function LinkIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-    </svg>
-  );
-}
-
-function DownloadIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
 
 // The copy confirmation crossfade (P10): both glyphs stay
 // mounted, stacked, and the copied state crossfades between
@@ -672,6 +609,86 @@ type LiveState =
   | { phase: "not-found"; category: string }
   | { phase: "done"; input: LiveReportInput };
 
+// The audit progress checklist's step states (R50). A step is
+// "waiting" until its stage starts, "active" while its real
+// read is in flight, and reaches a terminal state only when
+// that stage actually resolves: "done", or the honest endings
+// "skipped" (the stage never applied, a pool-less audit has no
+// exit to simulate and nothing to route), "missing" (the
+// identity read settled without a listing) and "unavailable"
+// (the Router was asked and did not answer). Nothing here is
+// timed: the orchestration's stage signals (core/live-audit.ts)
+// are the only writers, besides the submit that starts a run.
+type AuditStepState =
+  | "waiting"
+  | "active"
+  | "done"
+  | "skipped"
+  | "missing"
+  | "unavailable";
+
+interface AuditSteps {
+  pools: AuditStepState;
+  simulate: AuditStepState;
+  identity: AuditStepState;
+  quote: AuditStepState;
+}
+
+// Both reads start together at submit (the orchestration's
+// contract), so pools and identity open active; the simulation
+// waits on the pool facts it prices, and the quote on both.
+const AUDIT_STEPS_START: AuditSteps = {
+  pools: "active",
+  simulate: "waiting",
+  identity: "active",
+  quote: "waiting",
+};
+
+function AuditStepsCard({ steps, t }: { steps: AuditSteps; t: UiStrings }) {
+  const rows: Array<{
+    label: string;
+    state: AuditStepState;
+    word: string | null;
+  }> = [
+    { label: t.stepPools, state: steps.pools, word: null },
+    { label: t.stepSimulate, state: steps.simulate, word: null },
+    {
+      label: t.stepIdentity,
+      state: steps.identity,
+      word: steps.identity === "missing" ? t.stepIdentityMissing : null,
+    },
+    {
+      label: t.stepQuote,
+      state: steps.quote,
+      word: steps.quote === "unavailable" ? t.stepQuoteUnavailable : null,
+    },
+  ];
+  return (
+    <div className="scan-group audit-steps">
+      <ol className="steps">
+        {rows.map((row) => (
+          <li
+            key={row.label}
+            className="step"
+            data-state={row.state}
+          >
+            <span className="step-dot" aria-hidden="true">
+              {row.state === "done" && <CheckIcon />}
+            </span>
+            <span className="step-label">{row.label}</span>
+            {(row.word ?? (row.state === "skipped" ? t.stepSkipped : null)) !==
+              null && (
+              <span className="step-word">
+                {row.word ?? t.stepSkipped}
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 // The honest lookup miss (R44): one plain card. No verdict stamp,
 // no group cards, no exit simulation, no anchor offer, no report
 // actions: there is no token to judge, so there is nothing to
@@ -847,6 +864,168 @@ function exitStatusOf(judgement: PoolJudgement): ScanStatus {
       : "fail";
 }
 
+// The exit gauge (R50): the report's signature visual, the exit
+// truth as two bars on one scale: what the displayed price
+// promises for the reference sell, and what the exit actually
+// keeps. core/gauge.ts builds the model from the judgement
+// itself, so every length and figure here already stands in the
+// rows below; the gauge is their rendering, never a second
+// measurement. The fill's resting transform IS the exact
+// fraction: on a report landing (the section's reveal gate) a
+// one-shot grow runs, on an in-place upgrade (identity, Router
+// quote) the fill glides by transition to the new exact value
+// and never restarts, and under reduced motion it simply rests
+// at the value. Verdicts with no honest figure (NO_MARKET, a
+// route that could not be simulated) get no gauge at all.
+function ExitGauge({
+  snapshot,
+  judgement,
+  t,
+}: {
+  snapshot: TokenSnapshot;
+  judgement: PoolJudgement;
+  t: UiStrings;
+}) {
+  const model = exitGaugeModel(judgement, snapshot.facts);
+  if (model === null) return null;
+  const fractionText = (value: number) =>
+    latinNumberFormat({
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3,
+    }).format(value);
+  if (model.kind === "ratio") {
+    return (
+      <div
+        className="exit-gauge"
+        data-verdict={judgement.verdict}
+        role="img"
+        aria-label={`${t.exitRatio}: ${fractionText(model.ratio)}`}
+      >
+        <div className="gauge-row">
+          <span className="gauge-label">{t.gaugeReal}</span>
+          <span className="gauge-track">
+            <span
+              className="gauge-fill"
+              style={{ "--fill": model.fill } as CSSProperties}
+            />
+            <span
+              className="gauge-tick"
+              style={
+                { insetInlineStart: `${scalePercent(model.deadLine)}%` } as CSSProperties
+              }
+            />
+            <span
+              className="gauge-tick"
+              style={
+                { insetInlineStart: `${scalePercent(model.aliveLine)}%` } as CSSProperties
+              }
+            />
+          </span>
+          <span className="gauge-value">{fractionText(model.ratio)}</span>
+        </div>
+        <div className="gauge-row gauge-row-displayed">
+          <span className="gauge-label">{t.gaugeDisplayed}</span>
+          <span className="gauge-track gauge-track-thin">
+            <span
+              className="gauge-fill gauge-fill-displayed"
+              style={{ "--fill": model.displayedFill } as CSSProperties}
+            />
+          </span>
+          <span className="gauge-value">
+            {fractionText(model.displayedFill)}
+          </span>
+        </div>
+        <p className="gauge-caption">
+          {t.gaugeTickDead} {fractionText(model.deadLine)} · {t.gaugeTickAlive}{" "}
+          {fractionText(model.aliveLine)}
+        </p>
+      </div>
+    );
+  }
+  const satsText = (sats: bigint) =>
+    `${latinNumberFormat().format(sats)} sats`;
+  return (
+    <div
+      className="exit-gauge"
+      data-verdict={judgement.verdict}
+      role="img"
+      aria-label={`${t.gaugeReserve}: ${satsText(model.reserveSats)}`}
+    >
+      <div className="gauge-row">
+        <span className="gauge-label">{t.gaugeReserve}</span>
+        <span className="gauge-track">
+          <span
+            className="gauge-fill"
+            style={{ "--fill": model.fill } as CSSProperties}
+          />
+        </span>
+        <span className="gauge-value">{satsText(model.reserveSats)}</span>
+      </div>
+      <div className="gauge-row gauge-row-displayed">
+        <span className="gauge-label">{t.gaugeDustLine}</span>
+        <span className="gauge-track gauge-track-thin">
+          <span
+            className="gauge-fill gauge-fill-displayed"
+            style={{ "--fill": model.displayedFill } as CSSProperties}
+          />
+        </span>
+        <span className="gauge-value">{satsText(model.thresholdSats)}</span>
+      </div>
+      <p className="gauge-caption">{t.gaugeReserveNote}</p>
+    </div>
+  );
+}
+
+// Pool share bars (R50, scanner exit group): where the BCH
+// reserve actually sits, pool by pool, deepest first: the top
+// pools as bars and the long tail folded into one line with
+// its count and its sats. The model comes from the facts'
+// per-pool split (a live read carries it; a saved snapshot
+// without the split renders nothing here, never an invented
+// distribution). Shares are of the sats total: an exit is paid
+// in sats.
+function PoolShareBars({
+  snapshot,
+  t,
+}: {
+  snapshot: TokenSnapshot;
+  t: UiStrings;
+}) {
+  const model = poolShareModel(snapshot.facts.pools);
+  if (model === null) return null;
+  return (
+    <div className="pool-shares">
+      <p className="pool-shares-title">{t.poolShareTitle}</p>
+      {model.shown.map((row, index) => (
+        <div className="pool-share-row" key={index}>
+          <span className="pool-share-label">
+            {t.poolShareRow.replace("{n}", String(index + 1))}
+          </span>
+          <span className="pool-share-track">
+            <span
+              className="pool-share-fill"
+              style={{ "--fill": row.share } as CSSProperties}
+            />
+          </span>
+          <span className="pool-share-value">
+            {formatBchShort(row.satsReserve)} BCH · {formatShare(row.share)}
+          </span>
+        </div>
+      ))}
+      {model.hiddenCount > 0 && (
+        <p className="pool-share-more">
+          {t.poolShareMore.replace(
+            "{count}",
+            latinNumberFormat().format(model.hiddenCount),
+          )}{" "}
+          · {formatBchShort(model.hiddenSats)} BCH ·{" "}
+          {formatShare(Number(model.hiddenSats) / Number(model.totalSats))}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function ConcentrationTable({
   report,
   t,
@@ -1010,6 +1189,8 @@ function ScannerReport({
       </ScanGroup>
 
       <ScanGroup title={t.groupExit} status={exitStatus} t={t} wide index={2}>
+        <ExitGauge snapshot={snapshot} judgement={judgement} t={t} />
+        <PoolShareBars snapshot={snapshot} t={t} />
         <EvidenceRows
           snapshot={snapshot}
           judgement={judgement}
@@ -1459,6 +1640,30 @@ export default function App() {
   const [walletHoldings, setWalletHoldings] =
     useState<WalletHoldings | null>(null);
   const [openPanel, setOpenPanel] = useState<HomePanel | null>(null);
+  // Panel switching and closing (R50): openPanel is what the
+  // tiles say; renderedPanel is what is on screen. Switching
+  // replaces the panel at once and the new one's entry
+  // animation carries the change (the P5 doctrine: replaced
+  // content does not exit). Closing to nothing is different:
+  // the panel stays mounted under a closing class for one
+  // exit duration (the dialog-exit token), then unmounts, so
+  // a close reads as a close instead of a vanish.
+  const [renderedPanel, setRenderedPanel] = useState<HomePanel | null>(null);
+  const [panelClosing, setPanelClosing] = useState(false);
+  useEffect(() => {
+    if (openPanel !== null) {
+      setRenderedPanel(openPanel);
+      setPanelClosing(false);
+      return;
+    }
+    if (renderedPanel === null) return;
+    setPanelClosing(true);
+    const timer = window.setTimeout(() => {
+      setRenderedPanel(null);
+      setPanelClosing(false);
+    }, 190);
+    return () => window.clearTimeout(timer);
+  }, [openPanel, renderedPanel]);
   const [history] = useState(loadHistoryStore);
   const [entries, setEntries] = useState<HistoryEntry[]>(() =>
     history.store.list(),
@@ -1639,6 +1844,10 @@ export default function App() {
   const [liveInput, setLiveInput] = useState("");
   const [liveInvalid, setLiveInvalid] = useState(false);
   const [liveState, setLiveState] = useState<LiveState>({ phase: "idle" });
+  // The fetching phase's staged checklist (R50): started fresh
+  // at every submit, advanced only by the audit's real stage
+  // signals below.
+  const [auditSteps, setAuditSteps] = useState<AuditSteps>(AUDIT_STEPS_START);
   const liveAttempt = useRef(0);
   const liveCategory = useRef<string | null>(null);
   const runLiveAudit = async (raw: string) => {
@@ -1656,6 +1865,7 @@ export default function App() {
     liveCategory.current = category;
     const attempt = ++liveAttempt.current;
     setLiveState({ phase: "fetching" });
+    setAuditSteps(AUDIT_STEPS_START);
     // The classification's landing record (R44): the last report
     // input this attempt produced and whether it already landed,
     // kept in a box because the decision below reads it after the
@@ -1702,7 +1912,53 @@ export default function App() {
         },
         () => liveAttempt.current === attempt,
         {
+          // The checklist's stage signals (R50): each fires at
+          // most once per attempt, only while this attempt is
+          // current, and only when its real stage resolves.
+          onPoolsLanded: (poolCount) => {
+            setAuditSteps((prev) => ({
+              ...prev,
+              pools: "done",
+              simulate:
+                poolCount === 0
+                  ? "skipped"
+                  : prev.simulate === "waiting"
+                    ? "active"
+                    : prev.simulate,
+              quote:
+                poolCount === 0
+                  ? "skipped"
+                  : prev.quote === "waiting"
+                    ? "active"
+                    : prev.quote,
+            }));
+          },
+          onIdentitySettled: (found) => {
+            setAuditSteps((prev) => ({
+              ...prev,
+              identity: found ? "done" : "missing",
+            }));
+          },
+          onQuoteSettled: (landed) => {
+            setAuditSteps((prev) => ({
+              ...prev,
+              quote:
+                landed === null
+                  ? "skipped"
+                  : landed
+                    ? "done"
+                    : "unavailable",
+            }));
+          },
           onReport: (input) => {
+            // The report on screen embodies the simulation:
+            // the simulate step completes as it lands (a
+            // pool-less audit already marked it skipped).
+            setAuditSteps((prev) =>
+              prev.simulate === "active"
+                ? { ...prev, simulate: "done" }
+                : prev,
+            );
             landing.input = input;
             if (input.poolCount > 0 || input.identity !== null) {
               landing.landed = true;
@@ -1849,29 +2105,36 @@ export default function App() {
           onTogglePanel={togglePanel}
           onAudit={focusAudit}
         />
-        {openPanel === "send" && (
-          <SendPanel
-            t={t}
-            lang={packLang}
-            session={walletSession}
-            electrum={electrum}
-            utxoPhase={utxoPhase}
-            utxos={walletUtxos}
-            holdings={walletHoldings}
-            resolveIdentity={resolveTokenIdentity}
-            onSent={handleSent}
-          />
-        )}
-        {openPanel === "receive" && (
-          <ReceivePanel t={t} session={walletSession} />
-        )}
-        {openPanel === "history" && (
-          <HistoryPanel
-            t={t}
-            lang={packLang}
-            entries={entries}
-            loadFailed={history.loadFailed}
-          />
+        {renderedPanel !== null && (
+          <div
+            key={renderedPanel}
+            className={panelClosing ? "panel-exit" : undefined}
+          >
+            {renderedPanel === "send" && (
+              <SendPanel
+                t={t}
+                lang={packLang}
+                session={walletSession}
+                electrum={electrum}
+                utxoPhase={utxoPhase}
+                utxos={walletUtxos}
+                holdings={walletHoldings}
+                resolveIdentity={resolveTokenIdentity}
+                onSent={handleSent}
+              />
+            )}
+            {renderedPanel === "receive" && (
+              <ReceivePanel t={t} session={walletSession} />
+            )}
+            {renderedPanel === "history" && (
+              <HistoryPanel
+                t={t}
+                lang={packLang}
+                entries={entries}
+                loadFailed={history.loadFailed}
+              />
+            )}
+          </div>
         )}
         </div>
         <div className="layout-head">
@@ -1994,12 +2257,16 @@ export default function App() {
         </div>
         <div className="layout-report">
         {liveState.phase === "fetching" ? (
-          // The skeleton (P7): the report area holds the
-          // report's own geometry while the audit runs: a head
-          // bar and three group-shaped cards of row strips, one
-          // shimmer sweep. No strip is a number and nothing in
-          // it pretends to be data; the loading words stay as
-          // the block's accessible label.
+          // The loading state (P7 + R50): the skeleton head
+          // bar holds the report's silhouette, and under it
+          // the staged checklist (AuditStepsCard) replaces the
+          // old group-shaped skeleton cards. The checklist is
+          // not a skeleton: each step is a real stage of this
+          // audit and completes only when its read resolves
+          // (the stage signals in runLiveAudit), so the wait
+          // shows the work, with skipped stages named as
+          // skipped. The loading words stay as the block's
+          // accessible label.
           <div
             className="report-skeleton"
             role="status"
@@ -2007,14 +2274,7 @@ export default function App() {
             aria-label={t.liveFetching}
           >
             <div className="skeleton-head shimmer" aria-hidden="true" />
-            {[0, 1, 2].map((card) => (
-              <div className="scan-group" key={card} aria-hidden="true">
-                <div className="skeleton-strip skeleton-strip-head shimmer" />
-                <div className="skeleton-strip shimmer" style={{ width: "85%" }} />
-                <div className="skeleton-strip shimmer" style={{ width: "70%" }} />
-                <div className="skeleton-strip shimmer" style={{ width: "55%" }} />
-              </div>
-            ))}
+            <AuditStepsCard steps={auditSteps} t={t} />
             <span className="visually-hidden">{t.liveFetching}</span>
           </div>
         ) : liveState.phase === "failed" ? (
@@ -2094,6 +2354,7 @@ export default function App() {
           <p className="caveat">{t.caveat}</p>
 
           <ScanGroup title={t.groupExit} status={exitStatusOf(judgement)} t={t} index={0}>
+            <ExitGauge snapshot={snapshot} judgement={judgement} t={t} />
             <EvidenceRows
               snapshot={snapshot}
               judgement={judgement}

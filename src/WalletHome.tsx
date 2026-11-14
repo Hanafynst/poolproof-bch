@@ -10,6 +10,7 @@ import {
   shortenMiddle,
 } from "./format";
 import type { WalletSession } from "./WalletConnect";
+import { TileIcon } from "./icons";
 import type { ElectrumSession } from "./core/electrum-wss";
 import { DUST_SATS } from "./core/anchor-tx";
 import type { TokenIdentity } from "./core/identity";
@@ -126,44 +127,9 @@ export function TopBanner({
   );
 }
 
-function TileIcon({ panel }: { panel: HomePanel | "audit" }) {
-  const paths =
-    panel === "send" ? (
-      <>
-        <path d="M12 19V5" />
-        <path d="m5 12 7-7 7 7" />
-      </>
-    ) : panel === "receive" ? (
-      <>
-        <path d="M12 5v14" />
-        <path d="m19 12-7 7-7-7" />
-      </>
-    ) : panel === "history" ? (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v5l3 2" />
-      </>
-    ) : (
-      <>
-        <circle cx="11" cy="11" r="7" />
-        <path d="m21 21-4.5-4.5" />
-      </>
-    );
-  return (
-    <svg
-      className="tile-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {paths}
-    </svg>
-  );
-}
+// The tile glyphs come from src/icons.tsx (R50), the app's one
+// icon system: the four tiles and the report actions are drawn
+// to a single stroke spec there.
 
 /**
  * The wallet card under the header row: the connected wallet's BCH
