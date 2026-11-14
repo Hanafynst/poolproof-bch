@@ -177,6 +177,11 @@ export interface UiStrings {
   holdingsCategory: string;
   holdingsCommitment: string;
   holdingsEmpty: string;
+  portfolioTitle: string;
+  portfolioOther: string;
+  portfolioUnpricedNote: string;
+  portfolioPricesUnavailable: string;
+  portfolioRateNote: string;
   assetShowAll: string;
   concGini: string;
   concTierWellDistributed: string;

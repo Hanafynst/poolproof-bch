@@ -47,6 +47,12 @@ import {
   type SpendableUtxo,
 } from "./core/transfer-tx";
 import type { WalletHoldings } from "./core/wallet-utxos";
+import {
+  buildPortfolio,
+  type PortfolioModel,
+  type PortfolioPrice,
+} from "./core/portfolio";
+import { fetchLivePoolFacts } from "./core/cauldron-live";
 import type { HistoryEntry } from "./core/history-store";
 import { listWindow, LIST_WINDOW_SIZE } from "./core/list-window";
 import {
@@ -226,6 +232,302 @@ export function WalletCard({
           <span>{t.actionAudit}</span>
         </button>
       </div>
+    </section>
+  );
+}
+
+/**
+ * The portfolio ring (R81): the priced composition as a donut,
+ * drawn from the same model the rows render, so ring and rows
+ * can never disagree. Segments sweep in once on mount (the
+ * progress state starts at 0 and the effect raises it; refresh
+ * re-renders reuse the node and the raised state, so a balance
+ * poll never replays the sweep). Segment lengths carry a small
+ * gap so neighbours read as neighbours; a single full-circle
+ * segment closes without one.
+ */
+function PortfolioRing({
+  model,
+  centreText,
+  label,
+}: {
+  model: PortfolioModel;
+  centreText: string;
+  label: string;
+}) {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    setProgress(1);
+  }, []);
+  const radius = 34;
+  const circumference = 2 * Math.PI * radius;
+  const segments: Array<{
+    key: string;
+    color: string;
+    start: number;
+    share: number;
+  }> = [];
+  let acc = 0;
+  for (const row of model.rows) {
+    if (row.share === null || row.share <= 0) continue;
+    segments.push({
+      key: `${row.kind}:${row.category ?? ""}`,
+      color: row.color,
+      start: acc,
+      share: row.share,
+    });
+    acc += row.share;
+  }
+  const gap = segments.length > 1 ? 2 : 0;
+  return (
+    <div className="portfolio-ring" role="img" aria-label={label}>
+      <svg viewBox="0 0 84 84" aria-hidden="true" focusable="false">
+        <circle className="portfolio-track" cx="42" cy="42" r={radius} />
+        {segments.map((segment) => (
+          <circle
+            key={segment.key}
+            className="portfolio-seg"
+            cx="42"
+            cy="42"
+            r={radius}
+            stroke={segment.color}
+            strokeDasharray={`${Math.max(segment.share * circumference * progress - gap, 0)} ${circumference}`}
+            strokeDashoffset={-segment.start * circumference * progress}
+          />
+        ))}
+      </svg>
+      <span className="portfolio-ring-value">{centreText}</span>
+    </div>
+  );
+}
+
+/**
+ * The portfolio card (R81): the connected wallet's composition,
+ * modelled on the verdict hero — a donut of the priced rows, the
+ * priced total in USD at its centre, one row per asset below.
+ * All pricing lives in the pure core (core/portfolio.ts); this
+ * component only fetches and renders. Identities come through
+ * the caller's resolver (the audit path's TokenStork pinning),
+ * pool reserves through the audit path's own Cauldron adapter,
+ * and the BCH/USD rate is the labelled reference rate the caller
+ * passes (the one the bundled snapshots carry). A category whose
+ * pool read failed is unpriced like one with no pool, and the
+ * card says prices could not be loaded; unpriced holdings keep
+ * their amounts and carry no value. NFTs render as a count.
+ */
+export function PortfolioCard({
+  t,
+  holdings,
+  resolveIdentity,
+  bchUsd,
+}: {
+  t: UiStrings;
+  holdings: WalletHoldings;
+  resolveIdentity: (category: string) => Promise<TokenIdentity | null>;
+  bchUsd: number | null;
+}) {
+  const [identities, setIdentities] = useState<
+    Record<string, TokenIdentity | null>
+  >({});
+  const [prices, setPrices] = useState<Record<string, PortfolioPrice | null>>(
+    {},
+  );
+  const [priceFailed, setPriceFailed] = useState<ReadonlySet<string>>(
+    new Set(),
+  );
+  const identityAsked = useRef(new Set<string>());
+  const priceAsked = useRef(new Set<string>());
+  const categoriesKey = holdings.fungibles
+    .map((fungible) => fungible.category)
+    .join(",");
+  useEffect(() => {
+    for (const { category } of holdings.fungibles) {
+      if (!identityAsked.current.has(category)) {
+        identityAsked.current.add(category);
+        void resolveIdentity(category).then((identity) => {
+          setIdentities((prev) => ({ ...prev, [category]: identity }));
+        });
+      }
+      if (!priceAsked.current.has(category)) {
+        priceAsked.current.add(category);
+        void fetchLivePoolFacts(category)
+          .then((live) => {
+            setPrices((prev) => ({
+              ...prev,
+              [category]:
+                live.poolCount > 0
+                  ? {
+                      reserveQuoteSats: live.facts.reserveQuoteSats,
+                      reserveTokenRaw: live.facts.reserveTokenRaw,
+                    }
+                  : null,
+            }));
+          })
+          .catch(() => {
+            setPrices((prev) => ({ ...prev, [category]: null }));
+            setPriceFailed((prev) => new Set(prev).add(category));
+          });
+      }
+    }
+  }, [categoriesKey, holdings.fungibles, resolveIdentity]);
+
+  // The holdings index sums the token amount riding in NFT
+  // UTXOs into the category total, so a pure-NFT category shows
+  // up here with a zero fungible amount. It is not a portfolio
+  // asset row; its NFTs speak through the NFT count instead.
+  const assetFungibles = holdings.fungibles.filter(
+    (fungible) => fungible.totalAmount > 0n,
+  );
+  const settled = assetFungibles.every((fungible) =>
+    Object.prototype.hasOwnProperty.call(prices, fungible.category),
+  );
+  const model = useMemo<PortfolioModel | null>(() => {
+    if (!settled) return null;
+    return buildPortfolio({
+      bchSats: holdings.bchSats,
+      fungibles: assetFungibles.map((fungible) => {
+        const identity = identities[fungible.category] ?? null;
+        return {
+          category: fungible.category,
+          label:
+            identity !== null
+              ? `${identity.name} (${identity.symbol})`
+              : shortenMiddle(fungible.category, 6),
+          amountBase: fungible.totalAmount,
+          decimals: identity?.decimals ?? 0,
+        };
+      }),
+      nftCount: holdings.nfts.length,
+      prices: new Map(
+        holdings.fungibles.map((fungible) => [
+          fungible.category,
+          prices[fungible.category] ?? null,
+        ]),
+      ),
+      bchUsd,
+    });
+  }, [settled, holdings, identities, prices, bchUsd]);
+
+  const usdFormat = latinNumberFormat({
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const percentFormat = latinNumberFormat({
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+  const symbolOf = (category: string | null): string =>
+    category === null ? "" : (identities[category]?.symbol ?? "");
+  const isEmpty =
+    holdings.bchSats === 0n &&
+    holdings.fungibles.length === 0 &&
+    holdings.nfts.length === 0;
+
+  return (
+    <section className="portfolio-card" aria-label={t.portfolioTitle}>
+      <h2>{t.portfolioTitle}</h2>
+      {isEmpty ? (
+        <p className="balance-hint">{t.holdingsEmpty}</p>
+      ) : model === null ? (
+        <p className="balance-hint" aria-busy="true">
+          {t.liveFetching}
+        </p>
+      ) : (
+        <>
+          <PortfolioRing
+            model={model}
+            centreText={
+              model.totalUsd === null
+                ? "n/a"
+                : usdFormat.format(model.totalUsd)
+            }
+            label={`${t.portfolioTitle}: ${
+              model.totalUsd === null
+                ? "n/a"
+                : usdFormat.format(model.totalUsd)
+            }`}
+          />
+          <ul className="portfolio-rows">
+            {model.rows.map((row) => (
+              <li
+                className="portfolio-row"
+                key={`${row.kind}:${row.category ?? ""}`}
+              >
+                <span
+                  className="portfolio-dot"
+                  style={{ background: row.color }}
+                  aria-hidden="true"
+                />
+                <span className="portfolio-row-main">
+                  <span className="portfolio-row-top">
+                    <span className="portfolio-name">
+                      {row.kind === "other" ? t.portfolioOther : row.label}
+                    </span>
+                    <span className="portfolio-share">
+                      {row.share === null
+                        ? "n/a"
+                        : `${percentFormat.format(row.share * 100)}%`}
+                    </span>
+                  </span>
+                  <span className="portfolio-row-sub">
+                    {row.kind === "bch"
+                      ? `${formatBch(row.amountBase ?? 0n)} BCH`
+                      : row.kind === "token"
+                        ? `${formatTokenAmount(row.amountBase ?? 0n, row.decimals)} ${symbolOf(row.category)}`.trim()
+                        : ""}
+                    {row.usdValue !== null &&
+                      `${row.kind === "other" ? "" : " · "}${usdFormat.format(row.usdValue)}`}
+                  </span>
+                </span>
+              </li>
+            ))}
+            {model.unpriced.map((holding) => (
+              <li className="portfolio-row" key={`unpriced:${holding.category}`}>
+                <span
+                  className="portfolio-dot portfolio-dot-hollow"
+                  aria-hidden="true"
+                />
+                <span className="portfolio-row-main">
+                  <span className="portfolio-row-top">
+                    <span className="portfolio-name">{holding.label}</span>
+                    <span className="portfolio-share">n/a</span>
+                  </span>
+                  <span className="portfolio-row-sub">
+                    {`${formatTokenAmount(holding.amountBase, holding.decimals)} ${symbolOf(holding.category)}`.trim()}
+                  </span>
+                </span>
+              </li>
+            ))}
+            {model.nftCount > 0 && (
+              <li className="portfolio-row" key="nfts">
+                <span
+                  className="portfolio-dot portfolio-dot-hollow"
+                  aria-hidden="true"
+                />
+                <span className="portfolio-row-main">
+                  <span className="portfolio-row-top">
+                    <span className="portfolio-name">{t.holdingsNfts}</span>
+                    <span className="portfolio-share">
+                      {latinNumberFormat().format(model.nftCount)}
+                    </span>
+                  </span>
+                </span>
+              </li>
+            )}
+          </ul>
+          {priceFailed.size > 0 && (
+            <p className="panel-note">{t.portfolioPricesUnavailable}</p>
+          )}
+          {model.unpriced.length > 0 && (
+            <p className="panel-note">{t.portfolioUnpricedNote}</p>
+          )}
+          {bchUsd !== null && (
+            <p className="panel-note">{t.portfolioRateNote}</p>
+          )}
+        </>
+      )}
     </section>
   );
 }

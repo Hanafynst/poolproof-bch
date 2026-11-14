@@ -85,6 +85,7 @@ import {
 } from "./format";
 import {
   HistoryPanel,
+  PortfolioCard,
   ReceivePanel,
   SendPanel,
   TopBanner,
@@ -2003,6 +2004,14 @@ export default function App() {
     }
   };
   const walletAddress = walletSession.address;
+  // The portfolio card's BCH/USD rate (R81): the labelled
+  // reference rate the bundled snapshots carry (Selene market
+  // page, 13 Nov 2026) — the product's only BCH/USD rate, the
+  // same labelled-rate shape send-flow's FiatRate describes.
+  // No snapshot carrying a rate would mean no USD figures at
+  // all, never an invented one.
+  const referenceBchUsd =
+    SNAPSHOTS.find((snapshot) => snapshot.fiat)?.fiat?.bchUsd ?? null;
   useEffect(() => {
     if (walletAddress === null) {
       setUtxoPhase("idle");
@@ -2997,6 +3006,17 @@ export default function App() {
           onTogglePanel={togglePanel}
           onAudit={goToAudit}
         />
+        {walletSession.connected &&
+          !walletSession.addressMissing &&
+          utxoPhase === "ready" &&
+          walletHoldings !== null && (
+            <PortfolioCard
+              t={t}
+              holdings={walletHoldings}
+              resolveIdentity={resolveTokenIdentity}
+              bchUsd={referenceBchUsd}
+            />
+          )}
         {renderedPanel !== null && (
           <div
             key={renderedPanel}
