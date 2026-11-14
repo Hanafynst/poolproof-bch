@@ -1871,7 +1871,9 @@ main:focus {
    the sequence is done: the identity upgrade in place, the
    History refresh, and language or currency re-renders never
    re-run it. Each group rises with a delay from its inline
-   --i index, capped at 5 so the last card starts by 225ms. */
+   --i index; R76 retimed the cadence in the section at the
+   end of this file (70ms steps, the gauge growing across
+   600ms, the stamp settling last at 740ms). */
 .reveal .report-head,
 .reveal .scan-head {
   animation: panel-in var(--dur-reveal) var(--ease-out) both;
@@ -3370,4 +3372,167 @@ h1,
     button:not(.primary-action):hover {
     background-image: none;
   }
+}
+
+/* ============================================================
+   R76 — motion + layout adaptation (see
+   MOTION-LAYOUT-2026-11-14.md for the plan this implements).
+   The user's reference was a dashboard that moves: staggered
+   entrances, one hero card, a strip of headline figures.
+   Adapted inside the locked frame: the palette does not
+   change, the skeleton does not move, no group is reordered,
+   and every animation below is transform/opacity drawn from
+   the file's tokens, so the global reduced-motion collapse
+   freezes all of it with everything else. One appended
+   section owns the round, in the R74/R75 manner.
+
+   1. The reveal cadence slows to the reference's pace: a
+      70ms stagger step (tiles, layout head, report groups),
+      and the verdict stamp settles LAST, as the gauge glide
+      completes. One orchestrated moment, sequenced instead
+      of simultaneous.
+   2. The verdict head takes the evidence papers' matte
+      material, so token title and stamp sit on one staged
+      surface: the verdict card. No halo: the glow budget
+      stays with .scan-group and .anchor.
+   3. A stat strip under the head carries the report's four
+      headline figures on hairline dividers.
+   4. A view switch with no fresh report (Report and Scanner
+      are two renderings of one report) crossfades gently
+      instead of snapping; a fresh report's reveal owns its
+      entrance, so the fade stands down under .reveal.
+   5. Rows a fold reveals (R63) rise in as they mount, on a
+      faster fold step, capped so a huge list stays calm. */
+
+:root {
+  --stagger-step: 70ms;
+  --stagger-fold: 30ms;
+  --stamp-delay: 480ms;
+}
+
+/* The stamp lands as the gauge completes: its settle starts
+   at 480ms and ends at 740ms, the gauge grow's own endpoint
+   (Report view: the grow runs 0 to 600ms and the seal follows
+   a beat later; Scanner view: the exit group starts at
+   140ms, so its grow ends at 740ms exactly). The trigger is
+   unchanged: only a fresh report carries .reveal, so an
+   in-place refinement never re-stamps. */
+.reveal .stamp {
+  animation-delay: var(--stamp-delay);
+}
+
+/* Reduced motion flattens the landing's delays too: the
+   global collapse at the end of the base file crushes
+   durations but not delays, and a delayed stamp would sit
+   invisible at its from-state for 480ms. Under reduce the
+   whole sequence is simply present, instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal .stamp,
+  .reveal .scan-group,
+  .reveal .anchor,
+  .reveal .stat-strip,
+  .fold-in {
+    animation-delay: 0ms;
+  }
+}
+
+/* The verdict card: the head takes the scan-group's matte
+   material (surface, gradient hairline, contact shadow), so
+   the token title, the category line and the stamp read as
+   one staged surface at the top of the report. */
+.report-head,
+.scan-head {
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(180deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.02)) border-box;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 0.875rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* Section rhythm on one unit: the head card, the stat strip
+   and every group card step by the same 0.85rem the group
+   cards already use. The prose keeps its own leading; the
+   caveat's trailing margin folds into the strip's step so
+   no gap ever doubles. */
+.report .summary,
+.scanner .summary {
+  margin-top: 0.85rem;
+}
+
+.report .caveat,
+.scanner .caveat {
+  margin-bottom: 0;
+}
+
+/* The stat strip: four headline figures on a hairline grid
+   (the 1px gaps over the line colour are the dividers, in
+   the 2x2 phone grid and the one-row wide grid alike). Flat
+   by design: no shadow, no halo. It is a summary band, not
+   another evidence paper. Labels and values stay in the
+   document's serif, like the rows they summarise. */
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  margin-top: 0.85rem;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.stat-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.65rem 0.85rem 0.6rem;
+  background: var(--surface);
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--soft);
+}
+
+.stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 720px) {
+  .stat-strip {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* The strip joins the reveal beside the first group: it is
+   part of the landing, never a refresh surface, so outside
+   the gate it does not animate at all. */
+.reveal .stat-strip {
+  animation: group-in var(--dur-reveal) var(--ease-out) both;
+  animation-delay: calc(var(--stagger-step) * 1);
+}
+
+/* View switches crossfade: swapping the two renderings of
+   one report fades the incoming section in instead of
+   snapping. A fresh report carries .reveal and plays its
+   staged entrance instead, so the fade stands down there
+   and the two never stack. */
+.report:not(.reveal),
+.scanner:not(.reveal) {
+  animation: group-in var(--dur-reveal) var(--ease-out) both;
+}
+
+/* Fold reveals (R63): a row past the window exists in the
+   DOM only once its fold opens, so a mount animation on
+   exactly those rows is the expansion made visible. The
+   step is faster than the report stagger and the delay caps
+   at eight steps: row 5,000 arrives with row 58's timing.
+   Settled, not theatrical. */
+.fold-in {
+  animation: group-in var(--dur-reveal) var(--ease-out) both;
+  animation-delay: calc(var(--fold-i, 0) * var(--stagger-fold));
 }

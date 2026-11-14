@@ -340,6 +340,67 @@ function EvidenceRows({
   );
 }
 
+// The headline figures as a stat strip (R76): the report's four
+// load-bearing numbers, lifted out of the exit group's rows into
+// a band under the verdict head. Every cell reads the same field
+// through the same formatter as its EvidenceRows counterpart, so
+// the strip is a view of the rows, never a second measurement:
+// the exit ratio from judgement.exitRatio, the reserve from
+// facts.reserveQuoteSats, the pool count from snapshot.poolCount,
+// and the exit figure from judgement.simulatedOutSats (the
+// reference sell stands in under its own row's label when no
+// exit was simulated).
+function StatStrip({
+  snapshot,
+  judgement,
+  t,
+}: {
+  snapshot: TokenSnapshot;
+  judgement: PoolJudgement;
+  t: UiStrings;
+}) {
+  const { facts } = snapshot;
+  const exitCell: [string, string] =
+    judgement.simulatedOutSats !== null
+      ? [
+          t.simulatedExit,
+          `${formatBchShort(judgement.simulatedOutSats)} BCH`,
+        ]
+      : [
+          t.referenceSell,
+          `${formatTokenAmount(judgement.referenceSellRaw, snapshot.decimals)} ${snapshot.symbol}`,
+        ];
+  const cells: Array<[string, string]> = [
+    [
+      t.exitRatio,
+      judgement.exitRatio === null
+        ? "n/a"
+        : latinNumberFormat({
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3,
+          }).format(judgement.exitRatio),
+    ],
+    [t.bchReserve, `${formatBchShort(facts.reserveQuoteSats)} BCH`],
+    [
+      t.pools,
+      snapshot.poolCount === null
+        ? "n/a"
+        : latinNumberFormat().format(snapshot.poolCount),
+    ],
+    exitCell,
+  ];
+  return (
+    <div className="stat-strip">
+      {cells.map(([label, value]) => (
+        <div className="stat-cell" key={label}>
+          <span className="stat-label">{label}</span>
+          <span className="stat-value">{value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function FlagsList({
   judgement,
   t,
@@ -1186,6 +1247,8 @@ function ScannerReport({
       </div>
       <p className="summary">{summary}</p>
       <p className="caveat">{t.caveat}</p>
+
+      <StatStrip snapshot={snapshot} judgement={judgement} t={t} />
 
       <div className="scan-groups">
       <ScanGroup
@@ -2079,10 +2142,15 @@ export default function App() {
   // snapshot select, and a live audit landing (the call sites
   // in runLiveAudit distinguish a landing from the identity
   // upgrade of an already visible report). A timer clears it
-  // once the sequence (240ms plus the 225ms stagger cap) is
-  // done, so re-renders of the same report (the identity
-  // upgrade in place, a language switch) never
-  // carry the class and never re-run the stagger.
+  // once the sequence is done (R76 cadence: the last group
+  // starts at 280ms and lands by 520ms; the gauge grow and
+  // the stamp settle both complete at 740ms), so re-renders
+  // of the same report (the identity upgrade in place, a
+  // language switch) never carry the class and never re-run
+  // the stagger. In-place refinements (a Router quote
+  // settling, a balance refresh) therefore never re-run the
+  // stamp or the stagger either: the gauge alone moves, by
+  // its transform transition, to the refined figure.
   const [revealing, setRevealing] = useState(true);
   const revealTimer = useRef<number | null>(null);
   const triggerReveal = useCallback(() => {
@@ -2090,7 +2158,7 @@ export default function App() {
     if (revealTimer.current !== null) {
       window.clearTimeout(revealTimer.current);
     }
-    revealTimer.current = window.setTimeout(() => setRevealing(false), 700);
+    revealTimer.current = window.setTimeout(() => setRevealing(false), 850);
   }, []);
   useEffect(() => {
     triggerReveal();
@@ -2626,6 +2694,8 @@ export default function App() {
 
           <p className="summary">{summary}</p>
           <p className="caveat">{t.caveat}</p>
+
+          <StatStrip snapshot={snapshot} judgement={judgement} t={t} />
 
           <ScanGroup title={t.groupExit} status={exitStatusOf(judgement)} t={t} index={0}>
             <ExitGauge snapshot={snapshot} judgement={judgement} t={t} />

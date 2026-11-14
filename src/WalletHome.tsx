@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { createPortal } from "react-dom";
 import { binToHex, hexToBin } from "@bitauth/libauth";
 import qrcode from "qrcode-generator";
@@ -42,7 +48,7 @@ import {
 } from "./core/transfer-tx";
 import type { WalletHoldings } from "./core/wallet-utxos";
 import type { HistoryEntry } from "./core/history-store";
-import { listWindow } from "./core/list-window";
+import { listWindow, LIST_WINDOW_SIZE } from "./core/list-window";
 import {
   phaseFocusTarget,
   trapTabIndex,
@@ -522,8 +528,22 @@ export function HistoryPanel({
       {entries.length === 0 ? (
         <p>{t.historyEmpty}</p>
       ) : (
-        windowed.shown.map(({ receipt, status }) => (
-          <article className="history-row" key={receipt.txid}>
+        windowed.shown.map(({ receipt, status }, index) => (
+          <article
+            className={
+              index >= LIST_WINDOW_SIZE
+                ? "history-row fold-in"
+                : "history-row"
+            }
+            style={
+              index >= LIST_WINDOW_SIZE
+                ? ({
+                    "--fold-i": Math.min(index - LIST_WINDOW_SIZE, 8),
+                  } as CSSProperties)
+                : undefined
+            }
+            key={receipt.txid}
+          >
             <div className="history-main">
               <span className="history-asset">{receipt.assetLabel}</span>
               {receipt.kind !== "anchor" && (
@@ -971,7 +991,7 @@ export function SendPanel({
                 {formatBch(holdings.bchSats)} BCH
               </span>
             </button>
-            {fungibleWindow.shown.map((holding) => {
+            {fungibleWindow.shown.map((holding, index) => {
               const held = identities[holding.category] ?? null;
               const selected =
                 selection.kind === "fungible" &&
@@ -980,7 +1000,18 @@ export function SendPanel({
                 <button
                   key={holding.category}
                   type="button"
-                  className="asset-row"
+                  className={
+                    index >= LIST_WINDOW_SIZE
+                      ? "asset-row fold-in"
+                      : "asset-row"
+                  }
+                  style={
+                    index >= LIST_WINDOW_SIZE
+                      ? ({
+                          "--fold-i": Math.min(index - LIST_WINDOW_SIZE, 8),
+                        } as CSSProperties)
+                      : undefined
+                  }
                   aria-pressed={selected}
                   onClick={() =>
                     setSelection({ kind: "fungible", category: holding.category })
@@ -1016,7 +1047,7 @@ export function SendPanel({
                 </span>
               </button>
             )}
-            {nftWindow.shown.map((nft) => {
+            {nftWindow.shown.map((nft, index) => {
               const held = identities[nft.category] ?? null;
               const selected =
                 selection.kind === "nft" &&
@@ -1026,7 +1057,18 @@ export function SendPanel({
                 <button
                   key={`${nft.category}:${nft.commitment}`}
                   type="button"
-                  className="asset-row"
+                  className={
+                    index >= LIST_WINDOW_SIZE
+                      ? "asset-row fold-in"
+                      : "asset-row"
+                  }
+                  style={
+                    index >= LIST_WINDOW_SIZE
+                      ? ({
+                          "--fold-i": Math.min(index - LIST_WINDOW_SIZE, 8),
+                        } as CSSProperties)
+                      : undefined
+                  }
                   aria-pressed={selected}
                   onClick={() =>
                     setSelection({
