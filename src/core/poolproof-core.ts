@@ -67,7 +67,8 @@ export type FlagCode =
   | "DISPLAYED_LIQUIDITY_LIES"
   | "EXIT_WORTHLESS"
   | "EXIT_LEAKS_VALUE"
-  | "ROUTE_UNSIMULATED";
+  | "ROUTE_UNSIMULATED"
+  | "ROUTE_QUOTE_IMPLAUSIBLE";
 
 export interface PoolFlag {
   code: FlagCode;
@@ -383,12 +384,45 @@ function judgePoolInner(facts: PoolFacts): PoolJudgement {
       ? routedCpmmOutSats(sellRaw, facts.pools, feeBps)
       : null;
 
+  // R56 plausibility guard: a landed quote is the venue's word
+  // only inside the band this sell could physically pay — above
+  // zero and at most the total reserve sats. A zero quote for a
+  // sell of this shape (a tenth of the reserve against pools
+  // past the dust threshold, worth thousands of sats under any
+  // CPMM path) is the venue declining to price the route, not a
+  // price; a quote above every sat the pools hold is a payout
+  // no route can make. Either one, left in charge, fabricates
+  // the report's headline: DEAD for a funded pool, or an exit
+  // paying multiples of the spot value. Outside the band the
+  // verdict falls back to our own simulation and the flag names
+  // the figure set aside; the quote itself still rides the
+  // facts into the report's provenance. Inside the band nothing
+  // changes: a bad-but-possible quote still decides (the venue
+  // may price a route worse than our walk — BCHTV, R55),
+  // because plausibility is a property of arithmetic, not of
+  // agreement with us.
+  const landedQuote = facts.routeQuoteSats;
+  let quoteImplausible = false;
+  if (landedQuote !== undefined && landedQuote !== null) {
+    if (landedQuote <= 0n || landedQuote > facts.reserveQuoteSats) {
+      quoteImplausible = true;
+      pushFlag(
+        "ROUTE_QUOTE_IMPLAUSIBLE",
+        `router quote of ${landedQuote} sats is impossible for pools holding ${facts.reserveQuoteSats} sats in total: the verdict uses the simulated exit`,
+        {
+          quoteSats: landedQuote.toString(),
+          reserveSats: facts.reserveQuoteSats.toString(),
+        },
+      );
+    }
+  }
+
   let simOutSats: bigint | null;
   let simulationModel: SimulationModel;
   if (facts.routeQuoteSats === null) {
     simOutSats = null; // route attempted and failed
     simulationModel = "none";
-  } else if (facts.routeQuoteSats !== undefined) {
+  } else if (facts.routeQuoteSats !== undefined && !quoteImplausible) {
     // A Router quote outranks both simulations: it is the venue's
     // own routed pricing for this exact sell.
     simOutSats = facts.routeQuoteSats;
