@@ -112,12 +112,18 @@ export interface PoolJudgement {
   flagDetails: PoolFlag[];
 }
 
-/** 0.001 BCH — the detector's dust threshold, in satoshis. */
-const QUOTE_DUST_SATS = 100_000n;
+/** 0.001 BCH — the detector's dust threshold, in satoshis.
+ *  Exported (R50) so the report's reserve gauge reads the same
+ *  threshold the verdict used, never a second copy of the number. */
+export const QUOTE_DUST_SATS = 100_000n;
 /** Real liquidity under 1% of the displayed figure = the display lies. */
 const LYING_DISPLAY_MAX_REAL_FRACTION = 0.01;
-const EXIT_RATIO_DEAD = 0.01;
-const EXIT_RATIO_RISKY = 0.8;
+/** The exit-ratio verdict lines. Exported (R50) so the report's
+ *  exit gauge marks the lines the verdict itself was graded
+ *  against; the gauge is a rendering of this scale, not a
+ *  parallel one. */
+export const EXIT_RATIO_DEAD = 0.01;
+export const EXIT_RATIO_RISKY = 0.8;
 /** Reference sell is capped at 10% of the pool's token reserve: beyond
  *  that, constant-product impact dominates and even a healthy pool
  *  grades as a bad exit (same cap as the source detector). */

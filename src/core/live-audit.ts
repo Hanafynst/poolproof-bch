@@ -39,6 +39,14 @@
  * input from the audit's latest state (facts + identity below):
  * a late identity keeps a landed quote, a late quote keeps a
  * landed identity.
+ *
+ * R50 adds stage signals alongside the landings: optional hooks
+ * report each stage's real resolution (pools landed with their
+ * count, identity settled found or not, quote settled landed /
+ * unanswered / never applicable) so the caller can render a
+ * progress checklist that only ever describes work that has
+ * actually finished. Signals observe the same attempt guard as
+ * the landings and carry no report data.
  */
 import type { LiveFacts } from "./cauldron-live.js";
 import type { TokenIdentity } from "./identity.js";
@@ -77,6 +85,25 @@ export interface LiveAuditHooks {
    *  the audit's latest state, so it preserves whichever upgrade
    *  landed before it. */
   onQuoteUpgrade?: (input: LiveReportInput) => void;
+  /** Stage signals for the progress checklist (R50). These are
+   *  observations, not landings: each fires at most once, only
+   *  while the attempt is current, and only when its stage has
+   *  REALLY resolved — a step is never shown done on a timer or
+   *  ahead of its data. onPoolsLanded carries the pool count
+   *  the read found (0 is a landing too: it is what turns the
+   *  simulation and quote steps to skipped). */
+  onPoolsLanded?: (poolCount: number) => void;
+  /** The identity read has settled, one way or the other:
+   *  true when a listing resolved, false when it settled
+   *  without one (a null, or a resolver that broke its
+   *  contract — the audit reads both as "no identity"). */
+  onIdentitySettled?: (found: boolean) => void;
+  /** The quote stage has settled: true when a quote landed,
+   *  false when the read settled without one (the venue did
+   *  not answer — the report keeps its routed figure), and
+   *  null when the stage never applied (no quote read wired,
+   *  or a pool-less audit has nothing to route). */
+  onQuoteSettled?: (landed: boolean | null) => void;
 }
 
 export async function runLiveAuditReads(
@@ -103,10 +130,23 @@ export async function runLiveAuditReads(
       return null;
     },
   );
+  // The identity stage signal (R50) rides the same promise:
+  // attached after the state handler above, so `identity`
+  // already holds the settled value when it runs. It reports
+  // the settle, never the hope: a superseded attempt stays
+  // silent, exactly like the landings.
+  void identityPromise.then(() => {
+    if (isCurrent()) hooks.onIdentitySettled?.(identity !== null);
+  });
   // A pool failure throws out of this await — before any report
   // callback, and without waiting on the identity read above.
   const live = await reads.fetchPoolFacts(category);
   if (!isCurrent()) return; // superseded mid-read: land nothing
+  // The pool stage has resolved (R50): the count it reports is
+  // what the checklist needs to turn the simulation and quote
+  // steps to skipped for a pool-less audit, in this same turn,
+  // not when some later stage happens to land.
+  hooks.onPoolsLanded?.(live.poolCount);
 
   // The audit's latest state. Every landing and upgrade below is
   // built from these two, so the upgrades compose in either
@@ -137,6 +177,18 @@ export async function runLiveAuditReads(
           () => null,
         )
       : null;
+  // The quote stage signal (R50): an inapplicable stage is
+  // settled as skipped the moment the pool facts prove it does
+  // not apply; an applicable one reports its real outcome when
+  // the read settles — a landed quote and a silent venue are
+  // different endings and the checklist says which one happened.
+  if (quotePromise === null) {
+    hooks.onQuoteSettled?.(null);
+  } else {
+    void quotePromise.then((landed) => {
+      if (isCurrent()) hooks.onQuoteSettled?.(landed !== null);
+    });
+  }
 
   hooks.onReport(emit());
   // Each upgrade fires as its own read lands, built from the
