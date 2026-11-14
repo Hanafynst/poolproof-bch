@@ -38,6 +38,21 @@
  * token UTXOs as plain BCH, and the plain-BCH builder would burn
  * their tokens: completeness wins.
  *
+ * R60 CORRECTION (read off live responses, 2026-11-14): the fast
+ * path was unreachable and the slow path blind on this server,
+ * because Fulcrum's listunspent takes a token filter as its
+ * second parameter — "exclude_tokens" (the DEFAULT), 
+ * "include_tokens", "tokens_only" — and the default does not
+ * attach token_data, it omits token UTXOs from the result
+ * entirely. An address holding 11 real NFTs returned [] without
+ * the filter and 11 entries with it. Every listunspent this app
+ * makes (this fetch, the receive watch in App.tsx) passes
+ * "include_tokens". The same round's capture also fixed the
+ * token_data shape this header once described from docs: the
+ * category key on the wire is "category", not "category_id"
+ * (both are now accepted). The real response is saved as
+ * fixtures/wallet-utxos-fulcrum-listunspent-nft-real.json.
+ *
  * Traps recorded:
  *  - Scripthash byte order: sha256(locking bytecode) with the
  *    digest REVERSED, hex — Electrum's convention, opposite of the
@@ -57,6 +72,14 @@
  *    category convention; the tx-decode path cross-validates the
  *    convention end-to-end (libauth Output.token.category is
  *    display-order bytes).
+ *  - Outpoint txids are ALSO display order in libauth's
+ *    transaction model (R60): a real mint transaction decoded with
+ *    libauth returns its first input's outpoint hash as the
+ *    funding transaction's printed txid, and encode(decode(tx))
+ *    is byte-identical on the captured pool transaction. Nothing
+ *    in this module reverses a txid; the section-20 template
+ *    regression (fixture UTXOs -> built template -> decoded
+ *    inputs must be the fixture's own outpoints) pins it.
  */
 import {
   binToHex,
@@ -183,9 +206,12 @@ function tokenAmount(value: unknown, what: string): bigint {
 
 function parseTokenData(value: unknown, what: string): UtxoTokenContents {
   const data = asRecord(value, what);
-  const categoryId = data.category_id;
+  // Fulcrum's token_data names this key "category" (R60, read off
+  // a real captured response); "category_id" is accepted as a
+  // fallback for servers using the other spelling.
+  const categoryId = data.category ?? data.category_id;
   if (typeof categoryId !== "string" || !HEX_64.test(categoryId.toLowerCase())) {
-    throw new TypeError(`wallet-utxos: ${what}.category_id is not 64 hex chars`);
+    throw new TypeError(`wallet-utxos: ${what}.category is not 64 hex chars`);
   }
   const token: UtxoTokenContents = {
     category: hexToBin(categoryId.toLowerCase()),
@@ -295,9 +321,12 @@ export function tokenContentsInTransaction(
 }
 
 /** Map one normalized entry to the SpendableUtxo transfer-tx
- *  consumes. The outpoint txid flips from display order to
- *  libauth's internal (little-endian) order — the transfer-tx
- *  header's byte-order trap, applied in exactly one place.
+ *  consumes. The outpoint txid stays in DISPLAY order — the order
+ *  libauth's transaction model itself uses (R60, decode-proven
+ *  against a real mint transaction; see the header traps). An
+ *  earlier version reversed it here on a documented-but-wrong
+ *  "internal order" assumption, which made every template built
+ *  from these UTXOs reference a nonexistent outpoint.
  *  tokenFromTx is the tx-decode fallback result for entries whose
  *  server attached no token_data. */
 export function spendableUtxoFromElectrum(
@@ -306,7 +335,7 @@ export function spendableUtxoFromElectrum(
   tokenFromTx?: UtxoTokenContents,
 ): SpendableUtxo {
   const utxo: SpendableUtxo = {
-    txid: Uint8Array.from(hexToBin(entry.txid)).reverse(),
+    txid: hexToBin(entry.txid),
     index: entry.index,
     valueSats: entry.valueSats,
     lockingBytecode,
@@ -316,11 +345,15 @@ export function spendableUtxoFromElectrum(
   return utxo;
 }
 
-/** Fetch and normalize every UTXO of a mainnet address. Entries
- *  whose server attached no token_data are resolved by decoding
- *  their creating transaction (one call per unique txid) — see the
- *  header for why that cost is paid. Throws on a bad address, a
- *  transport error from `call`, or malformed server data. */
+/** Fetch and normalize every UTXO of a mainnet address. The
+ *  request carries Fulcrum's "include_tokens" filter: without it
+ *  the server's default response excludes token UTXOs entirely
+ *  (R60 — an address holding 11 NFTs read as an empty wallet).
+ *  Entries whose server attached no token_data are resolved by
+ *  decoding their creating transaction (one call per unique
+ *  txid) — see the header for why that cost is paid. Throws on a
+ *  bad address, a transport error from `call`, or malformed
+ *  server data. */
 export async function fetchAddressUtxos(
   address: string,
   call: ElectrumCall,
@@ -328,7 +361,10 @@ export async function fetchAddressUtxos(
   const lockingBytecode = addressLockingBytecode(address);
   const scripthash = await scripthashForLockingBytecode(lockingBytecode);
   const entries = parseListunspent(
-    await call("blockchain.scripthash.listunspent", [scripthash]),
+    await call("blockchain.scripthash.listunspent", [
+      scripthash,
+      "include_tokens",
+    ]),
   );
   const unresolved = entries.filter((entry) => entry.token === undefined);
   const rawTxByTxid = new Map<string, string>();
@@ -408,7 +444,7 @@ export function indexWalletHoldings(
         commitment: binToHex(utxo.token.nft.commitment),
         capability: utxo.token.nft.capability,
         utxoRef: {
-          txid: binToHex(Uint8Array.from(utxo.txid).reverse()),
+          txid: binToHex(utxo.txid),
           index: utxo.index,
         },
       });

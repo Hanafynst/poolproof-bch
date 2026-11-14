@@ -8,12 +8,13 @@
  * material); the wallet owns the keys, picks nothing, and signs
  * only after the user confirms. Nothing here signs or broadcasts.
  *
- * Byte-order trap, opposite of anchor-tx: outpoint txids in this
- * module are libauth's internal (little-endian) order, as in
- * AnchorTxRequest, but token CATEGORIES are display (big-endian)
- * order — the order explorers and UIs write token ids, and the
- * order libauth's Output.token expects. Mixing the two silently
- * targets a nonexistent category.
+ * Byte order (R60, decode-proven): outpoint txids AND token
+ * categories are both display order in libauth's transaction
+ * model — the order explorers and UIs print, and the order a
+ * decoded transaction returns them. (An earlier draft of this
+ * header claimed outpoint txids were little-endian "internal"
+ * order; that was wrong, and following it made built templates
+ * reference reversed, nonexistent outpoints.)
  *
  * Fee honesty, as in anchor-tx: fees are priced on the ESTIMATED
  * SIGNED size (each P2PKH unlock adds ~107 bytes), measured on the
@@ -56,7 +57,7 @@ export interface UtxoTokenContents {
 
 /** A UTXO the sender's wallet offers for spending. */
 export interface SpendableUtxo {
-  /** Outpoint txid in libauth's internal (little-endian) order. */
+  /** Outpoint txid in display order (libauth's model order). */
   txid: Uint8Array;
   index: number;
   valueSats: bigint;

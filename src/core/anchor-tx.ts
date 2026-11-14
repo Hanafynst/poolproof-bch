@@ -39,7 +39,7 @@ export interface AnchorTxRequest {
   /** Key that owns the input and receives the change. Practice:
    *  throwaway. Real app: never present — the wallet signs. */
   privateKey: Uint8Array;
-  /** Outpoint txid in libauth's internal (little-endian) order. */
+  /** Outpoint txid in display order (libauth's model order, R60). */
   utxoTxid: Uint8Array;
   utxoIndex: number;
   utxoValueSats: bigint;
@@ -88,7 +88,7 @@ export function buildAnchorTxTemplate(request: AnchorTxRequest): AnchorTxTemplat
  * change lock as the source output's lock.
  */
 export interface AnchorWalletTxRequest {
-  /** Outpoint txid in libauth's internal (little-endian) order. */
+  /** Outpoint txid in display order (libauth's model order, R60). */
   utxoTxid: Uint8Array;
   utxoIndex: number;
   utxoValueSats: bigint;

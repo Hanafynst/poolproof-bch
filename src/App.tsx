@@ -1972,6 +1972,7 @@ export default function App() {
         const entries = parseListunspent(
           await electrum.call("blockchain.scripthash.listunspent", [
             scripthash,
+            "include_tokens",
           ]),
         );
         const current: WatchedUtxo[] = entries.map((entry) => ({

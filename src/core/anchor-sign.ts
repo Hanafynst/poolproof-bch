@@ -35,7 +35,7 @@ const sha256Promise = instantiateSha256();
 
 /** The funding UTXO the wallet will spend, as the dapp knows it. */
 export interface AnchorFundingUtxo {
-  /** Outpoint txid in libauth's internal (little-endian) order —
+  /** Outpoint txid in display order (libauth's model order, R60) —
    *  the same order AnchorTxRequest takes. */
   txid: Uint8Array;
   index: number;
