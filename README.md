@@ -52,7 +52,7 @@ PoolProof is a static Vite, React and TypeScript site. There is no server and no
 
 - **Reserves** come from the Cauldron Indexer run by Riften. **Identity, supply, mint authority and holders** come from TokenStork as an independent second source. **Wallet balance and confirmation status** come from public Electrum servers over WebSocket.
 - The verdict core is pure TypeScript. It reads per-pool reserves, runs the routed constant-product simulation and applies the verdict thresholds. Nothing in the money path uses floating point.
-- **Wallet pairing and signing** use WizardConnect, which connects the app to Paytaca, Selene or Cashonize. The wallet signs; the app checks the signed bytes against the transaction you confirmed before broadcasting through Electrum. Transaction building uses `@bitauth/libauth`.
+- **Wallet pairing and signing** use WizardConnect, which connects the app to Paytaca, Selene or Cashonize. Pairing follows the routes those wallets actually use: with the wallet on the same phone, copy the connection link in the dialog and paste it into the wallet's connect or scan page; with the wallet on a second device, scan the dialog's QR code. The dialog also offers a deep-link button for wallets that answer one. The wallet signs; the app checks the signed bytes against the transaction you confirmed before broadcasting through Electrum. Transaction building uses `@bitauth/libauth`.
 - The app holds no keys and never takes custody of funds. Your wallet keeps your keys, and every transaction is shown to you before it is offered to the wallet for signing.
 
 ## Run locally
@@ -67,7 +67,7 @@ npm run build
 
 ## Testing
 
-The verdict and wallet logic was built in a practice lab first, then ported into this repository file by file, with the lab copy and the shipped copy kept byte-identical. The lab suite currently runs **566 checks, all passing**, covering:
+The verdict and wallet logic was built in a practice lab first, then ported into this repository file by file. The shipped core modules are byte-identical to the lab copies the suite runs against, with one exception: `src/core/wallet-address.ts` adds a token-aware address form (the address the banner and the Receive panel show) on top of its lab copy, built from the same payload code. The lab suite currently runs **657 checks, all passing**, covering:
 
 - verdict thresholds and the routed exit simulation, tested against real captured fixtures (PUSD alive, 0LANDO dead);
 - the exit gauge's model (ratio and dust-reserve modes, with the tick positions taken from the verdict's own constants), the per-pool reserve split, and the audit's stage signals, which fire only when their real read resolves;
