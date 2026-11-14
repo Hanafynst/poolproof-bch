@@ -234,6 +234,7 @@ function PairingDialog({
         <p className="pairing-hint">{t.pairingScanHint}</p>
         <p className="pairing-hint">{t.pairingPasteHint}</p>
         <p className="pairing-hint">{t.pairingShotHint}</p>
+        <p className="pairing-hint">{t.pairingReturnHint}</p>
         <div className="pairing-qr" role="img" aria-label={t.pairingScanHint}>
           <AlphanumericQRCode value={qrUri} size={210} />
         </div>
@@ -262,6 +263,7 @@ function PairingDialog({
           <div className="pairing-nowallet">
             <h3>{t.noWalletHeading}</h3>
             <p>{t.noWalletBody}</p>
+            <p>{t.noWalletStaleHint}</p>
             <div className="pairing-wallets">
               <a
                 href="https://www.paytaca.com"
@@ -492,17 +494,35 @@ export default function WalletConnect({
           </button>
         </>
       ) : (
-        <button
-          type="button"
-          ref={connectButtonRef}
-          disabled={state === "connecting"}
-          onClick={() => {
-            dialogOpenedByUser.current = true;
-            connect();
-          }}
-        >
-          {state === "connecting" ? t.walletConnecting : t.connectWallet}
-        </button>
+        <>
+          <button
+            type="button"
+            ref={connectButtonRef}
+            disabled={state === "connecting"}
+            onClick={() => {
+              dialogOpenedByUser.current = true;
+              connect();
+            }}
+          >
+            {state === "connecting" ? t.walletConnecting : t.connectWallet}
+          </button>
+          {/* The mobile escape hatch (R75): a restore enters
+              "connecting" with NO URI and no dialog, and it waits
+              for a wallet answer that may never come (the session
+              is a live handshake with no timeout). The only cancel
+              used to be an Escape keydown, which a phone does not
+              have, so a dead stored session held the header hostage
+              forever. While no URI exists there is no pairing to
+              protect, so a Cancel sits next to the waiting button:
+              one tap calls disconnect(), which clears the stored
+              session and returns the header to a tappable Connect.
+              Once a URI exists the pairing dialog owns closing. */}
+          {state === "connecting" && uri === null && (
+            <button type="button" onClick={() => void disconnect()}>
+              {t.sendCancel}
+            </button>
+          )}
+        </>
       )}
       {error !== null && (
         <span className="wallet-error" role="alert">

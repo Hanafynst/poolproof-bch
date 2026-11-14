@@ -3226,3 +3226,148 @@ h1,
     transform: none;
   }
 }
+
+/* ============================================================
+   R75 / gradient corrections, on the user's phone review of
+   the R74 build (2026-11-14 12:31 WIB). Three overrides of
+   R74 choices, everything else from R74 stands (halo, drift,
+   type faces, tile pin, mono):
+
+   1. The white-to-ember gradient leaves the windows. R74 put
+      gradient text on every title and ghost label in the app,
+      dialogs included; the user read the pairing dialog's
+      gradient title as decoration leaking into a tool surface.
+      Inside any modal window (pairing, receive, the send
+      confirmation sheet) titles and button labels render
+      SOLID again, in their pre-R74 colors.
+   2. One exception, explicit: the pairing dialog's own title
+      renders full solid scarlet, the reference red. It is the
+      one window whose whole job is the connection moment, and
+      the brief's identity color carries it alone.
+   3. On the page, where the gradient stays, it is rebalanced
+      to 70/30: white holds the first 70% of the run and the
+      ember arrives only across the final 30%, through the
+      same mid tint as R74. R74's stops (white gone by 34%)
+      read as red-dominant on the phone.
+
+   Cascade note: the R74 RTL rules hardcode their gradient
+   stops, so the page-scope RTL lines are restated below with
+   the new stops; the window selectors from those lists are
+   deliberately absent there, because the solid block at the
+   end of this section owns the windows in both directions
+   (its selectors are scoped through the overlay and card so
+   they outrank the R74 window lines in LTR and RTL alike).
+   ============================================================ */
+:root {
+  --grad-title: linear-gradient(
+    94deg,
+    #ffffff 0%,
+    #ffffff 70%,
+    #ffb3ab 86%,
+    #e63329 100%
+  );
+  --grad-label: linear-gradient(
+    94deg,
+    #ffffff 0%,
+    #ffffff 70%,
+    #ff6b5e 100%
+  );
+}
+
+[dir="rtl"] .topbar h1,
+[dir="rtl"] .panel h2,
+[dir="rtl"] .scan-heading h2 {
+  background-image: linear-gradient(
+    266deg,
+    #ffffff 0%,
+    #ffffff 70%,
+    #ffb3ab 86%,
+    #e63329 100%
+  );
+}
+
+[dir="rtl"] .scan-group h3,
+[dir="rtl"] .anchor h3 {
+  background-image: linear-gradient(
+    266deg,
+    #ffffff 0%,
+    #ffffff 70%,
+    #ff6b5e 100%
+  );
+}
+
+[dir="rtl"] .panel-actions button:not(.primary-action),
+[dir="rtl"] .panel-actions a,
+[dir="rtl"] .wallet button,
+[dir="rtl"] .banner-ember-address {
+  background-image:
+    linear-gradient(266deg, #ffffff 0%, #ffffff 70%, #ff6b5e 100%),
+    linear-gradient(var(--surface-2), var(--surface-2));
+}
+
+[dir="rtl"] .copy-inline button {
+  background-image:
+    linear-gradient(266deg, #ffffff 0%, #ffffff 70%, #ff6b5e 100%),
+    linear-gradient(transparent, transparent);
+}
+
+[dir="rtl"] .panel-actions button:not(.primary-action):hover:not(:disabled),
+[dir="rtl"] .panel-actions a:hover,
+[dir="rtl"] .wallet button:hover:not(:disabled),
+[dir="rtl"] .banner-ember-address:hover:not(:disabled) {
+  background-image:
+    linear-gradient(266deg, #ffffff 0%, #ffffff 70%, #ff6b5e 100%),
+    linear-gradient(var(--surface-3), var(--surface-3));
+}
+
+[dir="rtl"] .copy-inline button:hover {
+  background-image:
+    linear-gradient(266deg, #ffffff 0%, #ffffff 70%, #ff6b5e 100%),
+    linear-gradient(transparent, transparent);
+}
+
+/* Windows render solid. The clip resets matter: R74 clipped
+   these labels to their text, so dropping the image alone
+   would leave transparent glyphs; clipping back to the
+   border box and restoring the base color brings back the
+   exact pre-R74 rendering. Hover lines only drop the image:
+   the base hover rules paint background-color fills
+   (surface-2 / surface-3), which is the pre-R74 hover. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .pairing-overlay div.pairing-card h2 {
+    background-image: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    color: var(--accent);
+  }
+
+  .receive-overlay div.receive-card h2 {
+    background-image: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    color: var(--text);
+  }
+
+  .pairing-overlay .pairing-card .pairing-actions button,
+  .pairing-overlay .pairing-card .pairing-actions a,
+  .pairing-overlay .pairing-card .pairing-wallets a,
+  .pairing-overlay .pairing-card .pairing-nowallet h3,
+  .receive-overlay .receive-card .panel-actions button,
+  .confirm-overlay .confirm-sheet .panel-actions button:not(.primary-action) {
+    background-image: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    color: var(--text);
+  }
+
+  .pairing-overlay .pairing-card .pairing-actions button:hover,
+  .pairing-overlay .pairing-card .pairing-actions a:hover,
+  .pairing-overlay .pairing-card .pairing-wallets a:hover,
+  .receive-overlay .receive-card .panel-actions button:hover,
+  .confirm-overlay
+    .confirm-sheet
+    .panel-actions
+    button:not(.primary-action):hover {
+    background-image: none;
+  }
+}

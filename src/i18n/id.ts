@@ -18,6 +18,7 @@ const strings: UiStrings = {
     "Wallet di HP ini: salin tautannya, lalu tempel di halaman " +
     "koneksi atau pindai wallet.",
   pairingShotHint: "Tidak ada perangkat lain? Ambil tangkapan layar kode ini, lalu unggah gambarnya di pemindai wallet.",
+  pairingReturnHint: "Kembali ke halaman ini segera setelah memindai atau menempel. Jawaban wallet kedaluwarsa dalam hitungan detik, dan hanya bisa masuk saat halaman ini di depan.",
   dialogClose: "Tutup",
   noWalletHeading: "Tidak ada aplikasi wallet yang merespons",
   noWalletBody:
@@ -25,6 +26,7 @@ const strings: UiStrings = {
     "kode dari perangkat lain. Kalau belum punya wallet, pasang " +
     "salah satu di bawah ini. Cashonize berjalan di browser dan " +
     "tidak perlu dipasang.",
+  noWalletStaleHint: "Jika wallet menunjukkan PoolProof sudah terhubung tetapi halaman ini tidak, wallet menyimpan koneksi lama. Hapus entri PoolProof lama di wallet, lalu pasangkan lagi. Di Paytaca, daftarnya ada di Apps, lalu Wizard Connect.",
   walletBalanceLoading: "Memuat saldo...",
   walletBalanceUnavailable:
     "Saldo tidak tersedia. Indexer UTXO tidak bisa dihubungi.",

@@ -19,9 +19,11 @@ export interface UiStrings {
   pairingScanHint: string;
   pairingPasteHint: string;
   pairingShotHint: string;
+  pairingReturnHint: string;
   dialogClose: string;
   noWalletHeading: string;
   noWalletBody: string;
+  noWalletStaleHint: string;
   walletBalanceLoading: string;
   walletBalanceUnavailable: string;
   sendInProgress: string;

@@ -19,6 +19,7 @@ const strings: UiStrings = {
     "Portefeuille sur ce téléphone : copiez le lien, puis collez-le " +
     "dans la page de connexion ou de scan du portefeuille.",
   pairingShotHint: "Aucun autre appareil ? Faites une capture d'écran de ce code, puis importez-la dans le scanner du portefeuille.",
+  pairingReturnHint: "Revenez sur cette page aussitôt après avoir scanné ou collé. La réponse du portefeuille expire en quelques secondes et n'arrive que lorsque cette page est au premier plan.",
   dialogClose: "Fermer",
   noWalletHeading: "Aucune application de portefeuille n'a répondu",
   noWalletBody:
@@ -27,6 +28,7 @@ const strings: UiStrings = {
     "pas encore de portefeuille, installez-en un ci-dessous. " +
     "Cashonize fonctionne dans le navigateur et ne nécessite aucune " +
     "installation.",
+  noWalletStaleHint: "Si votre portefeuille affiche PoolProof comme connecté alors que cette page ne l'affiche pas, il garde une ancienne connexion. Supprimez les anciennes entrées PoolProof dans le portefeuille, puis refaites la liaison. Dans Paytaca, la liste se trouve dans Apps, puis Wizard Connect.",
   walletBalanceLoading: "Chargement du solde...",
   walletBalanceUnavailable:
     "Solde indisponible. L'indexeur UTXO n'a pas pu être joint.",

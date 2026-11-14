@@ -19,6 +19,7 @@ const strings: UiStrings = {
     "Carteira neste telefone: copie o link e cole na página de " +
     "conexão ou leitura da carteira.",
   pairingShotHint: "Sem outro dispositivo? Tire uma captura de tela deste código e envie a imagem no leitor da carteira.",
+  pairingReturnHint: "Volte a esta página logo depois de escanear ou colar. A resposta da carteira expira em segundos e só chega enquanto esta página está em primeiro plano.",
   dialogClose: "Fechar",
   noWalletHeading: "Nenhum aplicativo de carteira respondeu",
   noWalletBody:
@@ -26,6 +27,7 @@ const strings: UiStrings = {
     "escaneie o código de outro dispositivo. Se você ainda não tem " +
     "uma carteira, instale uma abaixo. O Cashonize funciona no " +
     "navegador e não precisa de instalação.",
+  noWalletStaleHint: "Se a sua carteira mostra o PoolProof como conectado, mas esta página não, ela guarda uma conexão antiga. Remova as entradas antigas do PoolProof na carteira e vincule de novo. No Paytaca, a lista fica em Apps e depois em Wizard Connect.",
   walletBalanceLoading: "Carregando saldo...",
   walletBalanceUnavailable:
     "Saldo indisponível. O indexador de UTXO não pôde ser contatado.",

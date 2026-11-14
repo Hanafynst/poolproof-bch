@@ -18,6 +18,7 @@ const strings: UiStrings = {
     "Wallet on this phone: copy the link, then paste it in the " +
     "wallet's connect or scan page.",
   pairingShotHint: "No second device? Take a screenshot of this code and upload it in the wallet's scanner.",
+  pairingReturnHint: "Come back to this page right away after scanning or pasting. The wallet's answer goes stale within seconds, and it can only land while this page is in front.",
   dialogClose: "Close",
   noWalletHeading: "No wallet app answered",
   noWalletBody:
@@ -25,6 +26,7 @@ const strings: UiStrings = {
     "scan the code from another device. If you have no wallet yet, " +
     "install one below. Cashonize runs in the browser and needs no " +
     "install.",
+  noWalletStaleHint: "If your wallet shows PoolProof as connected but this page does not, it is holding a stale connection. Remove the old PoolProof entries in the wallet, then pair again. In Paytaca, that list is under Apps, then Wizard Connect.",
   walletBalanceLoading: "Loading balance...",
   walletBalanceUnavailable:
     "Balance unavailable. The UTXO indexer could not be reached.",

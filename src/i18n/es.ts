@@ -19,6 +19,7 @@ const strings: UiStrings = {
     "Billetera en este teléfono: copia el enlace y pégalo en la " +
     "página de conexión o escaneo de la billetera.",
   pairingShotHint: "¿Sin otro dispositivo? Haz una captura de este código y súbela en el escáner de la cartera.",
+  pairingReturnHint: "Vuelve a esta página enseguida después de escanear o pegar. La respuesta de la cartera caduca en segundos y solo llega mientras esta página está al frente.",
   dialogClose: "Cerrar",
   noWalletHeading: "Ninguna aplicación de billetera respondió",
   noWalletBody:
@@ -26,6 +27,7 @@ const strings: UiStrings = {
     "o escanea el código desde otro dispositivo. Si aún no tienes " +
     "una billetera, instala una abajo. Cashonize funciona en el " +
     "navegador y no necesita instalación.",
+  noWalletStaleHint: "Si tu cartera muestra PoolProof como conectado pero esta página no, guarda una conexión antigua. Elimina las entradas viejas de PoolProof en la cartera y vuelve a vincular. En Paytaca, la lista está en Apps y luego en Wizard Connect.",
   walletBalanceLoading: "Cargando saldo...",
   walletBalanceUnavailable:
     "Saldo no disponible. No se pudo contactar el indexador de UTXO.",

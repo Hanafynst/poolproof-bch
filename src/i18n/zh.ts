@@ -16,11 +16,13 @@ const strings: UiStrings = {
   pairingPasteHint:
     "钱包就在这台手机上：复制链接，然后粘贴到钱包的连接或扫描页面。",
   pairingShotHint: "没有第二台设备？截取此代码的屏幕截图，然后在钱包的扫码页面中上传。",
+  pairingReturnHint: "扫描或粘贴后，请立即回到此页面。钱包的回复会在几秒内失效，且只有在此页面位于前台时才能送达。",
   dialogClose: "关闭",
   noWalletHeading: "没有钱包应用响应",
   noWalletBody:
     "复制连接链接并粘贴到钱包中，或用另一台设备扫描此二维码。" +
     "如果还没有钱包，请在下方安装一个。Cashonize 在浏览器中运行，无需安装。",
+  noWalletStaleHint: "如果您的钱包显示 PoolProof 已连接，但此页面没有，说明钱包里存着一条旧连接。请在钱包中删除旧的 PoolProof 条目，然后重新配对。在 Paytaca 中，该列表位于 Apps，然后 Wizard Connect。",
   walletBalanceLoading: "正在加载余额...",
   walletBalanceUnavailable: "余额不可用。无法连接 UTXO 索引器。",
   sendInProgress: "等待钱包签名...",
