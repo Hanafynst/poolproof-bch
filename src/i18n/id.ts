@@ -17,6 +17,8 @@ const strings: UiStrings = {
   pairingPasteHint:
     "Wallet di HP ini: salin tautannya, lalu tempel di halaman " +
     "koneksi atau pindai wallet.",
+  pairingShotHint: "Tidak ada perangkat lain? Ambil tangkapan layar kode ini, lalu unggah gambarnya di pemindai wallet.",
+  dialogClose: "Tutup",
   noWalletHeading: "Tidak ada aplikasi wallet yang merespons",
   noWalletBody:
     "Salin tautan koneksi dan tempel di dalam wallet, atau pindai " +

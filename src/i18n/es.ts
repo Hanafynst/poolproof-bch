@@ -18,6 +18,8 @@ const strings: UiStrings = {
   pairingPasteHint:
     "Billetera en este teléfono: copia el enlace y pégalo en la " +
     "página de conexión o escaneo de la billetera.",
+  pairingShotHint: "¿Sin otro dispositivo? Haz una captura de este código y súbela en el escáner de la cartera.",
+  dialogClose: "Cerrar",
   noWalletHeading: "Ninguna aplicación de billetera respondió",
   noWalletBody:
     "Copia el enlace de conexión y pégalo dentro de la billetera, " +

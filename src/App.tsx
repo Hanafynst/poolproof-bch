@@ -2060,6 +2060,10 @@ export default function App() {
       setOpenPanel((current) => (current === panel ? null : panel)),
     [],
   );
+  // The Receive window's own close paths (its Close button,
+  // backdrop, Escape) land here: they close outright rather
+  // than toggling, whatever state the window was opened from.
+  const closePanel = useCallback(() => setOpenPanel(null), []);
   const focusAudit = useCallback(() => {
     const input = document.getElementById("live-category");
     if (input === null) return;
@@ -2384,7 +2388,11 @@ export default function App() {
               />
             )}
             {renderedPanel === "receive" && (
-              <ReceivePanel t={t} session={walletSession} />
+              <ReceivePanel
+                t={t}
+                session={walletSession}
+                onClose={closePanel}
+              />
             )}
             {renderedPanel === "history" && (
               <HistoryPanel

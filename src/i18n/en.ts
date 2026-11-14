@@ -17,6 +17,8 @@ const strings: UiStrings = {
   pairingPasteHint:
     "Wallet on this phone: copy the link, then paste it in the " +
     "wallet's connect or scan page.",
+  pairingShotHint: "No second device? Take a screenshot of this code and upload it in the wallet's scanner.",
+  dialogClose: "Close",
   noWalletHeading: "No wallet app answered",
   noWalletBody:
     "Copy the connection link and paste it inside the wallet, or " +

@@ -2110,8 +2110,12 @@ main:focus {
    action copies the connection link (the route that pairs a
    wallet on this phone); the QR above it serves a wallet on
    another device, and the deep link into a wallet app sits in
-   the secondary row. */
-.pairing-overlay {
+   the secondary row. The Receive window (WalletHome.tsx) shares
+   this overlay and card system through the .receive-* selectors
+   below: one sizing system for both windows, so a fix to the
+   geometry lands on both. Its own rules follow the card block. */
+.pairing-overlay,
+.receive-overlay {
   position: fixed;
   inset: 0;
   z-index: 50;
@@ -2131,11 +2135,13 @@ main:focus {
   transition: opacity var(--dur-dialog-exit) var(--ease-out);
 }
 
-.pairing-overlay.closing {
+.pairing-overlay.closing,
+.receive-overlay.closing {
   opacity: 0;
 }
 
-.pairing-card {
+.pairing-card,
+.receive-card {
   background:
     linear-gradient(var(--surface), var(--surface)) padding-box,
     linear-gradient(180deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.02)) border-box;
@@ -2154,14 +2160,36 @@ main:focus {
 
 /* Exit runs at two-thirds of the entry (P5): the dialog's own
    close paths set the closing class and unmount after it. */
-.pairing-card.closing {
+.pairing-card.closing,
+.receive-card.closing {
   animation: pairing-out var(--dur-dialog-exit) var(--ease-out) both;
 }
 
-.pairing-card h2 {
+.pairing-card h2,
+.receive-card h2 {
   font-size: 1.1rem;
   letter-spacing: -0.014em;
   margin: 0 0 0.75rem;
+}
+
+/* Receive window: the shared card, left-aligned like the panel
+   it replaced and compacted so the single address block
+   (heading, note, QR, address, copy, close) fits a phone
+   viewport whole: the QR drops toward 190px and the close row
+   is set off by a hairline. On shorter viewports the shared
+   overlay scroll keeps every control reachable. */
+.receive-card {
+  text-align: left;
+}
+
+.receive-card .qr {
+  width: min(190px, 62vw);
+  margin: 0.6rem 0;
+}
+
+.receive-close-row {
+  border-top: 1px solid var(--line);
+  padding-top: 0.9rem;
 }
 
 .pairing-copy {

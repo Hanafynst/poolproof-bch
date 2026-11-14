@@ -55,10 +55,13 @@ function asSignManager(manager: unknown): SignFlowManager | null {
  * Our own pairing dialog. The stock WizardConnectQRDialog renders
  * a QR code and nothing else, and a QR on the same phone that
  * would scan it is a dead end, so the dialog is rebuilt around the
- * hook with the two routes that actually pair: the QR for a wallet
+ * hook with the routes that actually pair: the QR for a wallet
  * on another device, and the copyable connection URI as the
  * primary action for a wallet on this phone (copy the link, paste
- * it in the wallet's connect or scan page). The wiz:// deep link
+ * it in the wallet's connect or scan page). A third hint covers
+ * the route the user proved on his own phone (2026-11-14):
+ * screenshot the code and upload the image in the wallet's
+ * scanner. The wiz:// deep link
  * sits in the secondary row for wallets that do take it; on the
  * user's phone Paytaca ignored it (2026-11-14), so it is an
  * option here, not the promise.
@@ -230,6 +233,7 @@ function PairingDialog({
         <h2>{t.connectWallet}</h2>
         <p className="pairing-hint">{t.pairingScanHint}</p>
         <p className="pairing-hint">{t.pairingPasteHint}</p>
+        <p className="pairing-hint">{t.pairingShotHint}</p>
         <div className="pairing-qr" role="img" aria-label={t.pairingScanHint}>
           <AlphanumericQRCode value={qrUri} size={210} />
         </div>

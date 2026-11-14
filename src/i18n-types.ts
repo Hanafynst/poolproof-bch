@@ -18,6 +18,8 @@ export interface UiStrings {
   copyConnectionLink: string;
   pairingScanHint: string;
   pairingPasteHint: string;
+  pairingShotHint: string;
+  dialogClose: string;
   noWalletHeading: string;
   noWalletBody: string;
   walletBalanceLoading: string;

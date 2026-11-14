@@ -18,6 +18,8 @@ const strings: UiStrings = {
   pairingPasteHint:
     "Carteira neste telefone: copie o link e cole na página de " +
     "conexão ou leitura da carteira.",
+  pairingShotHint: "Sem outro dispositivo? Tire uma captura de tela deste código e envie a imagem no leitor da carteira.",
+  dialogClose: "Fechar",
   noWalletHeading: "Nenhum aplicativo de carteira respondeu",
   noWalletBody:
     "Copie o link de conexão e cole dentro da carteira, ou " +

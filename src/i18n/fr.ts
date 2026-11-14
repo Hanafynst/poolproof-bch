@@ -18,6 +18,8 @@ const strings: UiStrings = {
   pairingPasteHint:
     "Portefeuille sur ce téléphone : copiez le lien, puis collez-le " +
     "dans la page de connexion ou de scan du portefeuille.",
+  pairingShotHint: "Aucun autre appareil ? Faites une capture d'écran de ce code, puis importez-la dans le scanner du portefeuille.",
+  dialogClose: "Fermer",
   noWalletHeading: "Aucune application de portefeuille n'a répondu",
   noWalletBody:
     "Copiez le lien de connexion et collez-le dans le portefeuille, " +

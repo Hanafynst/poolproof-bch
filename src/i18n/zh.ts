@@ -15,6 +15,8 @@ const strings: UiStrings = {
   pairingScanHint: "钱包在另一台设备上：用它扫描此二维码。",
   pairingPasteHint:
     "钱包就在这台手机上：复制链接，然后粘贴到钱包的连接或扫描页面。",
+  pairingShotHint: "没有第二台设备？截取此代码的屏幕截图，然后在钱包的扫码页面中上传。",
+  dialogClose: "关闭",
   noWalletHeading: "没有钱包应用响应",
   noWalletBody:
     "复制连接链接并粘贴到钱包中，或用另一台设备扫描此二维码。" +

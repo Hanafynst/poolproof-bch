@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { binToHex, hexToBin } from "@bitauth/libauth";
 import qrcode from "qrcode-generator";
 import { languageOption, type Lang, type UiStrings } from "./i18n";
@@ -42,7 +43,11 @@ import {
 import type { WalletHoldings } from "./core/wallet-utxos";
 import type { HistoryEntry } from "./core/history-store";
 import { listWindow } from "./core/list-window";
-import { phaseFocusTarget, type SendPhase } from "./core/focus-nav";
+import {
+  phaseFocusTarget,
+  trapTabIndex,
+  type SendPhase,
+} from "./core/focus-nav";
 import {
   failureReasonForCode,
   type ToastFailureReason,
@@ -141,8 +146,9 @@ export function TopBanner({
  * The wallet card under the header row: the connected wallet's BCH
  * balance in large type, then the four action tiles. Disconnected,
  * the card carries the pack's connect hint and the tiles still
- * work: Send, Receive and History open their panels, which state
- * the disconnected case in words, and Audit scrolls to the audit
+ * work: Send and History open their panels and Receive opens its
+ * modal window, each stating the disconnected case in words, and
+ * Audit scrolls to the audit
  * form. No balance figure is ever rendered for a wallet whose
  * UTXOs have not actually been read.
  */
@@ -196,6 +202,7 @@ export function WalletCard({
         {tiles.map(({ panel, label }) => (
           <button
             key={panel}
+            id={`wallet-tile-${panel}`}
             type="button"
             className="tile"
             aria-expanded={openPanel === panel}
@@ -268,48 +275,140 @@ function CopyAddressButton({
 }
 
 /**
- * Receive: the derived addresses with their types labelled, the
- * token-aware one first with its QR (it is the safe address for
- * BCH, tokens and NFTs alike). The QR encodes the token address,
- * never the shortened display form.
+ * Receive: a modal window on the pairing dialog's overlay system
+ * (the .receive-* rules in style.css share the .pairing-*
+ * geometry), rendered through a portal to <body>. The portal is
+ * load-bearing, not cosmetic: this component mounts under the
+ * sticky topbar's subtree, whose backdrop-filter would make it
+ * the containing block for a fixed overlay and size the window
+ * to the bar instead of the viewport (the R68 field bug).
+ *
+ * One address only: the token-aware form, which accepts BCH,
+ * CashTokens and NFTs alike. The wallet still derives the plain
+ * form internally (Send's address-type checks rely on it), but
+ * the user cut it from this window on 2026-11-14: two addresses
+ * read as a choice, and the wrong pick loses a token deposit.
+ * The QR encodes the token address, never a shortened form.
+ *
+ * Close paths mirror the pairing dialog: the Close button, a
+ * backdrop click, and Escape (this window listens for its own
+ * Escape; App's panel state has no key handling) all play the
+ * short exit before unmounting. Tab cycles inside via the
+ * core's trapTabIndex, focus starts on the Close button, and
+ * closing returns focus to the Receive tile.
  */
 export function ReceivePanel({
   t,
   session,
+  onClose,
 }: {
   t: UiStrings;
   session: WalletSession;
+  onClose: () => void;
 }) {
-  if (!session.connected) {
-    return (
-      <section className="panel" aria-label={t.actionReceive}>
-        <p>{t.walletDisconnectedHint}</p>
-      </section>
+  const [closing, setClosing] = useState(false);
+  const closeTimer = useRef<number | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const requestClose = () => {
+    if (closing) return;
+    setClosing(true);
+    closeTimer.current = window.setTimeout(() => {
+      onClose();
+      document.getElementById("wallet-tile-receive")?.focus();
+    }, 190);
+  };
+  // requestClose is rebuilt per render; the Escape listener
+  // reads the latest through a ref so it never goes stale.
+  const requestCloseRef = useRef(requestClose);
+  requestCloseRef.current = requestClose;
+  useEffect(() => {
+    return () => {
+      if (closeTimer.current !== null) {
+        window.clearTimeout(closeTimer.current);
+      }
+    };
+  }, []);
+  // Focus starts on the Close button: it is inside the trap
+  // set, and preventScroll keeps the overlay from jumping to
+  // the card's bottom edge on short viewports, where the card
+  // is taller than the overlay's visible band.
+  useEffect(() => {
+    closeButtonRef.current?.focus({ preventScroll: true });
+  }, []);
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") requestCloseRef.current();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+  // The dialog declares aria-modal, so Tab cycles inside it,
+  // exactly as in the pairing dialog: the boundary ruling is
+  // the core's trapTabIndex, this handler only reads the live
+  // focusable set and the live focus.
+  const trapTab = (event: React.KeyboardEvent) => {
+    if (event.key !== "Tab") return;
+    const card = cardRef.current;
+    if (card === null) return;
+    const focusables = card.querySelectorAll<HTMLElement>(
+      "a[href], button:not([disabled])",
     );
-  }
-  if (session.address === null || session.tokenAddress === null) {
-    return (
-      <section className="panel" aria-label={t.actionReceive}>
-        <p>{t.walletAddressMissing}</p>
-      </section>
+    const target = trapTabIndex(
+      focusables.length,
+      Array.from(focusables).indexOf(
+        document.activeElement as HTMLElement,
+      ),
+      event.shiftKey,
     );
-  }
-  return (
-    <section className="panel" aria-label={t.actionReceive}>
-      <h2>{t.receiveAddressLabel}</h2>
-      <p className="panel-note">{t.receiveTokenNote}</p>
-      <AddressQr value={session.tokenAddress} caption={t.receiveQrCaption} />
-      <p className="mono panel-address">{session.tokenAddress}</p>
-      <div className="panel-actions">
-        <CopyAddressButton t={t} address={session.tokenAddress} label={t.copyAddress} />
+    if (target < 0) return;
+    event.preventDefault();
+    focusables[target].focus();
+  };
+
+  const tokenAddress = session.tokenAddress;
+  return createPortal(
+    <div
+      className={closing ? "receive-overlay closing" : "receive-overlay"}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) requestClose();
+      }}
+    >
+      <div
+        className={closing ? "receive-card closing" : "receive-card"}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t.actionReceive}
+        ref={cardRef}
+        onKeyDown={trapTab}
+      >
+        {!session.connected ? (
+          <p>{t.walletDisconnectedHint}</p>
+        ) : tokenAddress === null ? (
+          <p>{t.walletAddressMissing}</p>
+        ) : (
+          <>
+            <h2>{t.receiveAddressLabel}</h2>
+            <p className="panel-note">{t.receiveTokenNote}</p>
+            <AddressQr value={tokenAddress} caption={t.receiveQrCaption} />
+            <p className="mono panel-address">{tokenAddress}</p>
+            <div className="panel-actions">
+              <CopyAddressButton
+                t={t}
+                address={tokenAddress}
+                label={t.copyAddress}
+              />
+            </div>
+          </>
+        )}
+        <div className="panel-actions receive-close-row">
+          <button type="button" ref={closeButtonRef} onClick={requestClose}>
+            {t.dialogClose}
+          </button>
+        </div>
       </div>
-      <h3>{t.receivePlainLabel}</h3>
-      <p className="panel-note">{t.receivePlainNote}</p>
-      <p className="mono panel-address">{session.address}</p>
-      <div className="panel-actions">
-        <CopyAddressButton t={t} address={session.address} label={t.copyAddress} />
-      </div>
-    </section>
+    </div>,
+    document.body,
   );
 }
 
