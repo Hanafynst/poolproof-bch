@@ -32,7 +32,7 @@ The report also includes:
 - **Proof anchor.** The finished report's SHA-256 hash is written into an OP_RETURN output of a Bitcoin Cash mainnet transaction, signed in your own wallet through WizardConnect. At the default fee rate of 1 sat per byte the anchor costs 235 sats. Anyone can re-hash the report and match the hash against the chain.
 - **Report files.** Download the report as JSON, or share it as a link (`?cat=` for a live category, `?snap=` for a bundled snapshot).
 - **Wallet home.** Balance, Send, Receive, History and Audit in one screen. Send has an asset picker covering BCH, CashTokens and NFTs, address-type detection that blocks token sends to plain addresses, a confirmation sheet with a fee preview, and receipts whose confirmation status updates in History.
-- **Eight languages.** English by default, plus Bahasa Indonesia, Mandarin (Simplified), Español, हिन्दी, العربية (right-to-left), Português and Français. Numbers render in Latin digits in every language. Fiat figures (USD by default) appear only with a labelled, dated reference rate; verdicts are always computed in BCH and satoshis.
+- **Eight languages.** English by default, plus Bahasa Indonesia, Mandarin (Simplified), Español, हिन्दी, العربية (right-to-left), Português and Français. Numbers render in Latin digits in every language. Fiat figures (USD only) appear only with a labelled, dated reference rate; verdicts are always computed in BCH and satoshis.
 
 Three bundled snapshots (ParyonUSD, a dead-pool pattern fixture and 0LANDO, a real dead pool) let you read a full report without typing a category ID.
 
