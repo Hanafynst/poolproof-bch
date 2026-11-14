@@ -2409,11 +2409,14 @@ main:focus {
 
 /* The glow budget (P11): coloured glow exists at exactly two
    addresses, the locked banner (identity, untouched above)
-   and the hover of the primary actions below. Everywhere
-   else it is banned: cards, tiles, stamps, chips, icons and
-   text never glow. Pressed means grounded, so the glow is
-   removed on :active; a keyboard-focused control shows its
-   focus ring instead of the glow. */
+   and the hover of the primary actions below. Pressed means
+   grounded, so the glow is removed on :active; a keyboard-
+   focused control shows its focus ring instead of the glow.
+   R74 revises one clause on the user's direct order
+   (2026-11-14 11:59 and 12:18): the report's evidence papers
+   (.scan-group, .anchor) carry the ember halo defined in the
+   R74 section at the end of this file. Tiles, stamps, chips,
+   icons, toasts and text still never glow. */
 .primary-action:hover:not(:disabled):not(:focus-visible),
 .live-audit button:hover:not(:disabled):not(:focus-visible),
 .pairing-copy:hover:not(:focus-visible),
@@ -2807,5 +2810,419 @@ a:focus-visible {
 
   .toast-leaving {
     transition-duration: var(--dur-ui) !important;
+  }
+}
+
+/* ============================================================
+   R74 — design polish (see DESIGN-POLISH-2026-11-14.md for the
+   plan this implements). One appended section owns the round
+   so the cascade stays auditable: each rule below restates an
+   earlier rule at equal specificity, later in the file, or
+   adds a surface that did not exist. The verdict document
+   sits in ember light; the instruments stay matte. */
+
+@font-face {
+  font-family: "Raleway";
+  src: url("../fonts/raleway.woff2") format("woff2");
+  /* The served file is the family's variable font (wght axis
+     100-900); only the two weights this design uses are
+     declared, so nothing else can be synthesised from it. */
+  font-weight: 600 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Neuton";
+  src: url("../fonts/neuton-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Neuton";
+  src: url("../fonts/neuton-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --font-display: "Raleway", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Neuton", Georgia, "Times New Roman", serif;
+  --font-instrument: system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* The white-to-ember gradient family (user order 12:14).
+     Title stops are biased to white, ember arriving late; the
+     final stop is the locked accent itself, which still
+     measures 4.56:1 on the page ground. Label stops end at
+     ember-soft so small bold text holds AA at every point of
+     the flow (6.07:1 minimum, sampled on surface-2). */
+  --grad-title: linear-gradient(94deg, #ffffff 0%, #ffffff 34%, #ffb3ab 68%, #e63329 100%);
+  --grad-label: linear-gradient(94deg, #ffffff 0%, #ffffff 30%, #ff6b5e 100%);
+  /* The filled primary's white-hot core (order 12:14): hot
+     light pooled at the key's top edge over the R54-proven
+     scarlet gradient. The label's glyph band rides the middle
+     of the key and never samples more than a breath of the
+     core: its worst point computes to 4.61:1, and the band's
+     floor on the gradient itself is 4.85:1. */
+  --accent-grad-hot:
+    radial-gradient(130% 150% at 50% -40%, rgb(255 236 230 / 0.5), transparent 55%),
+    linear-gradient(180deg, var(--accent), #d92c21 58%, #c2241c);
+  /* A fourth named exception to the 300ms utility ceiling:
+     the ember halo's breath (order 12:02). Weather, not
+     feedback: ambient, non-blocking, shared by every paper,
+     and frozen present-but-static under reduced motion. */
+  --dur-glow: 16s;
+}
+
+body {
+  font-family: var(--font-body);
+  /* Serif body text takes a touch more air (the skill's
+     rule of thumb, ~1.55 against the sans 1.5). */
+  line-height: 1.55;
+  /* One light source (the plan's Chanel cut): the neutral
+     white radial from V4 leaves the page. The banner's
+     scarlet breath stays as the only ambient light; the
+     cards now carry the ember themselves. */
+  background:
+    radial-gradient(90rem 42rem at 18% -12%, rgb(230 51 41 / 0.05), transparent 62%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+/* The instrument family keeps the neutral stack: the four
+   tiles (locked by order (e), their face does not change),
+   the keypad digits, and the balance numeral, whose figures
+   must stay tabular so a polling balance never jitters. The
+   banner is locked: pinning its face here only keeps it
+   identical under the new body font, it is not a restyle. */
+.top-banner,
+.tile,
+.balance-value,
+.keypad button {
+  font-family: var(--font-instrument);
+}
+
+/* Mono is demoted to machine strings: the fields you paste a
+   category ID or an address into join the hashes and IDs
+   that already wear it. Character fidelity is the job there. */
+.live-audit input,
+.panel-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Display faces (order (e)): heads, titles, the seal, the
+   chips. Colour treatment for these lives further down; this
+   rule is the typeface only. */
+.wordmark,
+h1,
+.report-head h2,
+.scan-head h2,
+.not-found h2,
+.panel h2,
+.panel h3,
+.pairing-card h2,
+.receive-card h2,
+.pairing-nowallet h3,
+.stamp,
+.chip {
+  font-family: var(--font-display);
+}
+
+/* Labelled buttons (order (e)): every button whose label is
+   words. The tiles are buttons too, but they are excluded by
+   the same order and pinned above; the keypad is instrument;
+   icon-only buttons carry no label to set. */
+.live-audit button,
+.switcher button,
+.panel-actions button,
+.panel-actions a,
+.wallet button,
+.pairing-copy,
+.pairing-actions button,
+.pairing-actions a,
+.pairing-wallets a,
+.copy-inline,
+.not-found-action,
+.anchor .primary-action,
+.shortcut-row button {
+  font-family: var(--font-display);
+}
+
+/* The filled primaries take the hot-core background (order
+   12:14); their labels stay solid white. The icon buttons
+   share the material: a key is a key, glyph or label. */
+.live-audit button,
+.panel-actions .primary-action,
+.anchor .primary-action,
+.pairing-copy,
+.not-found-action,
+.icon-btn {
+  background: var(--accent-grad-hot);
+}
+
+/* The registrar's line: group heads leave the tracked
+   all-caps eyebrow behind. What a stamped document actually
+   uses: the register entry set in display type at its
+   authored sentence case, led by a short ember dash. The
+   chip beside the head is untouched. */
+.scan-group-head h3,
+.anchor h2,
+.pool-shares-title {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.scan-group-head h3::before,
+.anchor h2::before,
+.pool-shares-title::before {
+  content: "";
+  display: inline-block;
+  width: 0.55rem;
+  height: 2px;
+  margin-inline-end: 0.5rem;
+  vertical-align: middle;
+  border-radius: 1px;
+  background: var(--accent);
+}
+
+/* The ember halo (orders (b) + (d) + the 12:18 calibration):
+   every evidence paper glows, one notch above subtle, and
+   the light lives strictly outside the border. Two parts:
+   a static scarlet shadow hugging the card, and a blurred
+   radial layer behind it that breathes on the shared cycle.
+   The border itself warms from the locked white hairline to
+   the ember family, so paper and light read as one object.
+   Panels and dialogs are tools, not papers: they keep the
+   white hairline and never glow. */
+.scan-group,
+.anchor {
+  position: relative;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(180deg, rgb(230 51 41 / 0.4), rgb(230 51 41 / 0.1) 58%, rgb(255 255 255 / 0.05)) border-box;
+  box-shadow:
+    var(--shadow-card),
+    0 0 36px -8px rgb(230 51 41 / 0.35);
+}
+
+.scan-group::before,
+.anchor::before {
+  content: "";
+  position: absolute;
+  inset: -16px -12px;
+  z-index: -1;
+  border-radius: 26px;
+  background: radial-gradient(58% 52% at 32% 16%, rgb(230 51 41 / 0.42), transparent 70%);
+  filter: blur(14px);
+  animation: ember-drift var(--dur-glow) var(--ease-in-out) infinite alternate;
+  pointer-events: none;
+}
+
+/* The verdict's own paper (the exit group, the one carrying
+   the gauge) takes the strongest treatment: this is where
+   the boldness is spent. */
+.scan-group:has(.exit-gauge) {
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(180deg, rgb(230 51 41 / 0.55), rgb(230 51 41 / 0.16) 58%, rgb(255 255 255 / 0.06)) border-box;
+  box-shadow:
+    var(--shadow-card),
+    0 0 48px -8px rgb(230 51 41 / 0.5);
+}
+
+.scan-group:has(.exit-gauge)::before {
+  background: radial-gradient(58% 52% at 32% 16%, rgb(230 51 41 / 0.55), transparent 70%);
+}
+
+/* Sunlight arriving (order (d)): the card and its size never
+   move; only the light drifts and swells, on a 16s alternate
+   cycle slow enough to watch and calm enough to live with.
+   Effective core alpha rides 0.30 at the trough to 0.42 at
+   the peak (0.40 to 0.55 on the verdict paper). */
+@keyframes ember-drift {
+  from {
+    opacity: 0.72;
+    transform: translate3d(-10px, -6px, 0) scale(1);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(10px, 6px, 0) scale(1.06);
+  }
+}
+
+/* Gradient text (order 12:14), guarded: engines without
+   background-clip: text keep the solid colours they have
+   today instead of risking an invisible label. Ghost buttons
+   carry the gradient as the first of two background layers,
+   clipped to the text, over a fill layer clipped to the box,
+   so their resting and hover fills survive the treatment. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .wordmark,
+  .panel h2,
+  .pairing-card h2,
+  .receive-card h2,
+  .scan-group-head h3,
+  .anchor h2,
+  .pool-shares-title {
+    background-image: var(--grad-label);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  h1,
+  .report-head h2,
+  .scan-head h2,
+  .not-found h2 {
+    background-image: var(--grad-title);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Ghost buttons on a surface-2 fill. Pressed switcher
+     segments are excluded: their lit key keeps dark text. */
+  .wallet button,
+  .switcher button:not([aria-pressed="true"]),
+  .shortcut-row button,
+  .pairing-wallets a {
+    background-image:
+      var(--grad-label),
+      linear-gradient(var(--surface-2), var(--surface-2));
+    -webkit-background-clip: text, border-box;
+    background-clip: text, border-box;
+    color: transparent;
+  }
+
+  .wallet button:hover:not(:disabled),
+  .switcher button:not([aria-pressed="true"]):hover,
+  .shortcut-row button:hover,
+  .pairing-wallets a:hover {
+    background-image:
+      var(--grad-label),
+      linear-gradient(var(--surface-3), var(--surface-3));
+  }
+
+  /* Ghost buttons on a transparent fill. */
+  .panel-actions button:not(.primary-action),
+  .panel-actions a,
+  .pairing-actions button,
+  .pairing-actions a,
+  .copy-inline {
+    background-image:
+      var(--grad-label),
+      linear-gradient(transparent, transparent);
+    -webkit-background-clip: text, border-box;
+    background-clip: text, border-box;
+    color: transparent;
+  }
+
+  .panel-actions button:not(.primary-action):hover:not(:disabled),
+  .panel-actions a:hover,
+  .pairing-actions button:hover,
+  .pairing-actions a:hover,
+  .copy-inline:hover {
+    background-image:
+      var(--grad-label),
+      linear-gradient(var(--surface-2), var(--surface-2));
+  }
+
+  /* View-switch segments ride on the segmented track, not on
+     surface-2: their fill layer stays transparent. */
+  .switcher.view-switch button:not([aria-pressed="true"]) {
+    background-image:
+      var(--grad-label),
+      linear-gradient(transparent, transparent);
+  }
+
+  .switcher.view-switch button:not([aria-pressed="true"]):hover {
+    background-image:
+      var(--grad-label),
+      linear-gradient(var(--surface-2), var(--surface-2));
+  }
+
+  /* RTL: the flow follows the reading direction. The ghost
+     buttons' fill layers are restated group by group, so the
+     flip never costs a button its fill. */
+  [dir="rtl"] .wordmark,
+  [dir="rtl"] .panel h2,
+  [dir="rtl"] .pairing-card h2,
+  [dir="rtl"] .receive-card h2,
+  [dir="rtl"] .scan-group-head h3,
+  [dir="rtl"] .anchor h2,
+  [dir="rtl"] .pool-shares-title {
+    background-image: linear-gradient(266deg, #ffffff 0%, #ffffff 30%, #ff6b5e 100%);
+  }
+
+  [dir="rtl"] h1,
+  [dir="rtl"] .report-head h2,
+  [dir="rtl"] .scan-head h2,
+  [dir="rtl"] .not-found h2 {
+    background-image: linear-gradient(266deg, #ffffff 0%, #ffffff 34%, #ffb3ab 68%, #e63329 100%);
+  }
+
+  [dir="rtl"] .wallet button,
+  [dir="rtl"] .switcher button:not([aria-pressed="true"]),
+  [dir="rtl"] .shortcut-row button,
+  [dir="rtl"] .pairing-wallets a {
+    background-image:
+      linear-gradient(266deg, #ffffff 0%, #ffffff 30%, #ff6b5e 100%),
+      linear-gradient(var(--surface-2), var(--surface-2));
+  }
+
+  [dir="rtl"] .wallet button:hover:not(:disabled),
+  [dir="rtl"] .switcher button:not([aria-pressed="true"]):hover,
+  [dir="rtl"] .shortcut-row button:hover,
+  [dir="rtl"] .pairing-wallets a:hover {
+    background-image:
+      linear-gradient(266deg, #ffffff 0%, #ffffff 30%, #ff6b5e 100%),
+      linear-gradient(var(--surface-3), var(--surface-3));
+  }
+
+  [dir="rtl"] .panel-actions button:not(.primary-action),
+  [dir="rtl"] .panel-actions a,
+  [dir="rtl"] .pairing-actions button,
+  [dir="rtl"] .pairing-actions a,
+  [dir="rtl"] .copy-inline {
+    background-image:
+      linear-gradient(266deg, #ffffff 0%, #ffffff 30%, #ff6b5e 100%),
+      linear-gradient(transparent, transparent);
+  }
+
+  [dir="rtl"] .panel-actions button:not(.primary-action):hover:not(:disabled),
+  [dir="rtl"] .panel-actions a:hover,
+  [dir="rtl"] .pairing-actions button:hover,
+  [dir="rtl"] .pairing-actions a:hover,
+  [dir="rtl"] .copy-inline:hover {
+    background-image:
+      linear-gradient(266deg, #ffffff 0%, #ffffff 30%, #ff6b5e 100%),
+      linear-gradient(var(--surface-2), var(--surface-2));
+  }
+
+  [dir="rtl"] .switcher.view-switch button:not([aria-pressed="true"]) {
+    background-image:
+      linear-gradient(266deg, #ffffff 0%, #ffffff 30%, #ff6b5e 100%),
+      linear-gradient(transparent, transparent);
+  }
+
+  [dir="rtl"] .switcher.view-switch button:not([aria-pressed="true"]):hover {
+    background-image:
+      linear-gradient(266deg, #ffffff 0%, #ffffff 30%, #ff6b5e 100%),
+      linear-gradient(var(--surface-2), var(--surface-2));
+  }
+}
+
+/* Reduced motion for the halo: present, but still (order
+   (d)'s own condition). The resting pose is the calibrated
+   brightness at mid-breath. */
+@media (prefers-reduced-motion: reduce) {
+  .scan-group::before,
+  .anchor::before {
+    animation: none;
+    opacity: 0.85;
+    transform: none;
   }
 }
