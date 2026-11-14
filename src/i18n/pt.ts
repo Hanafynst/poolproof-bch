@@ -236,13 +236,17 @@ const strings: UiStrings = {
   concTierWhaleControlled: "Controlado por baleias",
   concTopHolder: "Maior detentor",
   concTop10: "10 maiores detentores",
-  concTopHolderSupply: "Maior detentor (parte do fornecimento)",
+  concTopHolderSupply: "Maior detentor (parte do suprimento)",
   concHhi: "HHI",
   concBasisListed: "Com base nos {count} maiores detentores listados",
   concBasisFull: "Com base em todos os {count} detentores",
   concUnavailable: "Indisponível",
   liveCategoryLabel: "ID da categoria",
   liveCategoryPlaceholder: "Cole um ID de categoria de 64 caracteres",
+  liveCategoryHint:
+    "Um ID de categoria identifica um CashToken. Copie-o da página do " +
+    "token no TokenStork ou num explorador de blocos. Os instantâneos " +
+    "de demonstração abaixo não precisam de ID; um deles é o PUSD.",
   liveAuditAction: "Auditar ao vivo",
   liveCategoryInvalid:
     "Esse ID de categoria não é válido. Uma categoria tem exatamente " +
