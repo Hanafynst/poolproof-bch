@@ -27,26 +27,9 @@ import {
  * The session is reported to the parent so the home panels share
  * this one connection instead of each wiring their own.
  */
-export interface WalletSession {
-  connected: boolean;
-  walletName: string | null;
-  address: string | null;
-  tokenAddress: string | null;
-  manager: SignFlowManager | null;
-  /** True when the wallet connected but the address poll gave
-   *  up: the panels must say the address is missing instead of
-   *  showing a balance "loading" state forever. */
-  addressMissing: boolean;
-}
-
-export const DISCONNECTED_SESSION: WalletSession = {
-  connected: false,
-  walletName: null,
-  address: null,
-  tokenAddress: null,
-  manager: null,
-  addressMissing: false,
-};
+export type { WalletSession } from "./wallet-session";
+export { DISCONNECTED_SESSION } from "./wallet-session";
+import type { WalletSession } from "./wallet-session";
 
 /**
  * The one seam between the library's manager and sign-flow's

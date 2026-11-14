@@ -9,7 +9,7 @@ import {
   latinNumberFormat,
   shortenMiddle,
 } from "./format";
-import type { WalletSession } from "./WalletConnect";
+import type { WalletSession } from "./wallet-session";
 import { TileIcon } from "./icons";
 import type { ElectrumSession } from "./core/electrum-wss";
 import { DUST_SATS } from "./core/anchor-tx";

@@ -86,7 +86,10 @@ import {
   type HomePanel,
   type UtxoPhase,
 } from "./WalletHome";
-import { DISCONNECTED_SESSION, type WalletSession } from "./WalletConnect";
+import {
+  DISCONNECTED_SESSION,
+  type WalletSession,
+} from "./wallet-session";
 import { CheckIcon, CopyIcon, DownloadIcon, LinkIcon } from "./icons";
 import { SNAPSHOTS, type TokenSnapshot } from "./data/snapshots";
 import {
