@@ -25,6 +25,17 @@
   --line-strong: #34343e;
   --surface-3: #212127;
 
+  /* Translucent hairlines (R49, DESIGN-REFERENCE-2 V3): edges in
+     white alpha, not solid hex, so a card's edge borrows the
+     ambient light behind it instead of reading as an outline.
+     --line stays for inner dividers and small controls. */
+  --line-soft: rgb(255 255 255 / 0.07);
+  --line-faint: rgb(255 255 255 / 0.05);
+
+  /* The primary key's vertical light (V8): scarlet family shades
+     of the locked accent only, lighter at the top edge. */
+  --accent-grad: linear-gradient(180deg, #ef4438, var(--accent) 58%, #d92c21);
+
   /* Motion tokens (DESIGN-REFERENCE §2): every transition and
      animation in this file draws its duration and curve from
      these. Built-in easing keywords are banned as final values;
@@ -43,7 +54,7 @@
   /* The two named exceptions to the 300ms utility ceiling:
      background information, non-blocking (P7 shimmer, P10
      chip settle tint). */
-  --dur-shimmer: 1.4s;
+  --dur-shimmer: 1.8s;
   --dur-settle: 600ms;
 
   /* Depth tokens (DESIGN-REFERENCE §3): one job per layer.
@@ -77,7 +88,7 @@
 @keyframes panel-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(8px) scale(0.99);
   }
 }
 
@@ -121,6 +132,21 @@
 
 /* The History chip's one-shot settle tint (P10): fires only
    on a real broadcast-to-confirmed change, never on render. */
+/* The verdict seal's one physical beat (V14): it lands like a
+   stamp, slightly oversized and rotated, and settles. It rides
+   the existing .reveal gate, so it fires only when a report
+   genuinely lands; the digits and wording never animate. */
+@keyframes stamp-in {
+  from {
+    opacity: 0;
+    transform: scale(1.14) rotate(-2.5deg);
+  }
+
+  60% {
+    opacity: 1;
+  }
+}
+
 @keyframes chip-settle {
   from {
     background-color: rgb(52 211 153 / 0.12);
@@ -137,10 +163,54 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  /* Ambient atmosphere (V4): the page is not a flat void. A
+     breath of the brand scarlet pools at the top, echoing the
+     locked banner's own light, and a neutral white glow sits
+     top-right; both are fixed while content scrolls over them.
+     Alphas stay at breath level (5% and 3%): atmosphere, never
+     decoration, and no hue beyond the locked scarlet. */
+  background:
+    radial-gradient(90rem 42rem at 18% -12%, rgb(230 51 41 / 0.05), transparent 62%),
+    radial-gradient(70rem 36rem at 88% -10%, rgb(255 255 255 / 0.03), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Type rendering (V1): antialiased strokes and the system
+     stack's alternate glyphs, the polish layer every premium
+     reference shares. Features are rendering only; sizes,
+     weights and the locked scale do not move. */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv11", "ss01";
   line-height: 1.5;
+}
+
+/* Browser-default surfaces, finished (V13). */
+::selection {
+  background: rgb(230 51 41 / 0.28);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scrollbar-color: var(--line-strong) var(--bg);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 8px;
+  border: 2px solid var(--bg);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
 }
 
 /* The mandatory banner (see TopBanner in WalletHome.tsx): a
@@ -229,6 +299,15 @@ button.banner-ember:hover {
   gap: 0.5rem 1.5rem;
   align-items: center;
   padding: 0.7rem 1.25rem;
+  /* Frosted chrome (V9): the header stays while the page
+     scrolls under it, as a translucent material with a blur
+     and a faint hairline, never a solid bar. */
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgb(11 11 13 / 0.78);
+  backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid var(--line-faint);
 }
 
 .wordmark {
@@ -244,14 +323,16 @@ main {
 
 h1 {
   font-size: 1.9rem;
-  line-height: 1.2;
-  margin: 1.75rem 0 0.75rem;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin: 2.25rem 0 0.75rem;
 }
 
 .lede {
   color: var(--soft);
   max-width: 38rem;
   margin: 0 0 1.75rem;
+  line-height: 1.6;
 }
 
 .mono {
@@ -266,11 +347,21 @@ h1 {
 
 /* Wallet home: the balance card and its action tiles. */
 .wallet-card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  /* The hero material (V5): a gradient hairline (brighter at
+     the top, where light arrives) drawn with the border-box
+     technique, and an ambient shadow tinted with a breath of
+     scarlet so the card's depth feels atmospheric, not pasted.
+     This is the richest surface in the app by design; every
+     other card sits one material step below it. */
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.03)) border-box;
+  border: 1px solid transparent;
+  border-radius: 20px;
   padding: 1.25rem;
-  box-shadow: var(--shadow-card);
+  box-shadow:
+    var(--shadow-card),
+    0 24px 48px -24px rgb(230 51 41 / 0.16);
 }
 
 .balance-hint {
@@ -287,6 +378,7 @@ h1 {
 .balance-value {
   font-size: 2.1rem;
   font-weight: 700;
+  letter-spacing: -0.028em;
   line-height: 1.15;
   margin: 0.15rem 0 0.25rem;
   /* The value runs panel-in once when a real balance lands
@@ -324,6 +416,10 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 12px;
   cursor: pointer;
+  /* At rest the tile carries the inner-slab top line (P8), so
+     it sits in the hero card as a pressed-in key, not a flat
+     outline (R49 refinement). */
+  box-shadow: var(--highlight-row);
   transition:
     transform var(--dur-press) var(--ease-out),
     background-color var(--dur-fast) var(--ease-out),
@@ -341,15 +437,24 @@ h1 {
 }
 
 .tile-icon {
-  width: 22px;
-  height: 22px;
+  width: 32px;
+  height: 32px;
+  padding: 5px;
   color: var(--accent-soft);
+  /* A recessed medallion behind the glyph (V16): the tile's
+     quiet richness, one material step below the card. */
+  background: var(--surface);
+  border: 1px solid var(--line-faint);
+  border-radius: 10px;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.35);
 }
 
 /* The tile panels: send, receive, history. */
 .panel {
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(180deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.02)) border-box;
+  border: 1px solid transparent;
   border-radius: 16px;
   padding: 1.25rem;
   margin-top: 1rem;
@@ -358,10 +463,12 @@ h1 {
      downward rise matches its origin (P5). It mounts fresh on
      every open, so the entry runs once per open. */
   animation: panel-in var(--dur-reveal) var(--ease-out) both;
+  transform-origin: top center;
 }
 
 .panel h2 {
   font-size: 1.1rem;
+  letter-spacing: -0.014em;
   margin: 0 0 0.5rem;
 }
 
@@ -392,6 +499,9 @@ h1 {
   color: var(--text);
   border: 1px solid var(--line);
   border-radius: 10px;
+  /* Recessed (V10): an inset shadow seats the field INTO the
+     card, separating "type here" from "read here". */
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.45);
   transition:
     border-color var(--dur-fast) var(--ease-out),
     box-shadow var(--dur-fast) var(--ease-out);
@@ -442,10 +552,13 @@ h1 {
 }
 
 .panel-actions .primary-action {
-  background: var(--accent);
+  background: var(--accent-grad);
   border-color: var(--accent);
   color: #fff;
   font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.22),
+    0 2px 8px -2px rgb(0 0 0 / 0.45);
 }
 
 .panel-actions button:disabled {
@@ -568,6 +681,11 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 12px;
   cursor: pointer;
+  /* A pressable key's bevel (V12): light on top, dark seat
+     below, so the key reads as a physical object. */
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.04),
+    inset 0 -1px 0 0 rgb(0 0 0 / 0.35);
   transition:
     transform var(--dur-press) var(--ease-out),
     background-color var(--dur-fast) var(--ease-out),
@@ -692,6 +810,7 @@ h1 {
   /* Both selects share one width, so the two rows line up. */
   width: 11rem;
   max-width: 55%;
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.35);
   transition:
     border-color var(--dur-fast) var(--ease-out),
     background-color var(--dur-fast) var(--ease-out),
@@ -748,9 +867,16 @@ h1 {
 }
 
 .switcher button[aria-pressed="true"] {
-  background: var(--text);
+  /* A lit key, not a flat white fill (R49 refinement): a
+     vertical light across the white, an inset top highlight,
+     and a contact shadow, the same material language as the
+     scarlet primary keys (V8) in the neutral family. */
+  background: linear-gradient(180deg, #ffffff, #e9e9ee);
   color: var(--bg);
   border-color: var(--text);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.6),
+    0 1px 3px rgb(0 0 0 / 0.4);
 }
 
 /* View toggle: one segmented control. The container carries the
@@ -784,8 +910,11 @@ h1 {
   bottom: 0.15rem;
   left: 0.15rem;
   width: calc(50% - 0.15rem);
-  background: var(--text);
+  background: linear-gradient(180deg, #ffffff, #e9e9ee);
   border-radius: 9px;
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.6),
+    0 1px 3px rgb(0 0 0 / 0.4);
   transition: transform var(--dur-dialog) var(--ease-in-out);
 }
 
@@ -842,6 +971,7 @@ h1 {
   color: var(--text);
   border: 1px solid var(--line);
   border-radius: 12px;
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.45);
   transition:
     border-color var(--dur-fast) var(--ease-out),
     box-shadow var(--dur-fast) var(--ease-out);
@@ -852,8 +982,11 @@ h1 {
   font-size: 0.88rem;
   min-height: 44px;
   padding: 0.45rem 0.9rem;
-  background: var(--accent);
+  background: var(--accent-grad);
   color: #fff;
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.22),
+    0 2px 8px -2px rgb(0 0 0 / 0.45);
   border: 1px solid var(--accent);
   border-radius: 12px;
   cursor: pointer;
@@ -904,9 +1037,9 @@ h1 {
   background: var(--surface-2);
   background-image: linear-gradient(
     100deg,
-    transparent 30%,
-    rgb(255 255 255 / 0.045) 50%,
-    transparent 70%
+    transparent 22%,
+    rgb(255 255 255 / 0.06) 50%,
+    transparent 78%
   );
   background-size: 220% 100%;
   animation: shimmer var(--dur-shimmer) var(--ease-in-out) infinite;
@@ -945,6 +1078,7 @@ h1 {
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
   font-weight: 600;
+  letter-spacing: -0.018em;
   line-height: 1.3;
 }
 
@@ -979,7 +1113,10 @@ h1 {
   min-height: 44px;
   margin-top: 0.75rem;
   padding: 0.45rem 0.9rem;
-  background: var(--accent);
+  background: var(--accent-grad);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.22),
+    0 2px 8px -2px rgb(0 0 0 / 0.45);
   color: #fff;
   border: 1px solid var(--accent);
   border-radius: 12px;
@@ -1005,6 +1142,7 @@ h1 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
+  letter-spacing: -0.018em;
   line-height: 1.3;
 }
 
@@ -1029,14 +1167,40 @@ h1 {
 }
 
 .stamp {
+  /* The verdict as a minted seal, not a badge (V7): a tinted
+     body in the verdict's own colour, a double ring (the 1px
+     border plus an inset ring set off by a dark gap), a top
+     highlight catching light, and a sealed dot leading the
+     word. Font size and pill silhouette stay locked; only the
+     material changes. */
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  padding: 0.35rem 0.8rem;
-  border: 2px solid var(--text);
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--text);
   border-radius: 999px;
   color: var(--text);
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.14),
+    inset 0 0 0 3px rgb(11 11 13 / 0.5),
+    inset 0 0 0 4px color-mix(in srgb, currentColor 55%, transparent),
+    0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+.stamp::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow:
+    inset 0 0 0 1.5px rgb(0 0 0 / 0.35),
+    0 0 0 1.5px color-mix(in srgb, currentColor 40%, transparent);
 }
 
 .stamp[data-verdict="ALIVE"] {
@@ -1062,6 +1226,7 @@ h1 {
 
 .summary {
   font-size: 1rem;
+  letter-spacing: -0.011em;
   margin: 1rem 0 0.5rem;
 }
 
@@ -1125,8 +1290,10 @@ h1 {
    same head style, hash rows as compact wallet rows inside it. */
 .anchor {
   margin-top: 0.85rem;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(180deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.02)) border-box;
+  border: 1px solid transparent;
   border-radius: var(--radius);
   padding: 0.875rem 0.875rem 0.65rem;
   box-shadow: var(--shadow-card);
@@ -1200,6 +1367,7 @@ h1 {
 .scan-head h2 {
   font-size: 1.25rem;
   font-weight: 600;
+  letter-spacing: -0.018em;
   line-height: 1.3;
   margin: 0;
 }
@@ -1211,8 +1379,10 @@ h1 {
 }
 
 .scan-group {
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(180deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.02)) border-box;
+  border: 1px solid transparent;
   border-radius: var(--radius);
   padding: 0.875rem 0.875rem 0.65rem;
   margin-top: 0.85rem;
@@ -1297,6 +1467,10 @@ h1 {
   animation: panel-in var(--dur-reveal) var(--ease-out) both;
 }
 
+.reveal .stamp {
+  animation: stamp-in 260ms var(--ease-out) both;
+}
+
 .reveal .scan-group,
 .reveal .anchor {
   animation: group-in var(--dur-reveal) var(--ease-out) both;
@@ -1324,7 +1498,8 @@ h1 {
   width: 40px;
   height: 40px;
   padding: 0;
-  background: var(--accent);
+  background: var(--accent-grad);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.22);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -1415,7 +1590,10 @@ h1 {
   font-weight: 600;
   padding: 0.5rem 0.95rem;
   margin-top: 0.35rem;
-  background: var(--accent);
+  background: var(--accent-grad);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.22),
+    0 2px 8px -2px rgb(0 0 0 / 0.45);
   border: 1px solid var(--accent);
   border-radius: 10px;
   color: #fff;
@@ -1543,8 +1721,10 @@ h1 {
 }
 
 .pairing-card {
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(180deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.02)) border-box;
+  border: 1px solid transparent;
   border-radius: 16px;
   padding: 1.25rem;
   width: 100%;
@@ -1564,6 +1744,7 @@ h1 {
 
 .pairing-card h2 {
   font-size: 1.1rem;
+  letter-spacing: -0.014em;
   margin: 0 0 0.75rem;
 }
 
@@ -1573,7 +1754,10 @@ h1 {
   justify-content: center;
   min-height: 48px;
   padding: 0.7rem 1rem;
-  background: var(--accent);
+  background: var(--accent-grad);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.22),
+    0 2px 8px -2px rgb(0 0 0 / 0.45);
   color: #fff;
   font-weight: 600;
   border-radius: 10px;
@@ -1823,8 +2007,9 @@ a:focus-visible {
   }
 
   .tile-icon {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
+    padding: 5px;
   }
 
   .report-head,
