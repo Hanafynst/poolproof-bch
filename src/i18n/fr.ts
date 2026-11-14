@@ -251,6 +251,11 @@ const strings: UiStrings = {
   concUnavailable: "Indisponible",
   liveCategoryLabel: "ID de catégorie",
   liveCategoryPlaceholder: "Collez un ID de catégorie de 64 caractères",
+  liveCategoryHint:
+    "Un ID de catégorie identifie un CashToken. Copiez-le depuis la " +
+    "page du jeton sur TokenStork ou sur un explorateur de blocs. Les " +
+    "instantanés de démonstration ci-dessous n'ont pas besoin d'ID ; " +
+    "l'un d'eux est PUSD.",
   liveAuditAction: "Auditer en direct",
   liveCategoryInvalid:
     "Cet ID de catégorie n'est pas valide. Une catégorie compte " +
@@ -309,8 +314,8 @@ export const flags: Record<FlagCode, string> = {
     "(frais et/ou impact sur le prix)",
   ROUTE_UNSIMULATED: "les réserves existent, mais l'itinéraire de vente n'a pas pu être simulé",
   ROUTE_QUOTE_IMPLAUSIBLE:
-    "le devis du routeur du lieu de {quoteSats} sats est impossible pour des pools " +
-    "totalisant {reserveSats} sats, donc le verdict utilise la sortie simulée",
+    "la cotation du routeur de la plateforme de {quoteSats} sats est impossible " +
+    "pour des pools totalisant {reserveSats} sats, donc le verdict utilise la sortie simulée",
 };
 
 export default strings;
