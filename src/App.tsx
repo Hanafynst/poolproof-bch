@@ -73,7 +73,6 @@ import {
   isLang,
   languageOption,
   loadLanguagePack,
-  type Currency,
   type Lang,
   type LanguagePack,
   type UiStrings,
@@ -159,28 +158,24 @@ function loadHistoryStore(): { store: HistoryStore; loadFailed: boolean } {
 // Fiat is orientation only (the verdict is computed in BCH). It is
 // shown solely where the snapshot carries labelled reference rates;
 // a snapshot without rates gets no fiat figure at all.
-function fiatText(
-  sats: bigint,
-  snapshot: TokenSnapshot,
-  currency: Currency,
-): string | null {
+// Currency is USD only (user order 2026-11-14, R49): the
+// selector is gone and every fiat figure is a USD figure.
+function fiatText(sats: bigint, snapshot: TokenSnapshot): string | null {
   if (!snapshot.fiat) return null;
   const usd = (Number(sats) / 1e8) * snapshot.fiat.bchUsd;
-  const value = currency === "USD" ? usd : usd * snapshot.fiat.usdIdr;
   return latinNumberFormat({
     style: "currency",
-    currency,
+    currency: "USD",
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(usd);
 }
 
 function withFiat(
   bchText: string,
   sats: bigint,
   snapshot: TokenSnapshot,
-  currency: Currency,
 ): string {
-  const fiat = fiatText(sats, snapshot, currency);
+  const fiat = fiatText(sats, snapshot);
   return fiat === null ? bchText : `${bchText} ≈ ${fiat}`;
 }
 
@@ -209,13 +204,11 @@ function EvidenceRows({
   snapshot,
   judgement,
   t,
-  currency,
   lang,
 }: {
   snapshot: TokenSnapshot;
   judgement: PoolJudgement;
   t: UiStrings;
-  currency: Currency;
   lang: Lang;
 }) {
   const { facts } = snapshot;
@@ -227,7 +220,7 @@ function EvidenceRows({
           // The fiat figure belongs to the simulated out, so it sits
           // directly behind that number, not at the end of the
           // sentence, where it would read as the spot value's.
-          const fiat = fiatText(simOut, snapshot, currency);
+          const fiat = fiatText(simOut, snapshot);
           return fiat === null ? out : `${out} (≈ ${fiat})`;
         });
   const spotText =
@@ -253,7 +246,6 @@ function EvidenceRows({
         `${formatBchShort(facts.reserveQuoteSats)} BCH`,
         facts.reserveQuoteSats,
         snapshot,
-        currency,
       ),
     ],
     [
@@ -926,7 +918,6 @@ function ScannerReport({
   judgement,
   summary,
   t,
-  currency,
   lang,
   flagTemplates,
   wiring,
@@ -936,7 +927,6 @@ function ScannerReport({
   judgement: PoolJudgement;
   summary: string;
   t: UiStrings;
-  currency: Currency;
   lang: Lang;
   flagTemplates: Record<FlagCode, string>;
   wiring: AnchorWiring;
@@ -1024,7 +1014,6 @@ function ScannerReport({
           snapshot={snapshot}
           judgement={judgement}
           t={t}
-          currency={currency}
           lang={lang}
         />
         {snapshot.fiat && <p className="fiat-note">{snapshot.fiat.note[lang]}</p>}
@@ -1393,16 +1382,14 @@ export default function App() {
     url.searchParams.set("snap", selectedId);
     window.history.replaceState(null, "", url);
   }, [selectedId]);
-  // Basic features the user ordered (2026-11-13): language choice
-  // with English as the default, currency choice for fiat reference
-  // figures with USD as the default. Both persist per visitor.
+  // Basic feature the user ordered (2026-11-13): language choice
+  // with English as the default, persisted per visitor. Currency
+  // was a choice until 2026-11-14, when the user locked it to USD
+  // only (R49): there is no currency state any more.
   const [lang, setLang] = useState<Lang>(() => {
     const stored = storedPref("poolproof-lang");
     return isLang(stored) ? stored : "en";
   });
-  const [currency, setCurrency] = useState<Currency>(() =>
-    storedPref("poolproof-currency") === "IDR" ? "IDR" : "USD",
-  );
   // UI experiment (R16): direction A (audit report) vs variant B
   // (grouped scanner) on the same data. A stays the default; the
   // choice persists like the other preferences.
@@ -1426,13 +1413,6 @@ export default function App() {
     document.documentElement.lang = option.locale;
     document.documentElement.dir = option.direction;
   }, [lang]);
-  useEffect(() => {
-    try {
-      localStorage.setItem("poolproof-currency", currency);
-    } catch {
-      // Same as above: persistence is a nicety, not a requirement.
-    }
-  }, [currency]);
 
   // The active language pack: English until the selected pack's
   // chunk lands (usually one frame, as the packs are ~10 kB each).
@@ -1636,7 +1616,7 @@ export default function App() {
   // upgrade of an already visible report). A timer clears it
   // once the sequence (240ms plus the 225ms stagger cap) is
   // done, so re-renders of the same report (the identity
-  // upgrade in place, a language or currency switch) never
+  // upgrade in place, a language switch) never
   // carry the class and never re-run the stagger.
   const [revealing, setRevealing] = useState(true);
   const revealTimer = useRef<number | null>(null);
@@ -1913,16 +1893,6 @@ export default function App() {
               ))}
             </select>
           </label>
-          <label>
-            {t.currency}
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value as Currency)}
-            >
-              <option value="USD">USD</option>
-              <option value="IDR">IDR</option>
-            </select>
-          </label>
         </div>
 
         {packFailed && (
@@ -2096,8 +2066,7 @@ export default function App() {
             judgement={judgement}
             summary={summary}
             t={t}
-            currency={currency}
-            lang={packLang}
+              lang={packLang}
             flagTemplates={flagTemplates}
             wiring={anchorWiring}
             reveal={revealing}
@@ -2129,8 +2098,7 @@ export default function App() {
               snapshot={snapshot}
               judgement={judgement}
               t={t}
-              currency={currency}
-              lang={packLang}
+                  lang={packLang}
             />
             {snapshot.fiat && (
               <p className="fiat-note">{snapshot.fiat.note[packLang]}</p>

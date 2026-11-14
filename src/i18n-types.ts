@@ -30,7 +30,6 @@ export interface UiStrings {
   headline: string;
   lede: string;
   language: string;
-  currency: string;
   languageLoadFailed: string;
   snapshotsLabel: string;
   reportLabel: string;

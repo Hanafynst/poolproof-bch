@@ -43,7 +43,6 @@ const strings: UiStrings = {
     "El veredicto sale de las reservas y de la venta simulada, no de la " +
     "cifra de liquidez que se muestra.",
   language: "Idioma",
-  currency: "Moneda",
   languageLoadFailed: "Ese idioma no cargó. Se sigue mostrando el anterior.",
   snapshotsLabel: "Instantáneas de demostración",
   reportLabel: "Informe de diligencia debida",

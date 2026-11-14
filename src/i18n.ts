@@ -5,7 +5,6 @@ import enStrings, { flags as enFlags } from "./i18n/en";
 export type { UiStrings } from "./i18n-types";
 
 export type Lang = "en" | "id" | "zh" | "es" | "hi" | "ar" | "pt" | "fr";
-export type Currency = "USD" | "IDR";
 
 export const LANGUAGE_OPTIONS: Array<{
   code: Lang;

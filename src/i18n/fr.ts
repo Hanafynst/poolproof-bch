@@ -43,7 +43,6 @@ const strings: UiStrings = {
     "Cauldron et simule une vente. Le verdict vient des réserves et " +
     "de la vente simulée, pas du montant de liquidité affiché.",
   language: "Langue",
-  currency: "Devise",
   languageLoadFailed: "Cette langue n'a pas chargé. La précédente reste affichée.",
   snapshotsLabel: "Instantanés de démonstration",
   reportLabel: "Rapport de diligence",

@@ -41,7 +41,6 @@ const strings: UiStrings = {
     "penjualan. Vonis berasal dari cadangan dan simulasi penjualan itu, " +
     "bukan dari angka likuiditas yang ditampilkan.",
   language: "Bahasa",
-  currency: "Mata uang",
   languageLoadFailed:
     "Bahasa itu gagal dimuat. Bahasa sebelumnya masih ditampilkan.",
   snapshotsLabel: "Snapshot demo",

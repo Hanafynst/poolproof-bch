@@ -41,7 +41,6 @@ const strings: UiStrings = {
     "The verdict comes from the reserves and the simulated sell, not " +
     "from the liquidity figure on display.",
   language: "Language",
-  currency: "Currency",
   languageLoadFailed:
     "That language could not be loaded. The previous language is still shown.",
   snapshotsLabel: "Demo snapshots",

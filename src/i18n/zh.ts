@@ -32,7 +32,6 @@ const strings: UiStrings = {
     "PoolProof 在您信任池的数字之前先对其进行检查。它读取池在 Cauldron " +
     "上的储备并模拟一次卖出。判定来自储备和模拟卖出，而不是页面上显示的流动性数字。",
   language: "语言",
-  currency: "货币",
   languageLoadFailed: "该语言加载失败，仍显示上一种语言。",
   snapshotsLabel: "演示快照",
   reportLabel: "尽职调查报告",

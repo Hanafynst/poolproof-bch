@@ -43,7 +43,6 @@ const strings: UiStrings = {
     "uma venda. O veredito vem das reservas e da venda simulada, não " +
     "do valor de liquidez exibido.",
   language: "Idioma",
-  currency: "Moeda",
   languageLoadFailed: "Esse idioma não carregou. O anterior continua exibido.",
   snapshotsLabel: "Instantâneos de demonstração",
   reportLabel: "Relatório de diligência",
