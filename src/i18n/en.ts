@@ -291,6 +291,51 @@ const strings: UiStrings = {
   toastAnchorConfirmed: "Report anchor confirmed",
   toastReceived: "Received {amount} BCH",
   toastDismiss: "Dismiss notification",
+  aboutTitle: "About PoolProof",
+  aboutWhat:
+    "PoolProof checks whether a CashToken pool can actually pay " +
+    "you out. It reads the pool's real reserves and simulates a " +
+    "sell against them, so the verdict rests on what the exit " +
+    "returns, not on the liquidity figure on display.",
+  aboutHowTitle: "How a verdict is reached",
+  aboutHow:
+    "The audit pins the token's identity and supply to the exact " +
+    "category ID first, so a look-alike token cannot stand in for " +
+    "it. Cauldron reserves are read live, and a reference sell " +
+    "(the smaller of 1% of supply or 10% of the pool reserve) is " +
+    "simulated through each of the token's pools in turn. If the " +
+    "venue's own Router returns a quote no larger than the " +
+    "reserves those pools hold, that quote cross-checks the " +
+    "simulation. The verdict follows the exit ratio, the share " +
+    "of spot value the sell keeps: below 0.010 the exit is dead, " +
+    "at 0.800 or above it holds. If more than one figure exists, " +
+    "the Router quote decides first, then the routed simulation, " +
+    "then the single-curve simulation.",
+  aboutVerdictsTitle: "The five verdicts",
+  aboutAnchor:
+    "A report can be sealed on chain. PoolProof hashes the " +
+    "report file exactly as you download it, and the wallet you " +
+    "connect carries that hash onto Bitcoin Cash mainnet in an " +
+    "OP_RETURN output. Anyone who holds the file can hash it " +
+    "and compare the result with the hash in the transaction, " +
+    "so a changed report cannot pass as the original.",
+  aboutSourcesTitle: "Where the data comes from",
+  aboutSources:
+    "Pool data comes from the Cauldron indexer run by Riften. " +
+    "Token identity comes from BCMR metadata, checked against " +
+    "TokenStork. Wallet balances come from public Electrum " +
+    "servers. Every figure in a report is read when the audit " +
+    "runs, not carried over from an earlier visit.",
+  aboutLimitsTitle: "The limits",
+  aboutLimits:
+    "A report is a check at one point in time. Reserves and " +
+    "mint authority can change after it. Run the check again " +
+    "before you act on it. A simulated exit is worked out from " +
+    "the reserves at that moment. It is an estimate, not a " +
+    "guaranteed execution price. PoolProof never holds keys, " +
+    "funds, or accounts. Signing always happens in your own " +
+    "wallet, and nothing moves without it.",
+  aboutBuilt: "PoolProof is a solo build for BCH BLAZE 2026.",
 };
 
 export const flags: Record<FlagCode, string> = {

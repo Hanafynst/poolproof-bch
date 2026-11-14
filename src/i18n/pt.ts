@@ -300,6 +300,62 @@ const strings: UiStrings = {
   toastAnchorConfirmed: "Âncora do relatório confirmada",
   toastReceived: "Recebido: {amount} BCH",
   toastDismiss: "Dispensar notificação",
+  aboutTitle: "Sobre o PoolProof",
+  aboutWhat:
+    "O PoolProof verifica se um pool de CashToken " +
+    "consegue mesmo pagar você. Ele lê as reservas reais " +
+    "do pool e simula a venda, então o veredito se apoia " +
+    "no que a saída devolve, não no número de liquidez " +
+    "exibido.",
+  aboutHowTitle: "Como o veredito é alcançado",
+  aboutHow:
+    "A auditoria fixa primeiro a identidade e a oferta " +
+    "do token ao ID de categoria exato, para que um token " +
+    "parecido não possa ocupar o lugar dele. As reservas " +
+    "da Cauldron são lidas ao vivo, e uma venda de " +
+    "referência (a menor entre 1% da oferta e 10% da " +
+    "reserva do pool) é simulada passando por cada pool " +
+    "do token. Se o Router do próprio local devolver uma " +
+    "cotação não maior do que as reservas que esses " +
+    "pools realmente mantêm, essa cotação confere a " +
+    "simulação. O veredito segue a razão de saída, a " +
+    "parte do valor à vista que a venda preserva: abaixo " +
+    "de 0,010 a saída está morta; em 0,800 ou acima, ela " +
+    "se sustenta. Se houver mais de um número, decide " +
+    "primeiro a cotação do Router, depois a simulação " +
+    "roteada e depois a simulação de curva única.",
+  aboutVerdictsTitle: "Os cinco vereditos",
+  aboutAnchor:
+    "Um relatório pode ser selado na cadeia. O PoolProof " +
+    "calcula o hash do arquivo do relatório exatamente " +
+    "como você o baixa, e a carteira que você conecta " +
+    "leva esse hash à rede principal do Bitcoin Cash em " +
+    "uma saída OP_RETURN. Quem tiver o arquivo pode " +
+    "calcular o hash dele e comparar com o hash na " +
+    "transação, então um relatório alterado não passa " +
+    "por original.",
+  aboutSourcesTitle: "De onde vêm os dados",
+  aboutSources:
+    "Os dados dos pools vêm do indexador da Cauldron " +
+    "operado pela Riften. A identidade do token vem dos " +
+    "metadados BCMR, conferidos com a TokenStork. Os " +
+    "saldos da carteira são lidos de servidores Electrum " +
+    "públicos. Cada número de um relatório é lido quando " +
+    "a auditoria roda, não trazido de uma visita " +
+    "anterior.",
+  aboutLimitsTitle: "Os limites",
+  aboutLimits:
+    "Um relatório é uma verificação em um momento " +
+    "específico. As reservas e a autoridade de emissão " +
+    "podem mudar depois dele. Execute a verificação de " +
+    "novo antes de agir com base no relatório. Uma saída " +
+    "simulada é calculada a partir das reservas daquele " +
+    "momento. É uma estimativa, não um preço de " +
+    "execução garantido. O PoolProof nunca guarda " +
+    "chaves, fundos ou contas. A assinatura acontece " +
+    "sempre na sua própria carteira, e nada se move sem " +
+    "ela.",
+  aboutBuilt: "O PoolProof é um projeto solo, feito para o BCH BLAZE 2026.",
 };
 
 export const flags: Record<FlagCode, string> = {

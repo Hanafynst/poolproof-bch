@@ -311,6 +311,65 @@ const strings: UiStrings = {
   toastAnchorConfirmed: "Ancrage du rapport confirmé",
   toastReceived: "Reçu : {amount} BCH",
   toastDismiss: "Fermer la notification",
+  aboutTitle: "À propos de PoolProof",
+  aboutWhat:
+    "PoolProof vérifie si un pool CashToken peut " +
+    "réellement vous payer. Il lit les réserves réelles " +
+    "du pool et simule la vente, donc le verdict repose " +
+    "sur ce que la sortie rapporte, et non sur le " +
+    "chiffre de liquidité affiché.",
+  aboutHowTitle: "Comment le verdict est obtenu",
+  aboutHow:
+    "L'audit fixe d'abord l'identité et l'offre du jeton " +
+    "à l'identifiant de catégorie exact, pour qu'un " +
+    "jeton ressemblant ne puisse pas prendre sa place. " +
+    "Les réserves Cauldron sont lues en direct, et une " +
+    "vente de référence (la plus petite entre 1% de " +
+    "l'offre et 10% de la réserve du pool) est simulée " +
+    "en passant par chacun des pools du jeton. Si le " +
+    "Router de la plateforme elle-même renvoie une " +
+    "cotation qui ne dépasse pas les réserves que ces " +
+    "pools détiennent réellement, cette cotation recoupe " +
+    "la simulation. Le verdict suit le ratio de sortie, " +
+    "la part de la valeur au comptant que la vente " +
+    "conserve : sous 0,010, la sortie est morte ; à " +
+    "0,800 ou au-dessus, elle tient. S'il existe " +
+    "plusieurs chiffres, la cotation du Router décide " +
+    "d'abord, puis la simulation routée, puis la " +
+    "simulation à courbe unique.",
+  aboutVerdictsTitle: "Les cinq verdicts",
+  aboutAnchor:
+    "Un rapport peut être scellé sur la chaîne. " +
+    "PoolProof calcule le hachage du fichier du rapport " +
+    "exactement tel que vous le téléchargez, et le " +
+    "portefeuille que vous connectez porte ce hachage " +
+    "sur le réseau principal Bitcoin Cash dans une " +
+    "sortie OP_RETURN. Quiconque détient le fichier " +
+    "peut calculer son hachage et le comparer à celui " +
+    "de la transaction, donc un rapport modifié ne peut " +
+    "pas passer pour l'original.",
+  aboutSourcesTitle: "D'où viennent les données",
+  aboutSources:
+    "Les données des pools viennent de l'indexeur " +
+    "Cauldron exploité par Riften. L'identité du jeton " +
+    "vient des métadonnées BCMR, recoupées avec " +
+    "TokenStork. Les soldes du portefeuille sont lus " +
+    "depuis des serveurs Electrum publics. Chaque " +
+    "chiffre d'un rapport est lu au moment où l'audit " +
+    "tourne, et non repris d'une visite précédente.",
+  aboutLimitsTitle: "Les limites",
+  aboutLimits:
+    "Un rapport est un contrôle à un instant donné. " +
+    "Les réserves et l'autorité d'émission peuvent " +
+    "changer ensuite. Relancez le contrôle avant d'agir " +
+    "sur la base du rapport. Une sortie simulée est " +
+    "calculée à partir des réserves de ce moment-là. " +
+    "C'est une estimation, pas un prix d'exécution " +
+    "garanti. PoolProof ne détient jamais de clés, de " +
+    "fonds ni de comptes. La signature a toujours lieu " +
+    "dans votre propre portefeuille, et rien ne bouge " +
+    "sans elle.",
+  aboutBuilt: "PoolProof est un projet solo, réalisé pour BCH BLAZE 2026.",
 };
 
 export const flags: Record<FlagCode, string> = {

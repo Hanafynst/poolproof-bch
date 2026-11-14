@@ -1661,6 +1661,52 @@ function AnchorBlock({
   );
 }
 
+// The About paper (R77): the last section of the page, after
+// the audit flow and the wallet sections. It carries no state
+// and no verdict of its own: what PoolProof is, how a verdict
+// is reached, what the five verdicts mean, where the data
+// comes from, and the honest limits. The glossary definitions
+// are the report's own summary strings (summaryByVerdict), so
+// the About can never drift from what a report itself says.
+const ABOUT_VERDICTS = [
+  "ALIVE",
+  "RISKY",
+  "DEAD",
+  "LYING_DISPLAY",
+  "NO_MARKET",
+] as const;
+
+function AboutSection({ t }: { t: UiStrings }) {
+  return (
+    <section className="about-paper" aria-label={t.aboutTitle}>
+      <div className="about-head">
+        <h2>{t.aboutTitle}</h2>
+      </div>
+      <p className="about-lede">{t.aboutWhat}</p>
+      <h3 className="about-sub">{t.aboutHowTitle}</h3>
+      <p>{t.aboutHow}</p>
+      <h3 className="about-sub">{t.aboutVerdictsTitle}</h3>
+      <dl className="about-glossary">
+        {ABOUT_VERDICTS.map((verdict) => (
+          <div className="about-glossary-row" key={verdict}>
+            <dt className="about-verdict" data-verdict={verdict}>
+              {verdict.replace("_", " ")}
+            </dt>
+            <dd>{t.summaryByVerdict[verdict]}</dd>
+          </div>
+        ))}
+      </dl>
+      <h3 className="about-sub">{t.anchorTitle}</h3>
+      <p>{t.aboutAnchor}</p>
+      <h3 className="about-sub">{t.aboutSourcesTitle}</h3>
+      <p>{t.aboutSources}</p>
+      <h3 className="about-sub">{t.aboutLimitsTitle}</h3>
+      <p>{t.aboutLimits}</p>
+      <p className="about-built">{t.aboutBuilt}</p>
+    </section>
+  );
+}
+
 function storedPref(key: string): string | null {
   try {
     return localStorage.getItem(key);
@@ -2745,6 +2791,7 @@ export default function App() {
           </>
         )}
         </div>
+        <AboutSection t={t} />
       </main>
       <ToastLayer
         items={toastQueue.items}

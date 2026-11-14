@@ -297,6 +297,59 @@ const strings: UiStrings = {
   toastAnchorConfirmed: "Jangkar laporan terkonfirmasi",
   toastReceived: "Diterima {amount} BCH",
   toastDismiss: "Tutup notifikasi",
+  aboutTitle: "Tentang PoolProof",
+  aboutWhat:
+    "PoolProof memeriksa apakah pool CashToken benar-benar bisa " +
+    "membayarkanmu. Ia membaca cadangan asli pool dan " +
+    "mensimulasikan penjualannya, jadi vonisnya bertumpu pada " +
+    "hasil keluar yang sebenarnya, bukan pada angka likuiditas " +
+    "yang ditampilkan.",
+  aboutHowTitle: "Bagaimana vonis dicapai",
+  aboutHow:
+    "Audit ini mengunci identitas dan pasokan token ke ID " +
+    "kategori yang persis lebih dulu, supaya token yang mirip " +
+    "tidak bisa menggantikannya. Cadangan Cauldron dibaca " +
+    "langsung, dan penjualan referensi (yang lebih kecil antara " +
+    "1% pasokan atau 10% cadangan pool) disimulasikan melewati " +
+    "tiap pool token itu satu per satu. Jika Router milik venue " +
+    "mengembalikan kutipan yang tidak lebih besar dari cadangan " +
+    "yang benar-benar dipegang pool-pool itu, kutipan tersebut " +
+    "memeriksa silang hasil simulasi. Vonis mengikuti rasio " +
+    "keluar, yaitu porsi nilai spot yang dipertahankan " +
+    "penjualan: di bawah 0,010 jalan keluarnya mati, di 0,800 " +
+    "atau di atasnya jalan keluar itu bertahan. Jika ada lebih " +
+    "dari satu angka, kutipan Router yang memutuskan lebih " +
+    "dulu, lalu simulasi ter-routing, lalu simulasi kurva " +
+    "tunggal.",
+  aboutVerdictsTitle: "Lima vonis",
+  aboutAnchor:
+    "Laporan bisa disegel di rantai. PoolProof meng-hash berkas " +
+    "laporan persis seperti yang kamu unduh, dan wallet yang " +
+    "kamu hubungkan membawa hash itu ke mainnet Bitcoin Cash " +
+    "dalam output OP_RETURN. Siapa pun yang memegang berkasnya " +
+    "bisa meng-hash dan membandingkan hasilnya dengan hash di " +
+    "transaksi, jadi laporan yang diubah tidak bisa lolos " +
+    "sebagai aslinya.",
+  aboutSourcesTitle: "Dari mana datanya berasal",
+  aboutSources:
+    "Data pool berasal dari indexer Cauldron yang dijalankan " +
+    "Riften. Identitas token berasal dari metadata BCMR, " +
+    "diperiksa silang dengan TokenStork. Saldo wallet dibaca " +
+    "dari server Electrum publik. Setiap angka dalam laporan " +
+    "dibaca saat audit berjalan, tidak dibawa dari kunjungan " +
+    "sebelumnya.",
+  aboutLimitsTitle: "Batasnya",
+  aboutLimits:
+    "Laporan adalah pemeriksaan pada satu titik waktu. " +
+    "Cadangan dan otoritas mint bisa berubah sesudahnya. " +
+    "Jalankan pemeriksaan lagi sebelum kamu bertindak " +
+    "berdasarkan laporan ini. Keluar hasil simulasi dihitung " +
+    "dari cadangan pada saat itu. Itu perkiraan, bukan harga " +
+    "eksekusi yang dijamin. PoolProof tidak pernah memegang " +
+    "kunci, dana, atau akun. Penandatanganan selalu terjadi di " +
+    "wallet milikmu sendiri, dan tidak ada yang bergerak tanpa " +
+    "tanda tangan itu.",
+  aboutBuilt: "PoolProof adalah karya solo, dibuat untuk BCH BLAZE 2026.",
 };
 
 export const flags: Record<FlagCode, string> = {

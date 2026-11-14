@@ -244,6 +244,44 @@ const strings: UiStrings = {
   toastAnchorConfirmed: "报告锚点已确认",
   toastReceived: "已收到 {amount} BCH",
   toastDismiss: "关闭通知",
+  aboutTitle: "关于 PoolProof",
+  aboutWhat:
+    "PoolProof 检查一个 CashToken 池是否真的能向你兑付。" +
+    "它读取池的真实储备并模拟卖出，因此结论取决于退出" +
+    "实际能得到多少，而不是展示中的流动性数字。",
+  aboutHowTitle: "结论如何得出",
+  aboutHow:
+    "审计先把代币的身份和供应量锁定到确切的类别 ID 上，" +
+    "相似的代币无法冒充。随后实时读取 Cauldron 储备，" +
+    "并把一笔参考卖出（供应量的 1% 与池储备的 10% 中" +
+    "较小者）逐个池地模拟。如果交易场所自己的 Router " +
+    "返回的报价不高于这些池实际持有的储备，该报价就会" +
+    "对模拟结果做交叉核对。结论取决于退出比率，即卖出" +
+    "保留的现货价值比例：低于 0.010，退出已死；在 " +
+    "0.800 或以上，退出成立。若存在多个数字，先由 " +
+    "Router 报价决定，其次是路由模拟，最后是单曲线模拟。",
+  aboutVerdictsTitle: "五种结论",
+  aboutAnchor:
+    "报告可以封存在链上。PoolProof 按你下载的原样对" +
+    "报告文件做哈希，你连接的钱包把该哈希以 OP_RETURN " +
+    "输出写入比特币现金主网。任何持有该文件的人都可以" +
+    "对它做哈希，并与交易中的哈希比对，因此被改动的" +
+    "报告无法冒充原件。",
+  aboutSourcesTitle: "数据来源",
+  aboutSources:
+    "池数据来自 Riften 运行的 Cauldron 索引器。代币" +
+    "身份来自 BCMR 元数据，并与 TokenStork 交叉核对。" +
+    "钱包余额从公共 Electrum 服务器读取。报告中的每个" +
+    "数字都在审计运行时读取，不会沿用之前访问的数据。",
+  aboutLimitsTitle: "局限",
+  aboutLimits:
+    "报告是某一时刻的检查结果。报告之后，储备和铸造" +
+    "权限都可能发生变化。根据报告采取行动前，请重新" +
+    "运行检查。模拟退出是根据当时储备计算的。它是" +
+    "估算，不是保证的成交价格。PoolProof 从不保管" +
+    "密钥、资金或账户。签名始终在你自己的钱包中完成，" +
+    "没有签名，任何资产都不会移动。",
+  aboutBuilt: "PoolProof 是为 BCH BLAZE 2026 独立完成的作品。",
 };
 
 export const flags: Record<FlagCode, string> = {

@@ -214,4 +214,15 @@ export interface UiStrings {
   toastAnchorConfirmed: string;
   toastReceived: string;
   toastDismiss: string;
+  aboutTitle: string;
+  aboutWhat: string;
+  aboutHowTitle: string;
+  aboutHow: string;
+  aboutVerdictsTitle: string;
+  aboutAnchor: string;
+  aboutSourcesTitle: string;
+  aboutSources: string;
+  aboutLimitsTitle: string;
+  aboutLimits: string;
+  aboutBuilt: string;
 }
