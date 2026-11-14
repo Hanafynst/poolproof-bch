@@ -157,6 +157,7 @@ export interface UiStrings {
   copyAmount: string;
   historyTitle: string;
   historyEmpty: string;
+  historyShowAll: string;
   historySent: string;
   historyAnchored: string;
   receiveAddressLabel: string;
@@ -169,6 +170,7 @@ export interface UiStrings {
   holdingsCategory: string;
   holdingsCommitment: string;
   holdingsEmpty: string;
+  assetShowAll: string;
   concGini: string;
   concTierWellDistributed: string;
   concTierGood: string;

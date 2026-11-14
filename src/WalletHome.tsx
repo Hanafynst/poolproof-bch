@@ -41,6 +41,7 @@ import {
 } from "./core/transfer-tx";
 import type { WalletHoldings } from "./core/wallet-utxos";
 import type { HistoryEntry } from "./core/history-store";
+import { listWindow } from "./core/list-window";
 import {
   failureReasonForCode,
   type ToastFailureReason,
@@ -365,7 +366,10 @@ function HistoryStatusChip({
  * transaction in a block; a reopen shows the last known status
  * immediately, from the persisted store. A store that failed to
  * load says so above the (empty) list instead of pretending
- * nothing ever happened.
+ * nothing ever happened. The list renders through the list
+ * window (R63): past the window size the remaining receipts
+ * fold behind a show-all control, so a long history cannot
+ * grow the DOM without bound.
  */
 export function HistoryPanel({
   t,
@@ -380,6 +384,8 @@ export function HistoryPanel({
 }) {
   const [copiedTxid, setCopiedTxid] = useState<string | null>(null);
   const [failedTxid, setFailedTxid] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  const windowed = listWindow(entries, expanded);
   const copyTxid = async (txid: string) => {
     try {
       await navigator.clipboard.writeText(txid);
@@ -405,7 +411,7 @@ export function HistoryPanel({
       {entries.length === 0 ? (
         <p>{t.historyEmpty}</p>
       ) : (
-        entries.map(({ receipt, status }) => (
+        windowed.shown.map(({ receipt, status }) => (
           <article className="history-row" key={receipt.txid}>
             <div className="history-main">
               <span className="history-asset">{receipt.assetLabel}</span>
@@ -439,6 +445,13 @@ export function HistoryPanel({
             </div>
           </article>
         ))
+      )}
+      {windowed.hiddenCount > 0 && (
+        <div className="panel-actions">
+          <button type="button" onClick={() => setExpanded(true)}>
+            {t.historyShowAll.replace("{count}", String(windowed.total))}
+          </button>
+        </div>
       )}
     </section>
   );
@@ -486,6 +499,13 @@ const GATE_STRINGS: Record<GateReason, (t: UiStrings) => string> = {
  * TokenStork; before that they are base units. Changing the asset
  * or the decimals clears the amount field, so a typed number can
  * never be silently reinterpreted under different decimals.
+ *
+ * The picker's two token sections render through the list
+ * window (R63): past the window size the remaining assets fold
+ * behind a show-all row, so an NFT-heavy wallet cannot bury
+ * the panel under thousands of buttons. Selection is state,
+ * not rendering: expanding or folding never changes which
+ * asset is picked.
  */
 export function SendPanel({
   t,
@@ -523,6 +543,8 @@ export function SendPanel({
     Record<string, TokenIdentity | null>
   >({});
   const identityAsked = useRef(new Set<string>());
+  const [fungiblesExpanded, setFungiblesExpanded] = useState(false);
+  const [nftsExpanded, setNftsExpanded] = useState(false);
 
   const selectedCategory =
     selection.kind === "bch" ? null : selection.category;
@@ -792,6 +814,8 @@ export function SendPanel({
     holdings.bchSats === 0n &&
     holdings.fungibles.length === 0 &&
     holdings.nfts.length === 0;
+  const fungibleWindow = listWindow(holdings.fungibles, fungiblesExpanded);
+  const nftWindow = listWindow(holdings.nfts, nftsExpanded);
 
   return (
     <section className="panel" aria-label={t.actionSend}>
@@ -813,7 +837,7 @@ export function SendPanel({
                 {formatBch(holdings.bchSats)} BCH
               </span>
             </button>
-            {holdings.fungibles.map((holding) => {
+            {fungibleWindow.shown.map((holding) => {
               const held = identities[holding.category] ?? null;
               const selected =
                 selection.kind === "fungible" &&
@@ -843,7 +867,21 @@ export function SendPanel({
                 </button>
               );
             })}
-            {holdings.nfts.map((nft) => {
+            {fungibleWindow.hiddenCount > 0 && (
+              <button
+                type="button"
+                className="asset-row asset-more"
+                onClick={() => setFungiblesExpanded(true)}
+              >
+                <span className="asset-name">
+                  {t.assetShowAll.replace(
+                    "{count}",
+                    String(fungibleWindow.total),
+                  )}
+                </span>
+              </button>
+            )}
+            {nftWindow.shown.map((nft) => {
               const held = identities[nft.category] ?? null;
               const selected =
                 selection.kind === "nft" &&
@@ -874,6 +912,17 @@ export function SendPanel({
                 </button>
               );
             })}
+            {nftWindow.hiddenCount > 0 && (
+              <button
+                type="button"
+                className="asset-row asset-more"
+                onClick={() => setNftsExpanded(true)}
+              >
+                <span className="asset-name">
+                  {t.assetShowAll.replace("{count}", String(nftWindow.total))}
+                </span>
+              </button>
+            )}
           </div>
 
           <label className="field-label" htmlFor="send-recipient">

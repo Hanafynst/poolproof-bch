@@ -717,6 +717,18 @@ h1 {
   border-color: var(--accent);
 }
 
+/* The fold row (R63): the show-all control wears an asset row's
+   shape so the list reads as one surface, but its label sits
+   centred and quiet, so it reads as a control, not an asset. */
+.asset-row.asset-more {
+  justify-content: center;
+}
+
+.asset-row.asset-more .asset-name {
+  font-weight: 500;
+  color: var(--soft);
+}
+
 .asset-name {
   font-weight: 600;
   overflow-wrap: anywhere;
