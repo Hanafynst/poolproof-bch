@@ -87,13 +87,17 @@ import {
 import {
   HistoryPanel,
   PortfolioCard,
+  PRESENTATION_URL,
   ReceivePanel,
+  REPO_URL,
   SendPanel,
   TopBanner,
   WalletCard,
+  X_URL,
   type HomePanel,
   type UtxoPhase,
 } from "./WalletHome";
+import { version as APP_VERSION } from "../package.json";
 import {
   DISCONNECTED_SESSION,
   type WalletSession,
@@ -1867,7 +1871,40 @@ function AboutSection({ t }: { t: UiStrings }) {
       <section className="about-card">
         <h3 className="about-sub">{t.aboutLimitsTitle}</h3>
         <p>{t.aboutLimits}</p>
+        <p>{t.aboutDisclaimer}</p>
+      </section>
+      <section className="about-card">
+        <h3 className="about-sub">{t.aboutFaqTitle}</h3>
+        <h4 className="about-faq-q">{t.faqNoPriceQ}</h4>
+        <p>{t.faqNoPriceA}</p>
+        <h4 className="about-faq-q">{t.faqStaleQ}</h4>
+        <p>{t.faqStaleA}</p>
+        <h4 className="about-faq-q">{t.faqKeysQ}</h4>
+        <p>{t.faqKeysA}</p>
+        <h4 className="about-faq-q">{t.faqAnchorQ}</h4>
+        <p>{t.faqAnchorA}</p>
+      </section>
+      <section className="about-card">
+        <p className="about-colophon-name">
+          PoolProof BCH · v{APP_VERSION}
+        </p>
         <p className="about-built">{t.aboutBuilt}</p>
+        <p>{t.aboutValuesLine}</p>
+        <p className="about-stack-row">
+          React · TypeScript · Vite · Cauldron Indexer · Electrum ·
+          Wizard Connect · libauth
+        </p>
+        <div className="about-links">
+          <a href={REPO_URL} target="_blank" rel="noreferrer">
+            {t.source}
+          </a>
+          <a href={PRESENTATION_URL} target="_blank" rel="noreferrer">
+            {t.presentation}
+          </a>
+          <a href={X_URL} target="_blank" rel="noreferrer">
+            X
+          </a>
+        </div>
       </section>
     </div>
   );

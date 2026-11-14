@@ -363,6 +363,49 @@ const strings: UiStrings = {
     "sempre na sua própria carteira, e nada se move sem " +
     "ela.",
   aboutBuilt: "O PoolProof é um projeto solo, feito para o BCH BLAZE 2026.",
+  aboutDisclaimer:
+    "Nada em um relatório é aconselhamento financeiro. " +
+    "O PoolProof descreve o que uma simulação encontrou; " +
+    "não recomenda comprar, vender ou manter nenhum " +
+    "token. Trate cada número como informação para você " +
+    "verificar por conta própria antes de confiar nela.",
+  aboutFaqTitle: "Perguntas que aparecem",
+  faqNoPriceQ: "Por que um token da minha carteira não mostra preço?",
+  faqNoPriceA:
+    "O preço da carteira vem do pool de Cauldron do " +
+    "token. Quando um token não tem pool contra BCH, ou " +
+    "o lado em BCH do pool guarda menos que a linha de " +
+    "poeira de 100.000 satoshis, não existe um preço que " +
+    "o PoolProof possa garantir. O token continua " +
+    "aparecendo com a quantidade dele e sem valor, nunca " +
+    "com um número chutado.",
+  faqStaleQ:
+    "Minha carteira diz que o PoolProof está conectado, " +
+    "mas esta página não. O que eu faço?",
+  faqStaleA:
+    "A carteira guarda uma sessão que esta página já " +
+    "descartou, então os dois lados discordam sobre a " +
+    "conexão. Na carteira, remova todas as entradas do " +
+    "PoolProof (no Paytaca, abra Apps e depois Wizard " +
+    "Connect), pareie de novo a partir desta página e " +
+    "volte a ela na hora. A resposta da carteira só " +
+    "consegue chegar enquanto esta página está na frente.",
+  faqKeysQ: "O PoolProof guarda minhas chaves ou meus fundos?",
+  faqKeysA:
+    "Não. O PoolProof não guarda chaves, fundos ou " +
+    "contas, e não consegue iniciar uma transação " +
+    "sozinho. A assinatura acontece dentro da sua " +
+    "carteira, e nada se move até você aprovar lá.",
+  faqAnchorQ: "O que a ancoragem de um relatório faz?",
+  faqAnchorA:
+    "Ancorar escreve o hash do arquivo do relatório em " +
+    "uma transação da rede principal do Bitcoin Cash, " +
+    "dentro de uma saída OP_RETURN que sua carteira " +
+    "assina e transmite. Quem tiver o arquivo depois " +
+    "pode calcular o hash dele e comparar com o hash " +
+    "registrado na cadeia. Mude um único caractere do " +
+    "arquivo e os hashes deixam de bater.",
+  aboutValuesLine: "Valores em USD · Rede principal do Bitcoin Cash",
   navCheck: "Verificar",
   navWallet: "Carteira",
   navAbout: "Sobre",

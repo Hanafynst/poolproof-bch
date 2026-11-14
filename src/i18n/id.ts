@@ -357,6 +357,51 @@ const strings: UiStrings = {
     "wallet milikmu sendiri, dan tidak ada yang bergerak tanpa " +
     "tanda tangan itu.",
   aboutBuilt: "PoolProof adalah karya solo, dibuat untuk BCH BLAZE 2026.",
+  aboutDisclaimer:
+    "Tidak ada isi laporan yang merupakan nasihat keuangan. " +
+    "PoolProof menjelaskan apa yang ditemukan sebuah simulasi; " +
+    "PoolProof tidak menyarankan membeli, menjual, atau " +
+    "menahan token apa pun. Anggap setiap angka sebagai " +
+    "informasi yang perlu kamu periksa sendiri sebelum kamu " +
+    "andalkan.",
+  aboutFaqTitle: "Pertanyaan yang sering muncul",
+  faqNoPriceQ: "Kenapa token di portofolioku tidak menampilkan harga?",
+  faqNoPriceA:
+    "Harga portofolio berasal dari pool Cauldron token itu. " +
+    "Kalau sebuah token tidak punya pool terhadap BCH, atau " +
+    "sisi BCH pool-nya berisi kurang dari garis debu 100.000 " +
+    "satoshi, tidak ada harga yang bisa PoolProof " +
+    "pertanggungjawabkan. Token itu tetap tampil dengan " +
+    "jumlahnya dan tanpa nilai, tidak pernah dengan angka " +
+    "tebakan.",
+  faqStaleQ:
+    "Wallet-ku bilang PoolProof terhubung, tapi halaman ini " +
+    "tidak. Apa yang harus kulakukan?",
+  faqStaleA:
+    "Wallet itu memegang sesi yang sudah dilepas halaman ini, " +
+    "jadi kedua sisi tidak sepakat soal koneksi. Di dalam " +
+    "wallet, hapus semua entri PoolProof (di Paytaca, buka " +
+    "Apps, lalu Wizard Connect), lalu pairing lagi dari " +
+    "halaman ini dan segera kembali ke halaman ini. Jawaban " +
+    "wallet hanya bisa mendarat selama halaman ini berada di " +
+    "depan.",
+  faqKeysQ: "Apakah PoolProof memegang kunciku atau danaku?",
+  faqKeysA:
+    "Tidak. PoolProof tidak memegang kunci, dana, atau akun, " +
+    "dan tidak bisa memulai transaksi dengan sendirinya. " +
+    "Penandatanganan terjadi di dalam wallet milikmu, dan " +
+    "tidak ada yang bergerak sampai kamu menyetujuinya di " +
+    "sana.",
+  faqAnchorQ: "Apa gunanya menjangkarkan laporan?",
+  faqAnchorA:
+    "Menjangkarkan menulis hash berkas laporan ke dalam " +
+    "transaksi mainnet Bitcoin Cash, di dalam output " +
+    "OP_RETURN yang wallet-mu tandatangani dan siarkan. " +
+    "Siapa pun yang memegang berkas itu nanti bisa meng-hash " +
+    "dan membandingkan hasilnya dengan hash yang tercatat di " +
+    "rantai. Ubah satu karakter saja dari berkasnya dan " +
+    "hash-nya tidak lagi cocok.",
+  aboutValuesLine: "Nilai dalam USD · Mainnet Bitcoin Cash",
   navCheck: "Periksa",
   navWallet: "Dompet",
   navAbout: "Tentang",

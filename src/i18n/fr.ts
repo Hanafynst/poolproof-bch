@@ -377,6 +377,54 @@ const strings: UiStrings = {
     "dans votre propre portefeuille, et rien ne bouge " +
     "sans elle.",
   aboutBuilt: "PoolProof est un projet solo, réalisé pour BCH BLAZE 2026.",
+  aboutDisclaimer:
+    "Rien dans un rapport ne constitue un conseil " +
+    "financier. PoolProof décrit ce qu'une simulation " +
+    "a trouvé ; il ne recommande ni d'acheter, ni de " +
+    "vendre, ni de conserver un jeton. Traitez chaque " +
+    "chiffre comme une information à vérifier vous-même " +
+    "avant de vous y fier.",
+  aboutFaqTitle: "Questions qui reviennent",
+  faqNoPriceQ: "Pourquoi un jeton de mon portefeuille n'affiche-t-il aucun prix ?",
+  faqNoPriceA:
+    "Le prix du portefeuille vient du pool Cauldron du " +
+    "jeton. Quand un jeton n'a aucun pool contre BCH, " +
+    "ou que le côté BCH du pool détient moins que le " +
+    "seuil de poussière de 100 000 satoshis, il n'existe " +
+    "aucun prix que PoolProof puisse garantir. Le jeton " +
+    "apparaît toujours avec sa quantité et sans valeur, " +
+    "jamais avec un chiffre deviné.",
+  faqStaleQ:
+    "Mon portefeuille dit que PoolProof est connecté, " +
+    "mais cette page dit le contraire. Que faire ?",
+  faqStaleA:
+    "Le portefeuille garde une session que cette page a " +
+    "déjà abandonnée, donc les deux côtés ne sont pas " +
+    "d'accord sur la connexion. Dans le portefeuille, " +
+    "supprimez toutes les entrées PoolProof (dans " +
+    "Paytaca, ouvrez Apps, puis Wizard Connect), puis " +
+    "relancez l'appairage depuis cette page et revenez-y " +
+    "aussitôt. La réponse du portefeuille ne peut " +
+    "arriver que pendant que cette page est au premier " +
+    "plan.",
+  faqKeysQ: "PoolProof détient-il mes clés ou mes fonds ?",
+  faqKeysA:
+    "Non. PoolProof ne détient ni clés, ni fonds, ni " +
+    "comptes, et il ne peut pas lancer une transaction " +
+    "de lui-même. La signature a lieu dans votre " +
+    "portefeuille, et rien ne bouge tant que vous ne " +
+    "l'avez pas approuvée là-bas.",
+  faqAnchorQ: "À quoi sert l'ancrage d'un rapport ?",
+  faqAnchorA:
+    "Ancrer écrit le hachage du fichier du rapport dans " +
+    "une transaction du réseau principal Bitcoin Cash, " +
+    "dans une sortie OP_RETURN que votre portefeuille " +
+    "signe et diffuse. Quiconque détient le fichier plus " +
+    "tard peut calculer son hachage et le comparer à " +
+    "celui inscrit sur la chaîne. Changez un seul " +
+    "caractère du fichier et les hachages ne " +
+    "correspondent plus.",
+  aboutValuesLine: "Valeurs en USD · Réseau principal Bitcoin Cash",
   navCheck: "Vérifier",
   navWallet: "Portefeuille",
   navAbout: "À propos",

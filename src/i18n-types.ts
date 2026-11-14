@@ -232,6 +232,17 @@ export interface UiStrings {
   aboutLimitsTitle: string;
   aboutLimits: string;
   aboutBuilt: string;
+  aboutDisclaimer: string;
+  aboutFaqTitle: string;
+  faqNoPriceQ: string;
+  faqNoPriceA: string;
+  faqStaleQ: string;
+  faqStaleA: string;
+  faqKeysQ: string;
+  faqKeysA: string;
+  faqAnchorQ: string;
+  faqAnchorA: string;
+  aboutValuesLine: string;
   navCheck: string;
   navWallet: string;
   navAbout: string;

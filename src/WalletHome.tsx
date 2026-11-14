@@ -66,9 +66,10 @@ import {
   type ToastFailureReason,
 } from "./core/toast";
 
-const PRESENTATION_URL =
+export const PRESENTATION_URL =
   "https://docs.google.com/presentation/d/1Yfuk9CJkf4U9M_WukcELhumWgj3Ak6345Ewy8hSp-Hk/edit?usp=sharing";
-const REPO_URL = "https://github.com/Hanafynst/poolproof-bch";
+export const REPO_URL = "https://github.com/Hanafynst/poolproof-bch";
+export const X_URL = "https://x.com/0xhannnx";
 
 /** The wallet read's state, owned by App: idle before any wallet
  *  address exists, loading during the UTXO read, ready with the

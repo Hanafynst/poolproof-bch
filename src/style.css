@@ -5076,3 +5076,65 @@ h1,
 .about-glossary dd {
   margin-inline: auto;
 }
+
+/* R84: the FAQ card and the colophon card that closes the
+   About room. The questions carry the registrar's line of
+   the card heads (display type, scarlet, the ember dash) a
+   step smaller, since they are sub-heads inside one card.
+   The colophon opens with the product name and the version
+   read from package.json, then the solo-build line that
+   moved here from the limits card, the values line, the
+   stack the app actually runs on as one quiet row of
+   names, and the project links in the banner's own link
+   treatment. Everything stays centred with the room. */
+.about-faq-q {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  margin: 1.05rem 0 0;
+}
+
+.about-faq-q::before {
+  content: "";
+  display: inline-block;
+  width: 0.55rem;
+  height: 2px;
+  margin-inline-end: 0.5rem;
+  vertical-align: middle;
+  border-radius: 1px;
+  background: var(--accent);
+}
+
+.about-card .about-colophon-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 0;
+}
+
+.about-stack-row {
+  color: var(--soft);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+}
+
+.about-links {
+  display: flex;
+  gap: 1.25rem;
+  justify-content: center;
+  margin-top: var(--gap-section);
+}
+
+.about-links a {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.about-links a:hover {
+  text-decoration-thickness: 2px;
+}

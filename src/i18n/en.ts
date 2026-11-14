@@ -343,6 +343,45 @@ const strings: UiStrings = {
     "funds, or accounts. Signing always happens in your own " +
     "wallet, and nothing moves without it.",
   aboutBuilt: "PoolProof is a solo build for BCH BLAZE 2026.",
+  aboutDisclaimer:
+    "Nothing in a report is financial advice. PoolProof " +
+    "describes what a simulation found; it does not recommend " +
+    "buying, selling, or holding any token. Treat every figure " +
+    "as information to verify yourself before you rely on it.",
+  aboutFaqTitle: "Questions that come up",
+  faqNoPriceQ: "Why does a token in my portfolio show no price?",
+  faqNoPriceA:
+    "A portfolio price comes from the token's Cauldron pool. " +
+    "When a token has no pool against BCH, or the pool's BCH " +
+    "side holds less than the 100,000 satoshi dust line, no " +
+    "price exists that PoolProof can stand behind. The token " +
+    "still appears with its amount and no value, never a " +
+    "guessed figure.",
+  faqStaleQ:
+    "My wallet says PoolProof is connected, but this page " +
+    "does not. What do I do?",
+  faqStaleA:
+    "The wallet is holding a session this page already " +
+    "dropped, so the two sides disagree about the connection. " +
+    "In the wallet, remove every PoolProof entry (in Paytaca, " +
+    "open Apps, then Wizard Connect), then pair again from " +
+    "this page and return to it right away. The wallet's " +
+    "answer can only land while this page is in front.",
+  faqKeysQ: "Does PoolProof hold my keys or my funds?",
+  faqKeysA:
+    "No. PoolProof holds no keys, funds, or accounts, and it " +
+    "cannot start a transaction on its own. Signing happens " +
+    "inside your wallet, and nothing moves until you approve " +
+    "it there.",
+  faqAnchorQ: "What does anchoring a report do?",
+  faqAnchorA:
+    "Anchoring writes the report file's hash into a Bitcoin " +
+    "Cash mainnet transaction, inside an OP_RETURN output " +
+    "that your wallet signs and broadcasts. Anyone who holds " +
+    "the file later can hash it and compare the result with " +
+    "the hash recorded on chain. Change one character of the " +
+    "file and the hashes no longer match.",
+  aboutValuesLine: "Values in USD · Bitcoin Cash mainnet",
   navCheck: "Check",
   navWallet: "Wallet",
   navAbout: "About",
