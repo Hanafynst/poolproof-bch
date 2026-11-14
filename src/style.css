@@ -125,6 +125,24 @@
   }
 }
 
+/* The toast entrance (R51): the panel family's rise and
+   settle, from the bottom edge the layer is anchored to. The
+   fade pair beside it is the reduced-motion form: opacity
+   only, no travel, swapped in by the block at the end of
+   this file. */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+@keyframes toast-fade {
+  from {
+    opacity: 0;
+  }
+}
+
 /* The shimmer sweep is the only looping animation in the app. */
 @keyframes shimmer {
   from {
@@ -2448,6 +2466,140 @@ a:focus-visible {
   }
 }
 
+/* Transaction feedback (R51, DESIGN-REFERENCE-2 §5): a fixed
+   layer at the bottom of the viewport. It is an overlay in
+   the strict sense: position fixed, pointer events only on
+   the cards, so no toast ever moves content, resizes a
+   panel, or eats a tap meant for the page. Phone: the cards
+   span the width just above the bottom edge, in the thumb
+   zone under the wallet tiles. Desktop: the layer anchors
+   to the right at a card's width. The card material is the
+   dialog's (surface-2, gradient hairline, dialog shadow):
+   a toast is a small dialog that leaves on its own. Status
+   colour lives on the glyph disc only; no toast glows
+   (the P11 budget is untouched). */
+.toast-layer {
+  position: fixed;
+  inset-inline: 0.75rem;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .toast-layer {
+    inset-inline: auto 1.5rem;
+    bottom: 1.5rem;
+    width: 23rem;
+  }
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background:
+    linear-gradient(var(--surface-2), var(--surface-2)) padding-box,
+    linear-gradient(180deg, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.03)) border-box;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  box-shadow: var(--shadow-dialog);
+  padding: 0.7rem 0.8rem;
+  animation: toast-in var(--dur-dialog) var(--ease-out) both;
+  /* The exit is a transition, not a second keyframe, so a
+     dismissal mid-entrance still leaves cleanly; it runs on
+     the dialog-exit token, faster than the entry (P5). */
+  transition:
+    opacity var(--dur-dialog-exit) var(--ease-out),
+    transform var(--dur-dialog-exit) var(--ease-out);
+}
+
+.toast-leaving {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.toast-disc {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.toast-disc svg {
+  width: 18px;
+  height: 18px;
+}
+
+.toast-sent .toast-disc {
+  color: var(--accent-soft);
+}
+
+.toast-confirmed .toast-disc,
+.toast-received .toast-disc {
+  color: var(--alive);
+}
+
+.toast-failed .toast-disc {
+  color: var(--dead);
+}
+
+.toast-fact {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/* The tap-target form of the fact line (the card opens
+   History, or copies the incoming txid): a real button with
+   the button chrome removed, inheriting the fact's type. */
+.toast-tap {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.toast-dismiss {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--soft);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.toast-dismiss svg {
+  width: 14px;
+  height: 14px;
+}
+
+.toast-dismiss:hover {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
 /* Desktop sizing (user orders 2026-11-14): from 1024px up the
    page stays ONE straight-down centred column in the original
    order (wallet, headline, controls, report), exactly the
@@ -2493,5 +2645,19 @@ a:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* R51 exception, named: a toast's fade IS the state change
+     being communicated, so it survives the collapse, on the
+     UI duration, with the travel removed (the fade keyframes
+     carry no transform) and the exit on the same fade. Every
+     other surface still freezes outright. */
+  .toast {
+    animation-name: toast-fade !important;
+    animation-duration: var(--dur-ui) !important;
+  }
+
+  .toast-leaving {
+    transition-duration: var(--dur-ui) !important;
   }
 }

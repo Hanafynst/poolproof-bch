@@ -67,7 +67,7 @@ npm run build
 
 ## Testing
 
-The verdict and wallet logic was built in a practice lab first, then ported into this repository file by file, with the lab copy and the shipped copy kept byte-identical. The lab suite currently runs **538 checks, all passing**, covering:
+The verdict and wallet logic was built in a practice lab first, then ported into this repository file by file, with the lab copy and the shipped copy kept byte-identical. The lab suite currently runs **566 checks, all passing**, covering:
 
 - verdict thresholds and the routed exit simulation, tested against real captured fixtures (PUSD alive, 0LANDO dead);
 - the exit gauge's model (ratio and dust-reserve modes, with the tick positions taken from the verdict's own constants), the per-pool reserve split, and the audit's stage signals, which fire only when their real read resolves;
@@ -75,6 +75,7 @@ The verdict and wallet logic was built in a practice lab first, then ported into
 - the anchor transaction: fee model, and funding selection that never spends a token or NFT UTXO to pay a fee;
 - the send flow's confirmation gate, address-type blocking and amount keypad;
 - history storage, versioned migration and forward-only confirmation status;
+- the transaction feedback queue: per-transaction dedupe, failure-sparing eviction, dwell and announcement rules, the broadcast-to-confirmed flip detector, and the receive rule that can never mistake the wallet's own change for an incoming payment;
 - the lookup classification that separates a real token with no market from a category that does not exist.
 
 The suite runs locally. There is no CI badge here because there is no CI claim to back one.
