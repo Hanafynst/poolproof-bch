@@ -33,8 +33,14 @@
   --line-faint: rgb(255 255 255 / 0.05);
 
   /* The primary key's vertical light (V8): scarlet family shades
-     of the locked accent only, lighter at the top edge. */
-  --accent-grad: linear-gradient(180deg, #ef4438, var(--accent) 58%, #d92c21);
+     of the locked accent only, lighter at the top edge. R54: the
+     stops sit one step deeper than V8 (#ef4438 top) because the
+     white label crosses the gradient's middle band, and that band
+     measured 4.06-4.47:1, under WCAG AA for normal text. With the
+     locked accent itself as the top stop the band the glyphs can
+     occupy measures 4.59-5.13:1; the accent everywhere else is
+     unchanged. */
+  --accent-grad: linear-gradient(180deg, var(--accent), #d92c21 58%, #c2241c);
 
   /* Motion tokens (DESIGN-REFERENCE §2): every transition and
      animation in this file draws its duration and curve from
