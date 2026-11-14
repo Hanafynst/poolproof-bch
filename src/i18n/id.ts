@@ -45,6 +45,7 @@ const strings: UiStrings = {
   language: "Bahasa",
   languageLoadFailed:
     "Bahasa itu gagal dimuat. Bahasa sebelumnya masih ditampilkan.",
+  skipToMain: "Lewati ke konten utama",
   snapshotsLabel: "Snapshot demo",
   reportLabel: "Laporan uji tuntas",
   caveat:

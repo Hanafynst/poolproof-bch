@@ -32,6 +32,7 @@ export interface UiStrings {
   lede: string;
   language: string;
   languageLoadFailed: string;
+  skipToMain: string;
   snapshotsLabel: string;
   reportLabel: string;
   caveat: string;

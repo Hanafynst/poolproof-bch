@@ -2327,6 +2327,9 @@ export default function App() {
 
   return (
     <>
+      <a className="skip-link" href="#main">
+        {t.skipToMain}
+      </a>
       <TopBanner t={t} tokenAddress={walletSession.tokenAddress} />
       <header className="topbar">
         <span className="wordmark">POOLPROOF</span>
@@ -2350,7 +2353,7 @@ export default function App() {
         </LazyBoundary>
       </header>
 
-      <main>
+      <main id="main" tabIndex={-1}>
         <div className="layout-wallet">
         <WalletCard
           t={t}

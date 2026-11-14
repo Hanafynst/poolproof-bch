@@ -46,6 +46,7 @@ const strings: UiStrings = {
     "do valor de liquidez exibido.",
   language: "Idioma",
   languageLoadFailed: "Esse idioma não carregou. O anterior continua exibido.",
+  skipToMain: "Pular para o conteúdo principal",
   snapshotsLabel: "Instantâneos de demonstração",
   reportLabel: "Relatório de diligência",
   caveat:

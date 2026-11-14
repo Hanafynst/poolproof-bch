@@ -46,6 +46,7 @@ const strings: UiStrings = {
     "cifra de liquidez que se muestra.",
   language: "Idioma",
   languageLoadFailed: "Ese idioma no cargó. Se sigue mostrando el anterior.",
+  skipToMain: "Saltar al contenido principal",
   snapshotsLabel: "Instantáneas de demostración",
   reportLabel: "Informe de diligencia debida",
   caveat:

@@ -41,6 +41,7 @@ const strings: UiStrings = {
     "والبيع المحاكى، لا من رقم السيولة المعروض.",
   language: "اللغة",
   languageLoadFailed: "تعذّر تحميل تلك اللغة. ما زالت اللغة السابقة معروضة.",
+  skipToMain: "تخطى إلى المحتوى الرئيسي",
   snapshotsLabel: "لقطات تجريبية",
   reportLabel: "تقرير العناية الواجبة",
   caveat:

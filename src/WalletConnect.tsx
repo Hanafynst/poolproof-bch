@@ -6,6 +6,7 @@ import {
   pubkeyToCashAddress,
   pubkeyToTokenAddress,
 } from "./core/wallet-address";
+import { trapTabIndex } from "./core/focus-nav";
 
 /**
  * WizardConnect integration.
@@ -156,6 +157,9 @@ function PairingDialog({
   // otherwise land on the page behind the overlay and lose the
   // dialog entirely. The focusable set is re-read per keypress:
   // the no-wallet fallback adds links while the dialog is open.
+  // The boundary ruling is the core's trapTabIndex (pinned by
+  // the suite); this handler only reads the live set and the
+  // live focus, then applies the ruling.
   const trapTab = (event: React.KeyboardEvent) => {
     if (event.key !== "Tab") return;
     const card = cardRef.current;
@@ -163,16 +167,16 @@ function PairingDialog({
     const focusables = card.querySelectorAll<HTMLElement>(
       "a[href], button:not([disabled])",
     );
-    if (focusables.length === 0) return;
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
+    const target = trapTabIndex(
+      focusables.length,
+      Array.from(focusables).indexOf(
+        document.activeElement as HTMLElement,
+      ),
+      event.shiftKey,
+    );
+    if (target < 0) return;
+    event.preventDefault();
+    focusables[target].focus();
   };
 
   const copyUri = async () => {
@@ -216,7 +220,7 @@ function PairingDialog({
           {t.openWalletApp}
         </a>
         <p className="pairing-hint">{t.pairingScanHint}</p>
-        <div className="pairing-qr">
+        <div className="pairing-qr" role="img" aria-label={t.pairingScanHint}>
           <AlphanumericQRCode value={qrUri} size={210} />
         </div>
         <div className="pairing-actions">

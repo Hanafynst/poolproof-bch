@@ -1430,6 +1430,40 @@ h1 {
   white-space: nowrap;
 }
 
+/* The skip link: the first control in the document, hidden by
+   the same pattern as .visually-hidden until keyboard focus
+   lands on it; then it surfaces as a solid chip at the top
+   corner and the global a:focus-visible ring draws around it.
+   Its target is <main> itself (tabIndex -1): the ring around
+   the whole main column would be noise, so the target takes
+   no outline. */
+.skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link:focus-visible {
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 60;
+  width: auto;
+  height: auto;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  clip-path: none;
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+}
+
+main:focus {
+  outline: none;
+}
+
 .live-banner {
   border: 1px solid var(--line);
   border-radius: 10px;

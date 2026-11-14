@@ -45,6 +45,7 @@ const strings: UiStrings = {
     "दिखाए गए तरलता आंकड़े से नहीं।",
   language: "भाषा",
   languageLoadFailed: "वह भाषा लोड नहीं हुई। पिछली भाषा अभी भी दिख रही है।",
+  skipToMain: "मुख्य सामग्री पर जाएं",
   snapshotsLabel: "डेमो स्नैपशॉट",
   reportLabel: "उचित परिश्रम रिपोर्ट",
   caveat:

@@ -46,6 +46,7 @@ const strings: UiStrings = {
     "de la vente simulée, pas du montant de liquidité affiché.",
   language: "Langue",
   languageLoadFailed: "Cette langue n'a pas chargé. La précédente reste affichée.",
+  skipToMain: "Aller au contenu principal",
   snapshotsLabel: "Instantanés de démonstration",
   reportLabel: "Rapport de diligence",
   caveat:

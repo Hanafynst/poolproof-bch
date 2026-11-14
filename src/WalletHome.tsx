@@ -42,6 +42,7 @@ import {
 import type { WalletHoldings } from "./core/wallet-utxos";
 import type { HistoryEntry } from "./core/history-store";
 import { listWindow } from "./core/list-window";
+import { phaseFocusTarget, type SendPhase } from "./core/focus-nav";
 import {
   failureReasonForCode,
   type ToastFailureReason,
@@ -455,7 +456,11 @@ export function HistoryPanel({
       )}
       {windowed.hiddenCount > 0 && (
         <div className="panel-actions">
-          <button type="button" onClick={() => setExpanded(true)}>
+          <button
+            type="button"
+            aria-expanded={false}
+            onClick={() => setExpanded(true)}
+          >
             {t.historyShowAll.replace("{count}", String(windowed.total))}
           </button>
         </div>
@@ -544,7 +549,7 @@ export function SendPanel({
   const [selection, setSelection] = useState<AssetSelection>({ kind: "bch" });
   const [recipient, setRecipient] = useState("");
   const [amountText, setAmountText] = useState("");
-  const [phase, setPhase] = useState<"form" | "confirm" | "signing">("form");
+  const [phase, setPhase] = useState<SendPhase>("form");
   const [sendError, setSendError] = useState<string | null>(null);
   const [identities, setIdentities] = useState<
     Record<string, TokenIdentity | null>
@@ -552,6 +557,23 @@ export function SendPanel({
   const identityAsked = useRef(new Set<string>());
   const [fungiblesExpanded, setFungiblesExpanded] = useState(false);
   const [nftsExpanded, setNftsExpanded] = useState(false);
+
+  // A phase swap unmounts the control that caused it (the
+  // review button going into the sheet, the confirm button
+  // coming back, disabled while signing), so the browser drops
+  // focus to the document body and a keyboard user restarts
+  // tabbing from the page top. The core rules the landing
+  // (focus-nav): the incoming phase's heading takes focus on
+  // every real transition.
+  const panelTitleRef = useRef<HTMLHeadingElement>(null);
+  const confirmTitleRef = useRef<HTMLHeadingElement>(null);
+  const phaseBefore = useRef<SendPhase>("form");
+  useEffect(() => {
+    const target = phaseFocusTarget(phaseBefore.current, phase);
+    phaseBefore.current = phase;
+    if (target === "confirm-heading") confirmTitleRef.current?.focus();
+    if (target === "panel-heading") panelTitleRef.current?.focus();
+  }, [phase]);
 
   const selectedCategory =
     selection.kind === "bch" ? null : selection.category;
@@ -826,7 +848,9 @@ export function SendPanel({
 
   return (
     <section className="panel" aria-label={t.actionSend}>
-      <h2>{t.sendTitle}</h2>
+      <h2 ref={panelTitleRef} tabIndex={-1}>
+        {t.sendTitle}
+      </h2>
       <p className="panel-note">{t.sendNetwork}</p>
       {walletEmpty ? (
         <p>{t.holdingsEmpty}</p>
@@ -878,6 +902,7 @@ export function SendPanel({
               <button
                 type="button"
                 className="asset-row asset-more"
+                aria-expanded={false}
                 onClick={() => setFungiblesExpanded(true)}
               >
                 <span className="asset-name">
@@ -923,6 +948,7 @@ export function SendPanel({
               <button
                 type="button"
                 className="asset-row asset-more"
+                aria-expanded={false}
                 onClick={() => setNftsExpanded(true)}
               >
                 <span className="asset-name">
@@ -1046,7 +1072,9 @@ export function SendPanel({
         </>
       ) : (
         <div className="confirm-sheet">
-          <h3>{t.confirmTitle}</h3>
+          <h3 ref={confirmTitleRef} tabIndex={-1}>
+            {t.confirmTitle}
+          </h3>
           <dl className="confirm-rows">
             <div>
               <dt>{t.confirmAsset}</dt>

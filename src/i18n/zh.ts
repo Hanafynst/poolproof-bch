@@ -34,6 +34,7 @@ const strings: UiStrings = {
     "上的储备并模拟一次卖出。判定来自储备和模拟卖出，而不是页面上显示的流动性数字。",
   language: "语言",
   languageLoadFailed: "该语言加载失败，仍显示上一种语言。",
+  skipToMain: "跳到主要内容",
   snapshotsLabel: "演示快照",
   reportLabel: "尽职调查报告",
   caveat:

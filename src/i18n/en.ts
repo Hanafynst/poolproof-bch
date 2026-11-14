@@ -45,6 +45,7 @@ const strings: UiStrings = {
   language: "Language",
   languageLoadFailed:
     "That language could not be loaded. The previous language is still shown.",
+  skipToMain: "Skip to main content",
   snapshotsLabel: "Demo snapshots",
   reportLabel: "Due diligence report",
   caveat:
