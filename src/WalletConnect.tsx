@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AlphanumericQRCode, useWizardConnect } from "@wizardconnect/react";
 import type { UiStrings } from "./i18n";
 import type { SignFlowManager } from "./core/sign-flow";
@@ -193,7 +194,14 @@ function PairingDialog({
     }
   };
 
-  return (
+  // The overlay renders through a portal to <body> on purpose: this
+  // component mounts inside the sticky topbar, whose backdrop-filter
+  // makes it the containing block for fixed descendants, so a
+  // position:fixed overlay left in that subtree is sized to the bar
+  // instead of the viewport and its card renders half off-screen
+  // (field report + rig measurement, 2026-11-14). The portal is what
+  // makes "fixed" mean the viewport again.
+  return createPortal(
     <div
       className={closing ? "pairing-overlay closing" : "pairing-overlay"}
       onClick={(event) => {
@@ -262,7 +270,8 @@ function PairingDialog({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
