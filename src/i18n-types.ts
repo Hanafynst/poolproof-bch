@@ -199,4 +199,9 @@ export interface UiStrings {
   signPromptAnchor: string;
   signPromptSend: string;
   signRejected: string;
+  toastSent: string;
+  toastConfirmed: string;
+  toastAnchorConfirmed: string;
+  toastReceived: string;
+  toastDismiss: string;
 }

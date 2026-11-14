@@ -257,6 +257,11 @@ const strings: UiStrings = {
     "تثبيت بصمة تقرير PoolProof هذا على الشبكة الرئيسية لـ Bitcoin Cash؟",
   signPromptSend: "وقّع هذا الإرسال في محفظتك لبثّه.",
   signRejected: "رفضت المحفظة طلب التوقيع. لم يُرسَل شيء.",
+  toastSent: "تم إرسال {amount} {asset}",
+  toastConfirmed: "تم تأكيد {amount} {asset}",
+  toastAnchorConfirmed: "تم تأكيد مرساة التقرير",
+  toastReceived: "تم استلام {amount} BCH",
+  toastDismiss: "إغلاق الإشعار",
 };
 
 export const flags: Record<FlagCode, string> = {

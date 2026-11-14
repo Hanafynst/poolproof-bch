@@ -268,6 +268,11 @@ const strings: UiStrings = {
   signPromptSend: "Sign this send in your wallet to broadcast it.",
   signRejected:
     "The wallet rejected the signature request. Nothing was sent.",
+  toastSent: "Sent {amount} {asset}",
+  toastConfirmed: "{amount} {asset} confirmed",
+  toastAnchorConfirmed: "Report anchor confirmed",
+  toastReceived: "Received {amount} BCH",
+  toastDismiss: "Dismiss notification",
 };
 
 export const flags: Record<FlagCode, string> = {

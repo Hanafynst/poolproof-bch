@@ -280,6 +280,11 @@ const strings: UiStrings = {
   signPromptSend: "Firma este envío en tu billetera para transmitirlo.",
   signRejected:
     "La billetera rechazó la solicitud de firma. No se envió nada.",
+  toastSent: "Enviado: {amount} {asset}",
+  toastConfirmed: "{amount} {asset} confirmado",
+  toastAnchorConfirmed: "Anclaje del informe confirmado",
+  toastReceived: "Recibido: {amount} BCH",
+  toastDismiss: "Descartar notificación",
 };
 
 export const flags: Record<FlagCode, string> = {

@@ -287,6 +287,11 @@ const strings: UiStrings = {
   signPromptSend: "Signez cet envoi dans votre portefeuille pour le diffuser.",
   signRejected:
     "Le portefeuille a rejeté la demande de signature. Rien n'a été envoyé.",
+  toastSent: "Envoyé : {amount} {asset}",
+  toastConfirmed: "{amount} {asset} confirmé",
+  toastAnchorConfirmed: "Ancrage du rapport confirmé",
+  toastReceived: "Reçu : {amount} BCH",
+  toastDismiss: "Fermer la notification",
 };
 
 export const flags: Record<FlagCode, string> = {

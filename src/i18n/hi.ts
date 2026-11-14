@@ -263,6 +263,11 @@ const strings: UiStrings = {
   signPromptSend:
     "इसे प्रसारित करने के लिए अपने वॉलेट में इस भेजे जाने पर हस्ताक्षर करें।",
   signRejected: "वॉलेट ने हस्ताक्षर अनुरोध ठुकरा दिया। कुछ नहीं भेजा गया।",
+  toastSent: "{amount} {asset} भेजा गया",
+  toastConfirmed: "{amount} {asset} की पुष्टि हो गई",
+  toastAnchorConfirmed: "रिपोर्ट एंकर की पुष्टि हो गई",
+  toastReceived: "{amount} BCH प्राप्त हुआ",
+  toastDismiss: "सूचना बंद करें",
 };
 
 export const flags: Record<FlagCode, string> = {

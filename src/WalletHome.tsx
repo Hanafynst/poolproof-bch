@@ -41,6 +41,10 @@ import {
 } from "./core/transfer-tx";
 import type { WalletHoldings } from "./core/wallet-utxos";
 import type { HistoryEntry } from "./core/history-store";
+import {
+  failureReasonForCode,
+  type ToastFailureReason,
+} from "./core/toast";
 
 const PRESENTATION_URL =
   "https://docs.google.com/presentation/d/1Yfuk9CJkf4U9M_WukcELhumWgj3Ak6345Ewy8hSp-Hk/edit?usp=sharing";
@@ -493,6 +497,7 @@ export function SendPanel({
   holdings,
   resolveIdentity,
   onSent,
+  onSendFailed,
 }: {
   t: UiStrings;
   lang: Lang;
@@ -503,6 +508,11 @@ export function SendPanel({
   holdings: WalletHoldings | null;
   resolveIdentity: (category: string) => Promise<TokenIdentity | null>;
   onSent: (receipt: Receipt) => void;
+  /** The toast layer's failure feed (R51): called with the
+   *  exact string the confirm sheet is about to show, so the
+   *  pop-up and the panel can never disagree about what went
+   *  wrong. */
+  onSendFailed: (reason: ToastFailureReason, message: string) => void;
 }) {
   const [selection, setSelection] = useState<AssetSelection>({ kind: "bch" });
   const [recipient, setRecipient] = useState("");
@@ -755,17 +765,20 @@ export function SendPanel({
     } catch (error) {
       setPhase("confirm");
       if (error instanceof SignFlowError) {
-        setSendError(
+        const message =
           error.code === "WALLET_REFUSED"
             ? t.signRejected
             : error.code === "TAMPERED"
               ? t.sendTampered
               : error.code === "BROADCAST_FAILED"
                 ? t.sendBroadcastFailed
-                : t.sendMalformed,
-        );
+                : t.sendMalformed;
+        setSendError(message);
+        onSendFailed(failureReasonForCode(error.code), message);
       } else {
-        setSendError(error instanceof Error ? error.message : String(error));
+        const message = error instanceof Error ? error.message : String(error);
+        setSendError(message);
+        onSendFailed("other", message);
       }
     }
   };

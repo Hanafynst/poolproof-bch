@@ -274,6 +274,11 @@ const strings: UiStrings = {
     "Tandatangani pengiriman ini di wallet kamu untuk menyiarkannya.",
   signRejected:
     "Wallet menolak permintaan tanda tangan. Tidak ada yang terkirim.",
+  toastSent: "Terkirim {amount} {asset}",
+  toastConfirmed: "{amount} {asset} terkonfirmasi",
+  toastAnchorConfirmed: "Jangkar laporan terkonfirmasi",
+  toastReceived: "Diterima {amount} BCH",
+  toastDismiss: "Tutup notifikasi",
 };
 
 export const flags: Record<FlagCode, string> = {

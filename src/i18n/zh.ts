@@ -228,6 +228,11 @@ const strings: UiStrings = {
   signPromptAnchor: "将此 PoolProof 报告哈希锚定到 Bitcoin Cash 主网？",
   signPromptSend: "在钱包中签署此笔发送以广播它。",
   signRejected: "钱包拒绝了签名请求。没有发送任何内容。",
+  toastSent: "已发送 {amount} {asset}",
+  toastConfirmed: "{amount} {asset} 已确认",
+  toastAnchorConfirmed: "报告锚点已确认",
+  toastReceived: "已收到 {amount} BCH",
+  toastDismiss: "关闭通知",
 };
 
 export const flags: Record<FlagCode, string> = {

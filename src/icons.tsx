@@ -70,6 +70,53 @@ export function CheckIcon() {
   );
 }
 
+/** The toast glyphs (R51), drawn to the same spec as the rest
+ *  of the system. Sent and Received reuse the tile arrows (the
+ *  same two directions of the same act); Confirmed and Failed
+ *  are the round family the History clock belongs to, a check
+ *  or a cross inside the circle; Dismiss is the bare cross.
+ *  Colour is inherited, as everywhere: the toast's status
+ *  colour comes from its disc, never from the glyph itself. */
+export function ToastGlyph({
+  kind,
+}: {
+  kind: "sent" | "confirmed" | "failed" | "received";
+}) {
+  const paths =
+    kind === "sent" ? (
+      <>
+        <path d="M12 19V5" />
+        <path d="m5 12 7-7 7 7" />
+      </>
+    ) : kind === "received" ? (
+      <>
+        <path d="M12 5v14" />
+        <path d="m19 12-7 7-7-7" />
+      </>
+    ) : kind === "confirmed" ? (
+      <>
+        <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" />
+        <path d="m8.6 12.1 2.3 2.3 4.5-4.8" />
+      </>
+    ) : (
+      <>
+        <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" />
+        <path d="m9.2 9.2 5.6 5.6" />
+        <path d="m14.8 9.2-5.6 5.6" />
+      </>
+    );
+  return <svg {...ICON_PROPS}>{paths}</svg>;
+}
+
+export function DismissIcon() {
+  return (
+    <svg {...ICON_PROPS}>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
 export type TileKind = "send" | "receive" | "history" | "audit";
 
 /** The four tile glyphs. Send and Receive are one arrow seen

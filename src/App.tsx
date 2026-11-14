@@ -49,8 +49,28 @@ import type { HistoryEntry } from "./core/history-store";
 import { fetchConfirmationUpdates } from "./core/history-status";
 import type { Receipt } from "./core/send-flow";
 import type { SpendableUtxo } from "./core/transfer-tx";
-import { fetchAddressUtxos, indexWalletHoldings, type WalletHoldings } from "./core/wallet-utxos";
 import {
+  fetchAddressUtxos,
+  indexWalletHoldings,
+  parseListunspent,
+  scripthashForAddress,
+  type WalletHoldings,
+} from "./core/wallet-utxos";
+import {
+  confirmationFlips,
+  diffReceivedUtxos,
+  dismissToast,
+  emptyToastQueue,
+  failureReasonForCode,
+  pushToast,
+  type ToastEvent,
+  type ToastFailureReason,
+  type ToastQueueState,
+  type WatchedUtxo,
+} from "./core/toast";
+import { ToastLayer } from "./Toasts";
+import {
+  formatBch,
   formatBchShort,
   formatTokenAmount,
   latinDateTimeFormat,
@@ -1229,6 +1249,10 @@ interface AnchorWiring {
   electrum: ElectrumSession;
   onConnectRequest: () => void;
   onAnchored: (receipt: Receipt) => void;
+  /** The toast layer's failure feed (R51): called with the
+   *  exact string the report is about to show under the
+   *  anchor action, so pop-up and panel never disagree. */
+  onAnchorFailed: (reason: ToastFailureReason, message: string) => void;
 }
 
 function AnchorBlock({
@@ -1294,7 +1318,7 @@ function AnchorBlock({
     }
   };
   const runAnchor = async (funding: SpendableUtxo) => {
-    const { session, electrum, onAnchored } = wiring;
+    const { session, electrum, onAnchored, onAnchorFailed } = wiring;
     const manager = session.manager;
     const address = session.address;
     if (manager === null || address === null || anchor === null) return;
@@ -1347,17 +1371,20 @@ function AnchorBlock({
     } catch (error) {
       setAnchorPhase("idle");
       if (error instanceof SignFlowError) {
-        setAnchorError(
+        const message =
           error.code === "WALLET_REFUSED"
             ? t.signRejected
             : error.code === "TAMPERED"
               ? t.anchorTampered
               : error.code === "BROADCAST_FAILED"
                 ? t.sendBroadcastFailed
-                : t.sendMalformed,
-        );
+                : t.sendMalformed;
+        setAnchorError(message);
+        onAnchorFailed(failureReasonForCode(error.code), message);
       } else {
-        setAnchorError(error instanceof Error ? error.message : String(error));
+        const message = error instanceof Error ? error.message : String(error);
+        setAnchorError(message);
+        onAnchorFailed("other", message);
       }
     }
   };
@@ -1625,6 +1652,13 @@ export default function App() {
   }, [lang, packAttempt]);
   const t = pack.strings;
   const flagTemplates = pack.flags;
+  // The toast callbacks are stable useCallbacks (history is
+  // their only state dependency), so they read the CURRENT
+  // language's strings through this ref instead of closing
+  // over one pack: a toast always speaks the language on
+  // screen at the moment its event fires.
+  const stringsRef = useRef(t);
+  stringsRef.current = t;
 
   const [walletSession, setWalletSession] =
     useState<WalletSession>(DISCONNECTED_SESSION);
@@ -1697,14 +1731,59 @@ export default function App() {
     (category: string) => resolveIdentity(category, fetchTokenStorkCandidates),
     [],
   );
+  // Transaction feedback (R51): App owns the toast queue; the
+  // pure core in core/toast.ts decides admission, dedupe,
+  // eviction, and dwell, and Toasts.tsx only renders. Events
+  // enter exclusively from real signals: the two receipt sinks
+  // below (a broadcast that resolved), the failure callbacks
+  // the send panel and anchor block feed with their own panel
+  // strings, the History watcher's observed confirmation
+  // flips, and the receive watcher's chain reads. Nothing
+  // else in the app can raise a toast.
+  const [toastQueue, setToastQueue] = useState<ToastQueueState>(
+    emptyToastQueue,
+  );
+  const pushToastEvent = useCallback((event: ToastEvent) => {
+    setToastQueue((prev) => pushToast(prev, event, Date.now()).state);
+  }, []);
+  const dismissToastById = useCallback((id: number) => {
+    setToastQueue((prev) => dismissToast(prev, id));
+  }, []);
+  const handleTxFailed = useCallback(
+    (reason: ToastFailureReason, message: string) => {
+      pushToastEvent({ kind: "failed", txid: null, fact: message, reason });
+    },
+    [pushToastEvent],
+  );
+  const copyToastTxid = useCallback(async (txid: string) => {
+    try {
+      await navigator.clipboard.writeText(txid);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
   const handleSent = useCallback(
     (receipt: Receipt) => {
       history.store.append(receipt);
       history.store.save();
       setEntries(history.store.list());
       setOpenPanel("history");
+      // The SENT toast fires here, inside the same success
+      // path that appends the receipt: the sign flow minted
+      // that receipt only after the broadcast resolved, so
+      // the pop-up can never announce a send that has not
+      // actually left.
+      const s = stringsRef.current;
+      pushToastEvent({
+        kind: "sent",
+        txid: receipt.txid,
+        fact: s.toastSent
+          .replace("{amount}", receipt.amountText)
+          .replace("{asset}", receipt.assetLabel),
+      });
     },
-    [history],
+    [history, pushToastEvent],
   );
   // An anchor's receipt joins the same store, but the panel does
   // NOT switch: the txid lands in the report the user is looking
@@ -1715,8 +1794,15 @@ export default function App() {
       history.store.append(receipt);
       history.store.save();
       setEntries(history.store.list());
+      // Same rule as a send: the toast rides the receipt sink,
+      // so it exists only because the anchor broadcast resolved.
+      pushToastEvent({
+        kind: "sent",
+        txid: receipt.txid,
+        fact: stringsRef.current.anchorDone,
+      });
     },
-    [history],
+    [history, pushToastEvent],
   );
   // Pairing requests from inside the report (the anchor action's
   // connect button): App owns the signal the header's
@@ -1750,6 +1836,7 @@ export default function App() {
     electrum,
     onConnectRequest: requestAnchorConnect,
     onAnchored: handleAnchored,
+    onAnchorFailed: handleTxFailed,
   };
   // Confirmation statuses refresh while the History panel is
   // open: once on open, then every 30 seconds until it closes.
@@ -1767,6 +1854,15 @@ export default function App() {
       try {
         const targets = history.store.list().slice(0, 20);
         if (targets.length === 0) return;
+        // The CONFIRMED toast (R51) hooks this same refresh:
+        // the stored statuses are snapshotted before the
+        // updates land, and the core's flip check names the
+        // transactions this cycle observed crossing from
+        // broadcast to confirmed. Same poller, same cadence,
+        // no second watcher.
+        const before = new Map(
+          targets.map((entry) => [entry.receipt.txid, entry.status]),
+        );
         const updates = await fetchConfirmationUpdates(
           electrum.call,
           targets.map((entry) => entry.receipt.txid),
@@ -1783,6 +1879,26 @@ export default function App() {
           history.store.save();
           setEntries(history.store.list());
         }
+        if (!cancelled) {
+          const byTxid = new Map(
+            targets.map((entry) => [entry.receipt.txid, entry.receipt]),
+          );
+          const s = stringsRef.current;
+          for (const txid of confirmationFlips(before, updates)) {
+            const receipt = byTxid.get(txid);
+            if (receipt === undefined) continue;
+            pushToastEvent({
+              kind: "confirmed",
+              txid,
+              fact:
+                receipt.kind === "anchor"
+                  ? s.toastAnchorConfirmed
+                  : s.toastConfirmed
+                      .replace("{amount}", receipt.amountText)
+                      .replace("{asset}", receipt.assetLabel),
+            });
+          }
+        }
       } catch {
         // fetchConfirmationUpdates already turns per-call
         // failures into missing updates; anything that still
@@ -1798,7 +1914,104 @@ export default function App() {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [openPanel, history, electrum]);
+  }, [openPanel, history, electrum, pushToastEvent]);
+  // The receive watch (R51): while a wallet is connected, the
+  // derived receive address (the same address the balance read
+  // uses) is re-read on the app's one existing poll cadence,
+  // the History refresh's 30 seconds, never faster. The
+  // Electrum client is request/response only (its message
+  // handler drops server pushes), so a scripthash subscription
+  // cannot surface events through it; polling listunspent is
+  // the read path the client already supports, and it is the
+  // same call the balance read makes. The pure diff in
+  // core/toast.ts decides what counts as a payment: a new
+  // outpoint whose creating transaction is not one of our own
+  // receipts (our change is created BY our own transaction,
+  // so it can never pass) and which carries no token data.
+  // The first read after connect only seeds the baseline, the
+  // wallet's existing contents are not news. Any set change
+  // at all refreshes the holdings read, so the balance and
+  // holdings the user sees stay true after receives AND after
+  // our own sends land their change.
+  const receiveBaseline = useRef<{
+    address: string;
+    map: Map<string, WatchedUtxo> | null;
+  }>({ address: "", map: null });
+  const receivePollInFlight = useRef(false);
+  useEffect(() => {
+    if (walletAddress === null) return;
+    let cancelled = false;
+    if (receiveBaseline.current.address !== walletAddress) {
+      receiveBaseline.current = { address: walletAddress, map: null };
+    }
+    const poll = async () => {
+      if (receivePollInFlight.current) return;
+      receivePollInFlight.current = true;
+      try {
+        const scripthash = await scripthashForAddress(walletAddress);
+        const entries = parseListunspent(
+          await electrum.call("blockchain.scripthash.listunspent", [
+            scripthash,
+          ]),
+        );
+        const current: WatchedUtxo[] = entries.map((entry) => ({
+          txid: entry.txid,
+          index: entry.index,
+          valueSats: entry.valueSats,
+          hasToken: entry.token !== undefined,
+        }));
+        const ownTxids = new Set(
+          history.store.list().map((entry) => entry.receipt.txid),
+        );
+        const diff = diffReceivedUtxos(
+          receiveBaseline.current.map,
+          current,
+          ownTxids,
+        );
+        receiveBaseline.current = {
+          address: walletAddress,
+          map: diff.nextBaseline,
+        };
+        if (cancelled) return;
+        const s = stringsRef.current;
+        for (const payment of diff.received) {
+          pushToastEvent({
+            kind: "received",
+            txid: payment.txid,
+            fact: s.toastReceived.replace(
+              "{amount}",
+              formatBch(payment.totalSats),
+            ),
+          });
+        }
+        if (diff.changed) {
+          // Advisory refresh: on failure the last good read
+          // stands and the next cycle retries; the wallet
+          // view never flips to unavailable over a watch read.
+          void fetchAddressUtxos(walletAddress, electrum.call)
+            .then((utxos) => {
+              if (cancelled) return;
+              setWalletUtxos(utxos);
+              setWalletHoldings(indexWalletHoldings(utxos));
+              setUtxoPhase("ready");
+            })
+            .catch(() => {});
+        }
+      } catch {
+        // A failed watch read changes nothing: the baseline
+        // stands, no toast fires, and the next cycle retries.
+        // The watch is advisory and never shows an error.
+      } finally {
+        receivePollInFlight.current = false;
+      }
+    };
+    void poll();
+    const timer = window.setInterval(() => void poll(), 30_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [walletAddress, electrum, history, pushToastEvent]);
   const togglePanel = useCallback(
     (panel: HomePanel) =>
       setOpenPanel((current) => (current === panel ? null : panel)),
@@ -2121,6 +2334,7 @@ export default function App() {
                 holdings={walletHoldings}
                 resolveIdentity={resolveTokenIdentity}
                 onSent={handleSent}
+                onSendFailed={handleTxFailed}
               />
             )}
             {renderedPanel === "receive" && (
@@ -2402,6 +2616,13 @@ export default function App() {
         )}
         </div>
       </main>
+      <ToastLayer
+        items={toastQueue.items}
+        t={t}
+        onDismiss={dismissToastById}
+        onOpenHistory={() => setOpenPanel("history")}
+        onCopyTxid={copyToastTxid}
+      />
     </>
   );
 }

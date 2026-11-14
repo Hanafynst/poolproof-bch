@@ -278,6 +278,11 @@ const strings: UiStrings = {
   signPromptSend: "Assine este envio na sua carteira para transmiti-lo.",
   signRejected:
     "A carteira rejeitou o pedido de assinatura. Nada foi enviado.",
+  toastSent: "Enviado: {amount} {asset}",
+  toastConfirmed: "{amount} {asset} confirmado",
+  toastAnchorConfirmed: "Âncora do relatório confirmada",
+  toastReceived: "Recebido: {amount} BCH",
+  toastDismiss: "Dispensar notificação",
 };
 
 export const flags: Record<FlagCode, string> = {
