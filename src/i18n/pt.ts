@@ -356,6 +356,9 @@ const strings: UiStrings = {
     "sempre na sua própria carteira, e nada se move sem " +
     "ela.",
   aboutBuilt: "O PoolProof é um projeto solo, feito para o BCH BLAZE 2026.",
+  navCheck: "Verificar",
+  navWallet: "Carteira",
+  navAbout: "Sobre",
 };
 
 export const flags: Record<FlagCode, string> = {

@@ -350,6 +350,9 @@ const strings: UiStrings = {
     "wallet milikmu sendiri, dan tidak ada yang bergerak tanpa " +
     "tanda tangan itu.",
   aboutBuilt: "PoolProof adalah karya solo, dibuat untuk BCH BLAZE 2026.",
+  navCheck: "Periksa",
+  navWallet: "Dompet",
+  navAbout: "Tentang",
 };
 
 export const flags: Record<FlagCode, string> = {

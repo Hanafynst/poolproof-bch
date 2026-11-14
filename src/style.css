@@ -4064,3 +4064,367 @@ h1,
     transform: none;
   }
 }
+
+/* ============================================================
+   R79: the rooms. The app is three rooms behind one menu,
+   adapting the two reference dashboards' placement wholesale:
+   their menu, their card arrangement, their hero ring, onto
+   PoolProof's existing features. The colour concept does not
+   change: near-black surfaces, the scarlet ember halo system,
+   the verdict hues stay exactly where R74 and R78 put them.
+
+   Phone: the menu is a fixed bottom bar, and the old topbar
+   keeps the wordmark and the wallet control. Desktop: the
+   menu stands in a left rail with the wordmark above it and
+   the wallet control under that, and the content column runs
+   right of the rail. The single-column desktop rule from the
+   earlier rounds is superseded here by the user's explicit
+   order for the rail layout; the banner still spans the very
+   top of the shell on every room and form factor.
+
+   Rooms mount on first visit and stay mounted (hidden), so
+   state survives the switches; a return visit plays only the
+   room crossfade below, never a replay of the landing
+   sequences inside the room. */
+
+/* On the phone the chrome wrapper generates no box of its
+   own, so the topbar keeps the whole page as its sticky
+   travel room, exactly as when it stood alone. The desktop
+   block at the end of this section restates the wrapper as
+   the rail itself. */
+.chrome {
+  display: contents;
+}
+
+.room[hidden] {
+  display: none;
+}
+
+@keyframes room-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.room-fade {
+  animation: room-fade var(--dur-crossfade) var(--ease-cross) both;
+}
+
+/* The menu items, shared by both mounts. The label takes the
+   display face like the other non-tile buttons (R74); the
+   active room reads in full text colour, its glyph carried
+   on the accent. */
+.room-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 0;
+  background: transparent;
+  color: var(--soft);
+  font-family: var(--font-display);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.room-nav-item .room-icon {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.room-nav-item:hover {
+  color: var(--text);
+}
+
+.room-nav-item:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: -2px;
+}
+
+.room-nav-item[aria-current="page"] {
+  color: var(--text);
+}
+
+.room-nav-item[aria-current="page"] .room-icon {
+  color: var(--accent-soft);
+}
+
+/* The rail mount is desktop-only; the bottom mount below is
+   its phone form. */
+.room-nav-rail {
+  display: none;
+}
+
+.room-nav-bottom {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 45;
+  display: flex;
+  background: rgb(11 11 13 / 0.92);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-top: 1px solid var(--line-faint);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.room-nav-bottom .room-nav-item {
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.15rem;
+  min-height: 3.6rem;
+  padding: 0.4rem 0 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+/* The active room's glyph sits in a scarlet pill, the
+   reference menu's active medallion in this app's accent. */
+.room-nav-bottom .room-nav-item[aria-current="page"] .room-icon {
+  background: rgb(230 51 41 / 0.16);
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  width: 2.6rem;
+  height: 1.65rem;
+}
+
+/* Nothing hides behind the bottom bar: the page pad clears
+   it, and the toast layer (z 60, above the bar's 45) lifts
+   clear of it too. The pairing and receive overlays already
+   render above both. */
+@media (max-width: 1023px) {
+  main {
+    padding-bottom: 6.5rem;
+  }
+
+  .toast-layer {
+    bottom: calc(4.9rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* The verdict hero's ring: the exit figure as a circular
+   progress stroke beside the token title. The stroke is set
+   from the same gauge model as the linear gauge in the exit
+   group, and it moves on the gauge's own duration and glide
+   curve (R78 tokens), so the ring and the bar travel
+   together. Its colour is the verdict's functional hue, the
+   gauge fill's mapping restated for a stroke. */
+.report-head,
+.scan-head {
+  align-items: center;
+}
+
+.verdict-ring {
+  position: relative;
+  flex: none;
+  width: 68px;
+  height: 68px;
+}
+
+.verdict-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+[dir="rtl"] .verdict-ring svg {
+  transform: rotate(-90deg) scaleX(-1);
+}
+
+.verdict-ring .ring-track {
+  fill: none;
+  stroke: var(--surface-3);
+  stroke-width: 7;
+}
+
+.verdict-ring .ring-fill {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--dur-gauge) var(--ease-glide);
+}
+
+.verdict-ring[data-verdict="ALIVE"] .ring-fill {
+  stroke: var(--alive);
+}
+
+.verdict-ring[data-verdict="RISKY"] .ring-fill {
+  stroke: var(--risky);
+}
+
+.verdict-ring[data-verdict="DEAD"] .ring-fill,
+.verdict-ring[data-verdict="NO_MARKET"] .ring-fill {
+  stroke: var(--dead);
+}
+
+.verdict-ring[data-verdict="LYING_DISPLAY"] .ring-fill {
+  stroke: var(--lying);
+}
+
+.ring-value {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+@media (min-width: 720px) {
+  .verdict-ring {
+    width: 80px;
+    height: 80px;
+  }
+
+  .ring-value {
+    font-size: 1.05rem;
+  }
+}
+
+/* The stat cards: the R76 strip's four figures as individual
+   cards, the reference dashboards' stat row. The container
+   band dissolves (its halo drift layer on the wrapper stays,
+   R78); each cell becomes its own card on the standard paper
+   shadow, halo included at the papers' standard strength.
+   The wrapper-prefixed selectors outrank the strip-era
+   divider rules they replace, on both phone and wide grids. */
+.stat-strip-wrap .stat-strip {
+  gap: 0.6rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+}
+
+.stat-strip-wrap .stat-strip .stat-cell {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem 0.75rem;
+  gap: 0.15rem;
+  box-shadow:
+    var(--highlight-top),
+    0 0 36px -8px rgb(230 51 41 / 0.35);
+}
+
+.stat-sub {
+  font-family: var(--font-prose);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--soft);
+}
+
+/* Desktop: the shell is a rail and a content column. The
+   rail holds the wordmark, the wallet control and the menu;
+   the content column takes the rest of the width (the old
+   full-width single column is superseded, see the section
+   head). Pairing stays one tap away in both mounts: the
+   wallet control stands in the rail here, in the topbar on
+   the phone. */
+@media (min-width: 1024px) {
+  .room-nav-bottom {
+    display: none;
+  }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .chrome {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding: 1.1rem 0.85rem;
+    border-inline-end: 1px solid var(--line-faint);
+  }
+
+  .chrome .topbar {
+    position: static;
+    max-width: none;
+    margin: 0;
+    padding: 0.15rem 0.45rem 0;
+    background: transparent;
+    border-bottom: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.9rem;
+  }
+
+  .chrome .wallet {
+    margin-inline-start: 0;
+  }
+
+  .room-nav-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0 0.2rem;
+  }
+
+  .room-nav-rail .room-nav-item {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    text-align: start;
+  }
+
+  .room-nav-rail .room-nav-item:hover {
+    background: var(--surface-2);
+  }
+
+  .room-nav-rail .room-nav-item[aria-current="page"] {
+    background: var(--surface-2);
+    box-shadow: var(--highlight-top);
+  }
+
+  main {
+    max-width: none;
+    margin: 0;
+    padding: 1.6rem clamp(1.25rem, 3vw, 2.75rem) 3.5rem;
+  }
+
+  .layout-head {
+    margin-top: 0.75rem;
+  }
+}
+
+/* Wide desktop Check room: the report takes the main column
+   and the controls stand in a sticky side panel, the second
+   reference's right rail in this app's terms. Below this
+   width the controls sit above the report inside the room,
+   as they always have. */
+@media (min-width: 1280px) {
+  .check-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 21rem;
+    gap: 0 1.5rem;
+    align-items: start;
+  }
+
+  .check-grid > .layout-report {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .check-grid > .check-controls {
+    grid-column: 2;
+    grid-row: 1;
+    position: sticky;
+    top: 1.6rem;
+  }
+}

@@ -332,6 +332,9 @@ const strings: UiStrings = {
     "हमेशा आपके अपने वॉलेट में होता है, और उसके बिना " +
     "कुछ नहीं हिलता।",
   aboutBuilt: "PoolProof एक एकल निर्माण है, BCH BLAZE 2026 के लिए बनाया गया।",
+  navCheck: "जांचें",
+  navWallet: "वॉलेट",
+  navAbout: "परिचय",
 };
 
 export const flags: Record<FlagCode, string> = {

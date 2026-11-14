@@ -322,6 +322,9 @@ const strings: UiStrings = {
     "حسابات. ويجري التوقيع دائمًا في محفظتك الخاصة، ولا " +
     "يتحرك شيء بدونه.",
   aboutBuilt: "PoolProof عمل فردي، صُنع من أجل BCH BLAZE 2026.",
+  navCheck: "فحص",
+  navWallet: "المحفظة",
+  navAbout: "حول",
 };
 
 export const flags: Record<FlagCode, string> = {

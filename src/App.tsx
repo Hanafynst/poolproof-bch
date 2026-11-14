@@ -27,7 +27,13 @@ import { runLiveAuditReads } from "./core/live-audit";
 import { fetchRouteQuote } from "./core/router-quote";
 import { type LiveReportInput } from "./core/live-report";
 import { classifyLookup } from "./core/lookup";
-import { judgePool, type FlagCode, type PoolJudgement } from "./core/poolproof-core";
+import {
+  EXIT_RATIO_DEAD,
+  EXIT_RATIO_RISKY,
+  judgePool,
+  type FlagCode,
+  type PoolJudgement,
+} from "./core/poolproof-core";
 import { exitGaugeModel, poolShareModel, scalePercent } from "./core/gauge";
 import {
   buildAnchorTxTemplateForWallet,
@@ -90,7 +96,14 @@ import {
   DISCONNECTED_SESSION,
   type WalletSession,
 } from "./wallet-session";
-import { CheckIcon, CopyIcon, DownloadIcon, LinkIcon } from "./icons";
+import {
+  CheckIcon,
+  CopyIcon,
+  DownloadIcon,
+  LinkIcon,
+  RoomIcon,
+  type RoomKind,
+} from "./icons";
 import { SNAPSHOTS, type TokenSnapshot } from "./data/snapshots";
 import {
   ENGLISH_PACK,
@@ -340,16 +353,129 @@ function EvidenceRows({
   );
 }
 
-// The headline figures as a stat strip (R76): the report's four
-// load-bearing numbers, lifted out of the exit group's rows into
-// a band under the verdict head. Every cell reads the same field
-// through the same formatter as its EvidenceRows counterpart, so
-// the strip is a view of the rows, never a second measurement:
-// the exit ratio from judgement.exitRatio, the reserve from
-// facts.reserveQuoteSats, the pool count from snapshot.poolCount,
-// and the exit figure from judgement.simulatedOutSats (the
-// reference sell stands in under its own row's label when no
-// exit was simulated).
+// The verdict hero's ring (R79): the exit figure staged as a
+// circular progress ring beside the token title, the reference
+// dashboards' signature move adapted to the report's own
+// number. It reads the SAME model as the linear gauge in the
+// exit group (exitGaugeModel over the same snapshot), so the
+// ring, the stat card and the gauge rows can never disagree:
+// ratio mode fills by the exit ratio, reserve mode by the
+// reserve against the dust line, and a snapshot the gauge
+// cannot stage renders no ring either. The stroke glides on
+// the gauge's own duration and curve whenever the figure
+// moves (a landing, an in-place refinement); the centre
+// carries the figure itself, the ratio in ratio mode and the
+// reserve's satoshi count in reserve mode.
+function VerdictRing({
+  snapshot,
+  judgement,
+  t,
+}: {
+  snapshot: TokenSnapshot;
+  judgement: PoolJudgement;
+  t: UiStrings;
+}) {
+  const model = exitGaugeModel(judgement, snapshot.facts);
+  const target = model === null ? 0 : model.fill;
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    setShown(target);
+  }, [target]);
+  if (model === null) return null;
+  const radius = 34;
+  const circumference = 2 * Math.PI * radius;
+  const ratioFormat = latinNumberFormat({
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  });
+  const label =
+    model.kind === "ratio"
+      ? `${t.exitRatio}: ${ratioFormat.format(model.ratio)}`
+      : `${t.gaugeReserve}: ${latinNumberFormat().format(model.reserveSats)} sats`;
+  const center =
+    model.kind === "ratio"
+      ? ratioFormat.format(model.ratio)
+      : latinNumberFormat().format(model.reserveSats);
+  return (
+    <div
+      className="verdict-ring"
+      data-verdict={judgement.verdict}
+      role="img"
+      aria-label={label}
+    >
+      <svg viewBox="0 0 84 84" aria-hidden="true" focusable="false">
+        <circle className="ring-track" cx="42" cy="42" r={radius} />
+        <circle
+          className="ring-fill"
+          cx="42"
+          cy="42"
+          r={radius}
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - shown)}
+        />
+      </svg>
+      <span className="ring-value">{center}</span>
+    </div>
+  );
+}
+
+// The room menu (R79): one menu, two mounts. On the phone it
+// is the fixed bottom bar; on desktop it stands in the left
+// rail under the wordmark. Both mounts drive the same room
+// state in App, and only one is ever displayed (the CSS hides
+// the other per form factor), so the menu a judge sees is
+// always the one for the screen in front of them.
+const ROOM_ORDER: RoomKind[] = ["check", "wallet", "about"];
+
+function RoomNav({
+  room,
+  onRoom,
+  t,
+  variant,
+}: {
+  room: RoomKind;
+  onRoom: (room: RoomKind) => void;
+  t: UiStrings;
+  variant: "rail" | "bottom";
+}) {
+  const labels: Record<RoomKind, string> = {
+    check: t.navCheck,
+    wallet: t.navWallet,
+    about: t.navAbout,
+  };
+  return (
+    <nav className={`room-nav room-nav-${variant}`}>
+      {ROOM_ORDER.map((kind) => (
+        <button
+          key={kind}
+          type="button"
+          className="room-nav-item"
+          aria-current={room === kind ? "page" : undefined}
+          onClick={() => onRoom(kind)}
+        >
+          <RoomIcon room={kind} />
+          <span>{labels[kind]}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+// The headline figures as stat cards (R76, card form R79):
+// the report's four load-bearing numbers, lifted out of the
+// exit group's rows into a card row under the verdict head.
+// Every cell reads the same field through the same formatter
+// as its EvidenceRows counterpart, so the cards are a view of
+// the rows, never a second measurement: the exit ratio from
+// judgement.exitRatio, the reserve from facts.reserveQuoteSats,
+// the pool count from snapshot.poolCount, and the exit figure
+// from judgement.simulatedOutSats (the reference sell stands
+// in under its own row's label when no exit was simulated).
+// A card carries a sub note only where the same snapshot
+// already holds a true one: the ratio card names the verdict's
+// own grading lines, the reserve card the fiat garnish the
+// rows carry, the stand-in exit card its own row's cap note.
+// Nothing is invented for the other cards.
 function StatStrip({
   snapshot,
   judgement,
@@ -360,7 +486,12 @@ function StatStrip({
   t: UiStrings;
 }) {
   const { facts } = snapshot;
-  const exitCell: [string, string] =
+  const ratioFormat = latinNumberFormat({
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  });
+  const reserveFiat = fiatText(facts.reserveQuoteSats, snapshot);
+  const exitCell: [string, string, string?] =
     judgement.simulatedOutSats !== null
       ? [
           t.simulatedExit,
@@ -369,18 +500,23 @@ function StatStrip({
       : [
           t.referenceSell,
           `${formatTokenAmount(judgement.referenceSellRaw, snapshot.decimals)} ${snapshot.symbol}`,
+          t.referenceSellCap,
         ];
-  const cells: Array<[string, string]> = [
+  const cells: Array<[string, string, string?]> = [
     [
       t.exitRatio,
       judgement.exitRatio === null
         ? "n/a"
-        : latinNumberFormat({
-            minimumFractionDigits: 3,
-            maximumFractionDigits: 3,
-          }).format(judgement.exitRatio),
+        : ratioFormat.format(judgement.exitRatio),
+      judgement.exitRatio === null
+        ? undefined
+        : `${t.gaugeTickDead} ${ratioFormat.format(EXIT_RATIO_DEAD)} · ${t.gaugeTickAlive} ${ratioFormat.format(EXIT_RATIO_RISKY)}`,
     ],
-    [t.bchReserve, `${formatBchShort(facts.reserveQuoteSats)} BCH`],
+    [
+      t.bchReserve,
+      `${formatBchShort(facts.reserveQuoteSats)} BCH`,
+      reserveFiat === null ? undefined : `≈ ${reserveFiat}`,
+    ],
     [
       t.pools,
       snapshot.poolCount === null
@@ -392,10 +528,11 @@ function StatStrip({
   return (
     <div className="stat-strip-wrap">
       <div className="stat-strip">
-        {cells.map(([label, value]) => (
+        {cells.map(([label, value, sub]) => (
           <div className="stat-cell" key={label}>
             <span className="stat-label">{label}</span>
             <span className="stat-value">{value}</span>
+            {sub !== undefined && <span className="stat-sub">{sub}</span>}
           </div>
         ))}
       </div>
@@ -1235,6 +1372,7 @@ function ScannerReport({
       aria-label={t.reportLabel}
     >
       <div className="scan-head">
+        <VerdictRing snapshot={snapshot} judgement={judgement} t={t} />
         <div>
           <h2>
             {snapshot.name} <span className="symbol">({snapshot.symbol})</span>
@@ -2184,6 +2322,58 @@ export default function App() {
     }, 350);
   }, []);
 
+  // The rooms (R79): the app is three rooms behind one menu,
+  // Check (the audit), Wallet, About, switched in place with
+  // no reload. Every room's state lives here in App (the typed
+  // category ID, the landed report, the open panel), so a
+  // round-trip to another room and back loses nothing. A room
+  // mounts on its first visit and stays mounted (hidden), which
+  // is also what preserves the panels' own state. The motion
+  // discipline: a room's first mount plays its own entrances;
+  // returning to a visited room plays only the room crossfade
+  // (the .room-fade class restarted by hand below), never a
+  // replay of the landing sequences inside it.
+  const [room, setRoom] = useState<RoomKind>("check");
+  const [visitedRooms, setVisitedRooms] = useState<ReadonlySet<RoomKind>>(
+    () => new Set<RoomKind>(["check"]),
+  );
+  const roomSections = useRef<Partial<Record<RoomKind, HTMLElement | null>>>(
+    {},
+  );
+  const goToRoom = useCallback(
+    (next: RoomKind) => {
+      if (next === room) return;
+      const returning = visitedRooms.has(next);
+      if (!returning) {
+        setVisitedRooms((current) => new Set(current).add(next));
+      }
+      setRoom(next);
+      if (returning) {
+        // Restart the crossfade on the room being returned to:
+        // the class is dropped, a reflow forced, and the class
+        // re-applied once the section is displayed again.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const section = roomSections.current[next];
+            if (section === null || section === undefined) return;
+            section.classList.remove("room-fade");
+            void section.offsetWidth;
+            section.classList.add("room-fade");
+          });
+        });
+      }
+    },
+    [room, visitedRooms],
+  );
+  // The wallet's Audit tile: its destination is the Check room
+  // now, and the focus behaviour it has always had (the input
+  // scrolled into view and focused) rides along once the room
+  // is on screen.
+  const goToAudit = useCallback(() => {
+    goToRoom("check");
+    window.setTimeout(focusAudit, 60);
+  }, [goToRoom, focusAudit]);
+
   // The report reveal (P6): the reveal class rides on the
   // report section only while a fresh report's stagger runs.
   // It is set by exactly three events: the first mount, a
@@ -2453,6 +2643,8 @@ export default function App() {
         {t.skipToMain}
       </a>
       <TopBanner t={t} tokenAddress={walletSession.tokenAddress} />
+      <div className="shell">
+      <div className="chrome">
       <header className="topbar">
         <span className="wordmark">POOLPROOF</span>
         <LazyBoundary label={t.walletLoadFailed}>
@@ -2474,60 +2666,24 @@ export default function App() {
           </Suspense>
         </LazyBoundary>
       </header>
+      <RoomNav room={room} onRoom={goToRoom} t={t} variant="rail" />
+      </div>
 
       <main id="main" tabIndex={-1}>
-        <div className="layout-wallet">
-        <WalletCard
-          t={t}
-          session={walletSession}
-          utxoPhase={utxoPhase}
-          holdings={walletHoldings}
-          openPanel={openPanel}
-          onTogglePanel={togglePanel}
-          onAudit={focusAudit}
-        />
-        {renderedPanel !== null && (
-          <div
-            key={renderedPanel}
-            className={panelClosing ? "panel-exit" : undefined}
-          >
-            {renderedPanel === "send" && (
-              <SendPanel
-                t={t}
-                lang={packLang}
-                session={walletSession}
-                electrum={electrum}
-                utxoPhase={utxoPhase}
-                utxos={walletUtxos}
-                holdings={walletHoldings}
-                resolveIdentity={resolveTokenIdentity}
-                onSent={handleSent}
-                onSendFailed={handleTxFailed}
-              />
-            )}
-            {renderedPanel === "receive" && (
-              <ReceivePanel
-                t={t}
-                session={walletSession}
-                onClose={closePanel}
-              />
-            )}
-            {renderedPanel === "history" && (
-              <HistoryPanel
-                t={t}
-                lang={packLang}
-                entries={entries}
-                loadFailed={history.loadFailed}
-                saveFailed={historySaveFailed}
-              />
-            )}
-          </div>
-        )}
-        </div>
+        <section
+          className="room room-check"
+          aria-label={t.navCheck}
+          hidden={room !== "check"}
+          ref={(el) => {
+            roomSections.current.check = el;
+          }}
+        >
         <div className="layout-head">
         <h1>{t.headline}</h1>
         <p className="lede">{t.lede}</p>
         </div>
+        <div className="check-grid">
+        <aside className="check-controls">
         <div className="layout-controls">
         <div className="controls">
           <label>
@@ -2647,6 +2803,7 @@ export default function App() {
         </div>
 
         </div>
+        </aside>
         <div className="layout-report">
         {liveState.phase === "fetching" ? (
           // The loading state (P7 + R50): the skeleton head
@@ -2729,6 +2886,7 @@ export default function App() {
           aria-label={t.reportLabel}
         >
           <div className="report-head">
+            <VerdictRing snapshot={snapshot} judgement={judgement} t={t} />
             <div>
               <h2>
                 {snapshot.name} <span className="symbol">({snapshot.symbol})</span>
@@ -2795,13 +2953,90 @@ export default function App() {
           </>
         )}
         </div>
-        <AboutSection t={t} />
+        </div>
+        </section>
+        {visitedRooms.has("wallet") && (
+          <section
+            className="room room-wallet"
+            aria-label={t.navWallet}
+            hidden={room !== "wallet"}
+            ref={(el) => {
+              roomSections.current.wallet = el;
+            }}
+          >
+        <div className="layout-wallet">
+        <WalletCard
+          t={t}
+          session={walletSession}
+          utxoPhase={utxoPhase}
+          holdings={walletHoldings}
+          openPanel={openPanel}
+          onTogglePanel={togglePanel}
+          onAudit={goToAudit}
+        />
+        {renderedPanel !== null && (
+          <div
+            key={renderedPanel}
+            className={panelClosing ? "panel-exit" : undefined}
+          >
+            {renderedPanel === "send" && (
+              <SendPanel
+                t={t}
+                lang={packLang}
+                session={walletSession}
+                electrum={electrum}
+                utxoPhase={utxoPhase}
+                utxos={walletUtxos}
+                holdings={walletHoldings}
+                resolveIdentity={resolveTokenIdentity}
+                onSent={handleSent}
+                onSendFailed={handleTxFailed}
+              />
+            )}
+            {renderedPanel === "receive" && (
+              <ReceivePanel
+                t={t}
+                session={walletSession}
+                onClose={closePanel}
+              />
+            )}
+            {renderedPanel === "history" && (
+              <HistoryPanel
+                t={t}
+                lang={packLang}
+                entries={entries}
+                loadFailed={history.loadFailed}
+                saveFailed={historySaveFailed}
+              />
+            )}
+          </div>
+        )}
+        </div>
+          </section>
+        )}
+        {visitedRooms.has("about") && (
+          <section
+            className="room room-about"
+            aria-label={t.navAbout}
+            hidden={room !== "about"}
+            ref={(el) => {
+              roomSections.current.about = el;
+            }}
+          >
+            <AboutSection t={t} />
+          </section>
+        )}
       </main>
+      </div>
+      <RoomNav room={room} onRoom={goToRoom} t={t} variant="bottom" />
       <ToastLayer
         items={toastQueue.items}
         t={t}
         onDismiss={dismissToastById}
-        onOpenHistory={() => setOpenPanel("history")}
+        onOpenHistory={() => {
+          setOpenPanel("history");
+          goToRoom("wallet");
+        }}
         onCopyTxid={copyToastTxid}
       />
     </>

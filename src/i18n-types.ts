@@ -225,4 +225,7 @@ export interface UiStrings {
   aboutLimitsTitle: string;
   aboutLimits: string;
   aboutBuilt: string;
+  navCheck: string;
+  navWallet: string;
+  navAbout: string;
 }

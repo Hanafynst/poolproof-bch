@@ -282,6 +282,9 @@ const strings: UiStrings = {
     "密钥、资金或账户。签名始终在你自己的钱包中完成，" +
     "没有签名，任何资产都不会移动。",
   aboutBuilt: "PoolProof 是为 BCH BLAZE 2026 独立完成的作品。",
+  navCheck: "检查",
+  navWallet: "钱包",
+  navAbout: "关于",
 };
 
 export const flags: Record<FlagCode, string> = {

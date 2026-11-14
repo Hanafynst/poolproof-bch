@@ -151,3 +151,38 @@ export function TileIcon({ panel }: { panel: TileKind }) {
     </svg>
   );
 }
+
+export type RoomKind = "check" | "wallet" | "about";
+
+/** The room menu's glyphs (R79), drawn to the same spec. Check
+ *  reuses the Audit tile's lens path for path, so the menu and
+ *  the tile that leads to the same room carry the same mark;
+ *  Wallet is the card wallet outline; About is the round
+ *  family's information mark, the clock's circle with a stem
+ *  and a dot. */
+export function RoomIcon({ room }: { room: RoomKind }) {
+  const paths =
+    room === "check" ? (
+      <>
+        <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z" />
+        <path d="m21 21-4.35-4.35" />
+      </>
+    ) : room === "wallet" ? (
+      <>
+        <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+        <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+        <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+      </>
+    ) : (
+      <>
+        <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" />
+        <path d="M12 16v-5" />
+        <path d="M12 8h.01" />
+      </>
+    );
+  return (
+    <svg className="room-icon" {...ICON_PROPS}>
+      {paths}
+    </svg>
+  );
+}

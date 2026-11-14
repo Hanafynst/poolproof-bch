@@ -336,6 +336,9 @@ const strings: UiStrings = {
     "funds, or accounts. Signing always happens in your own " +
     "wallet, and nothing moves without it.",
   aboutBuilt: "PoolProof is a solo build for BCH BLAZE 2026.",
+  navCheck: "Check",
+  navWallet: "Wallet",
+  navAbout: "About",
 };
 
 export const flags: Record<FlagCode, string> = {
