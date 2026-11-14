@@ -68,7 +68,7 @@ npm run build
 
 ## Testing
 
-The verdict and wallet logic was built in a practice lab first, then ported into this repository file by file. The shipped core modules are byte-identical to the lab copies the suite runs against, with one exception: `src/core/wallet-address.ts` adds a token-aware address form (the address the banner and the Receive panel show) on top of its lab copy, built from the same payload code. The lab suite currently runs **687 checks, all passing**, covering:
+The verdict and wallet logic was built in a practice lab first, then ported into this repository file by file. The shipped core modules are byte-identical to the lab copies the suite runs against. The lab suite currently runs **696 checks, all passing**, covering:
 
 - verdict thresholds and the routed exit simulation, tested against real captured fixtures (PUSD alive, 0LANDO dead);
 - the exit gauge's model (ratio and dust-reserve modes, with the tick positions taken from the verdict's own constants), the per-pool reserve split, and the audit's stage signals, which fire only when their real read resolves;
